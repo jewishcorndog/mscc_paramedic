@@ -14,7 +14,7 @@ study aid, not a clinical reference.
 | --- | --- |
 | **Cards** | Flashcards. The front can show the drug (you recall the info) or the info (you name the drug), or mix both. Cards you miss come back later in the same round. |
 | **Quiz** | Mixed questions: multiple choice ("Which drug is indicated for…", "Which of these is the adult dose of…", with realistic wrong doses), fill in the missing dose number, name the drug from its indications and dose, and name one indication or contraindication. |
-| **Write** | Practice for the written test. For each drug you type out indications, contraindications, adult dose and pediatric dose. The app checks each item from the deck and marks it ✓ or ✗. Tap a line to flip it if the checker got it wrong. There is also a warm-up: list every drug on the list from memory. |
+| **Write** | Practice for the written test. Pick exactly which drugs to write out (tap them, add a whole group, or take your weakest 5), then for each drug you type out indications, contraindications, adult dose and pediatric dose. The app checks each item from the deck and marks it ✓ or ✗. Tap a line to flip it if the checker got it wrong. There is also a warm-up: list every drug on the list from memory. |
 | **Drugs** | Searchable reference with everything from the deck, including the secondary info (trade names, class, mechanism, adverse reactions, TN/NASEMSO protocols, memory tricks). |
 | **Stats** | Accuracy per drug and topic, weakest first, with a button to study your weakest 8. |
 

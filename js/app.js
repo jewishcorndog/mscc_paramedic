@@ -47,10 +47,12 @@
     cardOrder: 'shuffle',
     quizLen: 20,
     quizTypes: { mc: true, dose: true, name: true, recall: true },
-    woCount: 5
+    woSelected: DRUGS.map(function (d) { return d.id; }),
+    woOrder: 'shuffle'
   }, loadSaved());
   S.selected = S.selected.filter(function (id) { return BY_ID[id]; });
   if (!S.selected.length) S.selected = DRUGS.map(function (d) { return d.id; });
+  S.woSelected = S.woSelected.filter(function (id) { return BY_ID[id]; });
 
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage blocked */ }
@@ -155,33 +157,48 @@
     if (first) first.focus();
   }
 
-  function renderSetup(error) {
-    var chips = DRUGS.map(function (d) {
-      var on = S.selected.indexOf(d.id) !== -1;
+  function drugChips(selected) {
+    return '<div class="chips">' + DRUGS.map(function (d) {
+      var on = selected.indexOf(d.id) !== -1;
       return '<button class="chip" data-drug="' + d.id + '" aria-pressed="' + on + '" ' + labStyle(d) + '>' +
         '<span class="swatch"></span>' + esc(d.name) + '</button>';
-    }).join('');
-    var groupBtns = GROUPS.map(function (g) {
+    }).join('') + '</div>';
+  }
+  function groupButtons() {
+    return '<div class="row">' + GROUPS.map(function (g) {
       return '<button class="btn" data-group="' + g.id + '">' + esc(g.name) + '</button>';
+    }).join('') + '</div>';
+  }
+  // Clicking a group adds all of its drugs, or removes them if all are already in.
+  function toggleGroup(selected, groupId) {
+    var ids = DRUGS.filter(function (d) { return d.groups.indexOf(groupId) !== -1; }).map(function (d) { return d.id; });
+    var allOn = ids.every(function (x) { return selected.indexOf(x) !== -1; });
+    if (allOn) return selected.filter(function (x) { return ids.indexOf(x) === -1; });
+    return selected.concat(ids.filter(function (x) { return selected.indexOf(x) === -1; }));
+  }
+  function toggleDrug(selected, id) {
+    var i = selected.indexOf(id);
+    if (i === -1) selected.push(id); else selected.splice(i, 1);
+  }
+  function fieldChecks(list) {
+    return list.map(function (f) {
+      return '<label class="check"><input type="checkbox" data-field="' + f + '"' +
+        (S.fields[f] ? ' checked' : '') + '> ' + esc(FIELDS[f].label) + '</label>';
     }).join('');
-    function checks(list) {
-      return list.map(function (f) {
-        return '<label class="check"><input type="checkbox" id="fld-' + f + '" data-field="' + f + '"' +
-          (S.fields[f] ? ' checked' : '') + '> ' + esc(FIELDS[f].label) + '</label>';
-      }).join('');
-    }
+  }
+
+  function renderSetup(error) {
     setupEl.innerHTML =
       '<div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="setup-title">' +
       '<div class="row spread"><h2 class="title" id="setup-title">What to study</h2>' +
       '<button class="btn primary" data-act="done">Done</button></div>' +
       (error ? '<p class="error">' + esc(error) + '</p>' : '') +
-      '<div class="field-row"><p class="eyebrow">On the test</p><div class="row">' + checks(CORE) + '</div></div>' +
-      '<div class="field-row"><p class="eyebrow">Secondary info</p><div class="row">' + checks(EXTRA) + '</div></div>' +
+      '<div class="field-row"><p class="eyebrow">On the test</p><div class="row">' + fieldChecks(CORE) + '</div></div>' +
+      '<div class="field-row"><p class="eyebrow">Secondary info</p><div class="row">' + fieldChecks(EXTRA) + '</div></div>' +
       '<div class="field-row"><div class="row spread"><p class="eyebrow">Drugs (' + S.selected.length + ' of ' + DRUGS.length + ')</p>' +
       '<div class="row"><button class="btn link" data-act="all">All</button><button class="btn link" data-act="none">None</button>' +
       '<button class="btn link" data-act="weak">Weakest 8</button></div></div>' +
-      '<div class="row">' + groupBtns + '</div>' +
-      '<div class="chips">' + chips + '</div></div>' +
+      groupButtons() + drugChips(S.selected) + '</div>' +
       '</div>';
   }
 
@@ -190,13 +207,9 @@
     var t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.drug) {
-      var id = t.dataset.drug, i = S.selected.indexOf(id);
-      if (i === -1) S.selected.push(id); else S.selected.splice(i, 1);
+      toggleDrug(S.selected, t.dataset.drug);
     } else if (t.dataset.group) {
-      var ids = DRUGS.filter(function (d) { return d.groups.indexOf(t.dataset.group) !== -1; }).map(function (d) { return d.id; });
-      var allOn = ids.every(function (x) { return S.selected.indexOf(x) !== -1; });
-      if (allOn) S.selected = S.selected.filter(function (x) { return ids.indexOf(x) === -1; });
-      else ids.forEach(function (x) { if (S.selected.indexOf(x) === -1) S.selected.push(x); });
+      S.selected = toggleGroup(S.selected, t.dataset.group);
     } else if (t.dataset.act === 'all') {
       S.selected = DRUGS.map(function (d) { return d.id; });
     } else if (t.dataset.act === 'none') {
@@ -683,18 +696,27 @@
   var W = null;
 
   function writeSetup() {
-    var n = S.selected.length;
+    var n = S.woSelected.length;
+    var ready = n && activeFields().length;
+    var scroll = window.scrollY;
     writeEl.innerHTML =
-      '<div><h2 class="title">Write it out</h2><p class="lede">Practice like the written test. Type everything you know for each drug, one item per line, then check it against the deck.</p></div>' +
-      deckbar() +
+      '<div><h2 class="title">Write it out</h2><p class="lede">Practice like the written test. Pick the drugs, type everything you know for each one, then check it against the deck.</p></div>' +
       '<div class="panel">' +
-      '<div class="field-row"><p class="eyebrow">Drugs per round</p>' +
-      seg('woCount', S.woCount, [[1, '1'], [5, '5'], [10, '10'], [0, 'All ' + n]]) + '</div>' +
-      '<div><button class="btn primary big" data-act="start">Start writing</button></div></div>' +
+      '<div class="field-row"><div class="row spread"><p class="eyebrow">Drugs to write out (' + n + ' of ' + DRUGS.length + ')</p>' +
+      '<div class="row"><button class="btn link" data-act="wo-all">All</button><button class="btn link" data-act="wo-none">None</button>' +
+      '<button class="btn link" data-act="wo-weak">Weakest 5</button></div></div>' +
+      groupButtons() + drugChips(S.woSelected) + '</div>' +
+      '<div class="field-row"><p class="eyebrow">Write out</p><div class="row">' + fieldChecks(CORE) + '</div>' +
+      '<div class="row">' + fieldChecks(EXTRA) + '</div></div>' +
+      '<div class="field-row"><p class="eyebrow">Order</p>' +
+      seg('woOrder', S.woOrder, [['shuffle', 'Random'], ['inorder', 'List order']]) + '</div>' +
+      (n ? '' : '<p class="muted small">Tap drugs above to add them.</p>') +
+      '<div><button class="btn primary big" data-act="start"' + (ready ? '' : ' disabled') + '>Write out ' + n + ' ' + (n === 1 ? 'drug' : 'drugs') + '</button></div></div>' +
       '<div class="panel"><p class="eyebrow">Warm-up</p><h3 class="title" style="font-size:1.3rem">Every drug on the list, from memory</h3>' +
       '<label for="recall-all" class="muted small">Type every drug name you can, one per line or separated by commas.</label>' +
       '<textarea id="recall-all" rows="6" placeholder="Acetaminophen&#10;Adenosine&#10;…"></textarea>' +
       '<div><button class="btn" data-act="recall-check">Check my list</button></div><div id="recall-result"></div></div>';
+    window.scrollTo(0, scroll);
   }
 
   function recallCheck() {
@@ -709,8 +731,9 @@
   }
 
   function writeStart() {
-    var drugs = shuffle(selectedDrugs());
-    if (S.woCount) drugs = drugs.slice(0, S.woCount);
+    var drugs = DRUGS.filter(function (d) { return S.woSelected.indexOf(d.id) !== -1; });
+    if (!drugs.length || !activeFields().length) return;
+    if (S.woOrder === 'shuffle') drugs = shuffle(drugs);
     W = { drugs: drugs, i: 0, results: [], graded: null };
     writeRender();
   }
@@ -804,9 +827,11 @@
   }
 
   writeEl.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-act],[data-seg],[data-toggle]');
+    var t = e.target.closest('[data-act],[data-seg],[data-toggle],[data-drug],[data-group]');
     if (!t) return;
-    if (t.dataset.seg) { S[t.dataset.seg] = Number(t.dataset.val); save(); return writeSetup(); }
+    if (t.dataset.seg) { S[t.dataset.seg] = t.dataset.val; save(); return writeSetup(); }
+    if (t.dataset.drug) { toggleDrug(S.woSelected, t.dataset.drug); save(); return writeSetup(); }
+    if (t.dataset.group) { S.woSelected = toggleGroup(S.woSelected, t.dataset.group); save(); return writeSetup(); }
     if (t.dataset.toggle) {
       var p = t.dataset.toggle.split(':');
       var row = W.graded[p[0]].rows[Number(p[1])];
@@ -817,12 +842,25 @@
       return;
     }
     var act = t.dataset.act;
-    if (act === 'setup') return openSetup(function () { W = null; writeSetup(); });
+    if (act === 'wo-all' || act === 'wo-none' || act === 'wo-weak') {
+      S.woSelected = act === 'wo-none' ? [] : act === 'wo-all' ? DRUGS.map(function (d) { return d.id; })
+        : DRUGS.slice().sort(function (a, b) { return weakness(b.id) - weakness(a.id); }).slice(0, 5).map(function (d) { return d.id; });
+      save();
+      return writeSetup();
+    }
     if (act === 'start') return writeStart();
     if (act === 'grade') return writeGrade();
     if (act === 'skip' || act === 'next') return writeNext();
     if (act === 'new') { W = null; return writeSetup(); }
     if (act === 'recall-check') return recallCheck();
+  });
+
+  writeEl.addEventListener('change', function (e) {
+    var f = e.target.dataset && e.target.dataset.field;
+    if (!f || W) return;
+    S.fields[f] = e.target.checked;
+    save();
+    writeSetup();
   });
 
   VIEWS.write = { show: function () { if (W) writeRender(); else writeSetup(); } };
@@ -973,7 +1011,7 @@
   // Shared "Change" button on deck bars.
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-act="setup"]');
-    if (t && !cardsEl.contains(t) && !quizEl.contains(t) && !writeEl.contains(t)) openSetup(null);
+    if (t && !cardsEl.contains(t) && !quizEl.contains(t)) openSetup(null);
   });
 
   showTab(VIEWS[S.tab] ? S.tab : 'cards');
