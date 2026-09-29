@@ -18,7 +18,7 @@ study aid, not a clinical reference.
 | **Drugs** | Searchable reference with everything from the deck, including the secondary info (trade names, class, mechanism, adverse reactions, TN/NASEMSO protocols, memory tricks). |
 | **Stats** | Accuracy per drug and topic, weakest first, with a button to study your weakest 8. |
 
-**Change** (on the Cards, Quiz and Write tabs) picks which drugs to study (all of them, a
+**Change** (on the Cards and Quiz tabs) picks which drugs to study (all of them, a
 group such as Cardiac or RSI, your weakest, or hand-picked) and which topics to include.
 Secondary info such as trade names or mechanism of action can be switched on there too.
 
