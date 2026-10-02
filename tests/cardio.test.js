@@ -4,6 +4,7 @@ globalThis.window = globalThis;
 require('../js/grading.js');
 require('../js/ecg.js');
 require('../js/cardio-data.js');
+require('../js/real-strips.js');
 const G = globalThis.Grading;
 const ECG = globalThis.ECG;
 const R = globalThis.CARDIO_RHYTHMS;
@@ -106,6 +107,36 @@ t('typed rhythm names match aliases and tolerate typos', () => {
   assert(G.nameMatches('sinus brady', by['sinus-brady']));
   assert(!G.nameMatches('sinus tach', by['sinus-brady']));
   assert(!G.nameMatches('atrial flutter', by.afib));
+});
+
+t('real MIT-BIH strips are complete, credited and renderable', () => {
+  const RS = globalThis.REAL_STRIPS;
+  assert.strictEqual(RS.hz, 180);
+  assert(RS.strips.length >= 50, 'expected a decent real-strip library');
+  const real = new Set();
+  RS.strips.forEach(x => {
+    assert(ids.includes(x.id), 'unknown rhythm ' + x.id);
+    assert(/^\d{3}$/.test(x.rec) && /^\d+:\d\d$/.test(x.at), 'missing record credit on ' + x.id);
+    assert.strictEqual(x.mv.length, 6 * RS.hz, x.id + ' ' + x.rec + ' is not 6 s');
+    x.also.forEach(a => assert(ids.includes(a) && a !== x.id));
+    x.beats.forEach(b => assert(b[0] >= 0 && b[0] < x.mv.length));
+    const html = ECG.render(ECG.fromReal(x, RS.hz), null, { cap: ['MIT-BIH ' + x.rec, x.at], marks: x.beats.map(b => [b[0], b[1]]) });
+    assert(!/NaN/.test(html), 'NaN in rendered ' + x.id);
+    real.add(x.id);
+  });
+  ['nsr', 'afib', 'flutter', 'vt', 'pvc', 'paced'].forEach(id => assert(real.has(id), 'no real ' + id));
+});
+
+t('sodium-potassium pump content is complete', () => {
+  const P = globalThis.CARDIO_PUMP;
+  assert.strictEqual(P.steps.length, 4);
+  assert.deepStrictEqual(P.phases.map(p => p.n).sort(), [0, 1, 2, 3, 4]);
+  assert(P.qa.length >= 20);
+  P.qa.forEach(b => {
+    assert(b.q && b.a && b.wrong.length >= 3, b.q);
+    assert(!b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, 'bad choices: ' + b.q);
+  });
+  assert(/3 Na⁺ out and 2 K⁺ in/.test(P.qa[0].a));
 });
 
 console.log(n + ' cardiology test groups passed');

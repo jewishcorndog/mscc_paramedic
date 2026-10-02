@@ -365,13 +365,13 @@
   var uid = 0;
 
   // One row of paper covering [t0, t1) seconds. Returns SVG children.
-  function row(samples, t0, t1, yTop, height) {
+  function row(samples, hz, t0, t1, yTop, height) {
     var x0 = t0 * MM_PER_S, w = (t1 - t0) * MM_PER_S;
     var mid = yTop + height * 0.56;
     var pts = [];
-    var i0 = Math.round(t0 * HZ), i1 = Math.round(t1 * HZ);
+    var i0 = Math.round(t0 * hz), i1 = Math.round(t1 * hz);
     for (var i = i0; i <= i1 && i < samples.length; i++) {
-      var x = i / HZ * MM_PER_S - x0;
+      var x = i / hz * MM_PER_S - x0;
       var y = mid - samples[i] * MM_PER_MV;
       y = Math.max(yTop + 0.4, Math.min(yTop + height - 0.4, y));
       pts.push((i === i0 ? 'M' : 'L') + x.toFixed(2) + ' ' + y.toFixed(2));
@@ -396,18 +396,34 @@
     return s;
   }
 
+  // Beat labels drawn along the top edge, for real strips after answering.
+  function marks(list, hz, t0, t1) {
+    return (list || []).filter(function (m) { var t = m[0] / hz; return t >= t0 && t < t1; }).map(function (m) {
+      var x = (m[0] / hz - t0) * MM_PER_S;
+      return '<text x="' + x.toFixed(2) + '" y="3.6" class="ecg-mark">' + m[1] + '</text>';
+    }).join('');
+  }
+
   // Wide layout: one 6 s row. Narrow layout: two 3 s rows stacked.
-  function render(strip, label) {
-    var h = 40, id = ++uid, s = strip.samples, title = label ? '<title>' + label + '</title>' : '';
-    var full = row(s, 0, SECONDS, 0, h);
+  // opts: { cap: [left, right], marks: [[sample, text]] }
+  function render(strip, label, opts) {
+    opts = opts || {};
+    var h = 40, id = ++uid, s = strip.samples, hz = strip.hz || HZ, title = label ? '<title>' + label + '</title>' : '';
+    var full = row(s, hz, 0, SECONDS, 0, h);
     var wide = '<svg class="ecg ecg-wide" viewBox="0 0 150 ' + h + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="ECG strip, 6 seconds, lead II">' + title +
-      paper(id, 150, h) + ticks(0, 6, 0) + '<path d="' + full.path + '" class="ecg-trace"/></svg>';
-    var a = row(s, 0, 3, 0, h), b = row(s, 3, 6, 0, h);
+      paper(id, 150, h) + ticks(0, 6, 0) + '<path d="' + full.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 0, 6) + '</svg>';
+    var a = row(s, hz, 0, 3, 0, h), b = row(s, hz, 3, 6, 0, h);
     var id2 = ++uid;
     var narrow = '<svg class="ecg ecg-narrow" viewBox="0 0 75 ' + (h * 2 + 3) + '" role="img" aria-label="ECG strip, 6 seconds in two rows, lead II">' + title +
-      '<g>' + paper(id2, 75, h) + ticks(0, 3, 0) + '<path d="' + a.path + '" class="ecg-trace"/></g>' +
-      '<g transform="translate(0 ' + (h + 3) + ')">' + paper(id2 + 'b', 75, h) + ticks(3, 6, 0) + '<path d="' + b.path + '" class="ecg-trace"/></g></svg>';
-    return '<div class="ecg-wrap">' + wide + narrow + '<div class="ecg-cap"><span>Lead II</span><span>6 seconds · 25 mm/s</span></div></div>';
+      '<g>' + paper(id2, 75, h) + ticks(0, 3, 0) + '<path d="' + a.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 0, 3) + '</g>' +
+      '<g transform="translate(0 ' + (h + 3) + ')">' + paper(id2 + 'b', 75, h) + ticks(3, 6, 0) + '<path d="' + b.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 3, 6) + '</g></svg>';
+    var cap = opts.cap || ['Lead II', '6 seconds · 25 mm/s'];
+    return '<div class="ecg-wrap">' + wide + narrow + '<div class="ecg-cap"><span>' + cap[0] + '</span><span>' + cap[1] + '</span></div></div>';
+  }
+
+  // A recorded strip from window.REAL_STRIPS (hundredths of a mV) in the same shape generate() returns.
+  function fromReal(entry, hz) {
+    return { id: entry.id, hz: hz, seconds: SECONDS, samples: entry.mv.map(function (v) { return v / 100; }) };
   }
 
   function strip(id, seed) { return render(generate(id, seed)); }
@@ -416,6 +432,7 @@
     ids: Object.keys(RHYTHMS),
     generate: generate,
     render: render,
+    fromReal: fromReal,
     strip: strip,
     makeRng: makeRng
   };

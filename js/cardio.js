@@ -8,6 +8,9 @@
   var TOPICS = window.CARDIO_TOPICS;
   var TGROUPS = window.CARDIO_TOPIC_GROUPS;
   var BASICS = window.CARDIO_BASICS;
+  var PUMP = window.CARDIO_PUMP;
+  // Question-and-answer sets: ECG basics and the sodium-potassium pump.
+  var QA = { basics: { list: BASICS, pre: 'b', title: 'ECG basics' }, pump: { list: PUMP.qa, pre: 'p', title: 'Na-K pump & cell' } };
   var ECG = window.ECG;
   var G = window.Grading;
   var R_BY = {}, T_BY = {};
@@ -48,6 +51,39 @@
     wpw: ['avb-1', 'nsr', 'pac']
   };
 
+  // ---------- Real strips (MIT-BIH) ----------
+  var REAL = window.REAL_STRIPS || { hz: 180, strips: [] };
+  var REAL_BY = {};
+  REAL.strips.forEach(function (x, i) { (REAL_BY[x.id] = REAL_BY[x.id] || []).push(i); });
+  var REAL_IDS = STRIP_IDS.filter(function (id) { return REAL_BY[id]; });
+  // MIT-BIH beat labels worth pointing out; plain normal beats stay unlabeled.
+  var BEAT_LABEL = {
+    A: ['A', 'Premature atrial beat'], a: ['A', 'Aberrant atrial beat'], J: ['J', 'Premature junctional beat'],
+    S: ['S', 'Premature supraventricular beat'], V: ['V', 'PVC'], F: ['F', 'Fusion beat'],
+    j: ['j', 'Junctional escape beat'], E: ['E', 'Ventricular escape beat'], '/': ['P', 'Paced beat'],
+    f: ['f', 'Fusion of paced and normal beat'], R: ['R', 'Right bundle branch block beat'], L: ['L', 'Left bundle branch block beat']
+  };
+  function realHtml(n, answered) {
+    var x = REAL.strips[n];
+    var marks = answered ? x.beats.filter(function (b) { return BEAT_LABEL[b[1]]; }).map(function (b) { return [b[0], BEAT_LABEL[b[1]][0]]; }) : null;
+    return ECG.render(ECG.fromReal(x, REAL.hz), null, { cap: ['Real ECG · MIT-BIH ' + x.rec + ' at ' + x.at, '6 s'], marks: marks });
+  }
+  function realLegend(n) {
+    var seen = {};
+    REAL.strips[n].beats.forEach(function (b) { if (BEAT_LABEL[b[1]]) seen[BEAT_LABEL[b[1]][0]] = BEAT_LABEL[b[1]][1]; });
+    var keys = Object.keys(seen);
+    return keys.length ? '<p class="real-note">Beat labels from the database: ' + keys.map(function (k) { return '<strong>' + esc(k) + '</strong> ' + esc(seen[k]); }).join(' · ') + '. Unlabeled beats are normally conducted.</p>' : '';
+  }
+  function pickReal(id, avoid) {
+    var pool = (REAL_BY[id] || []).filter(function (n) { return !avoid || avoid.indexOf(n) === -1; });
+    if (!pool.length) pool = REAL_BY[id] || [];
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }
+  // Rhythm ids that count as a right answer for this strip (a real strip can show two things at once).
+  function okIds(item) {
+    return [item.id].concat(item.real != null ? REAL.strips[item.real].also : []);
+  }
+
   // ---------- Saved state ----------
   var KEY = 'mscc-cardio-v1';
   function loadSaved() {
@@ -58,13 +94,17 @@
     stripSel: STRIP_IDS.slice(),
     stripMode: 'mc',
     stripLen: 20,
-    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false },
+    stripSrc: 'mix',
+    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false },
     cardDir: 'forward',
     quizLen: 20,
-    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true },
+    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true },
     learn: 'rhythms',
     stats: {}
   }, loadSaved());
+  // Older saves predate the pump deck.
+  if (S.cardDecks.pump === undefined) S.cardDecks.pump = false;
+  if (S.quizTopics.pump === undefined) S.quizTopics.pump = true;
   S.stripSel = S.stripSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
 
   function save() {
@@ -153,9 +193,9 @@
     shuffle(near).concat(shuffle(sameGroup), shuffle(rest)).forEach(function (x) { if (out.indexOf(x) === -1) out.push(x); });
     return out;
   }
-  function rhythmMC(id, within) {
+  function rhythmMC(id, within, also) {
     if (within.length < 4) within = STRIP_IDS;
-    var names = rhythmDistractors(id, within).slice(0, 3).map(function (x) { return R_BY[x].name; });
+    var names = rhythmDistractors(id, within).filter(function (x) { return !also || also.indexOf(x) === -1; }).slice(0, 3).map(function (x) { return R_BY[x].name; });
     return mcFrom(R_BY[id].name, names);
   }
 
@@ -217,25 +257,41 @@
 
   function stripsSetup() {
     var n = S.stripSel.length, y = window.scrollY;
+    var realCount = S.stripSel.filter(function (id) { return REAL_BY[id]; }).length;
+    var canStart = S.stripSrc === 'real' ? realCount : n;
     stripsEl.innerHTML =
-      '<div><h2 class="title">Rhythm strips</h2><p class="lede">Name the rhythm on a 6-second lead II strip. Every strip is drawn fresh, so you never see the exact same one twice.</p></div>' +
+      '<div><h2 class="title">Rhythm strips</h2><p class="lede">Name the rhythm on a 6-second lead II strip. Drawn strips are made fresh every time; real strips are recorded patients from the MIT-BIH Arrhythmia Database.</p></div>' +
       '<div class="panel">' +
       '<div class="field-row"><div class="row spread"><p class="eyebrow">Rhythms (' + n + ' of ' + STRIP_IDS.length + ')</p>' +
       '<div class="row"><button class="btn link" data-act="all">All</button><button class="btn link" data-act="none">None</button>' +
       '<button class="btn link" data-act="weak">Weakest 6</button></div></div>' + rhythmChips(S.stripSel) + '</div>' +
+      '<div class="field-row"><p class="eyebrow">Strips</p>' +
+      seg('stripSrc', S.stripSrc, [['gen', 'Drawn'], ['real', 'Real'], ['mix', 'Mix']]) +
+      (S.stripSrc === 'gen' ? '' : '<p class="muted small">Real strips exist for ' + realCount + ' of your ' + n + ' rhythms' +
+        (S.stripSrc === 'real' ? '; the round uses only those.' : '; the rest stay drawn.') + ' Real strips have some noise and wander, like a monitor in the field.</p>') + '</div>' +
       '<div class="field-row"><p class="eyebrow">Answer by</p>' +
       seg('stripMode', S.stripMode, [['mc', 'Choices'], ['list', 'List'], ['type', 'Type it']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Strips per round</p>' + seg('stripLen', S.stripLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       (n ? '' : '<p class="muted small">Tap rhythms above to add them.</p>') +
-      '<div><button class="btn primary big" data-act="start"' + (n ? '' : ' disabled') + '>Start ' + S.stripLen + ' strips</button></div></div>';
+      (n && !canStart ? '<p class="muted small">None of these rhythms has a real strip yet. Pick Mix or Drawn, or add rhythms like AF or VT.</p>' : '') +
+      '<div><button class="btn primary big" data-act="start"' + (canStart ? '' : ' disabled') + '>Start ' + S.stripLen + ' strips</button></div></div>';
     window.scrollTo(0, y);
   }
 
   function stripsStart(ids) {
-    var list = [];
+    var list = [], used = [];
+    if (S.stripSrc === 'real') ids = ids.filter(function (id) { return REAL_BY[id]; });
+    if (!ids.length) return stripsSetup();
     // Spread rhythms evenly, then shuffle, so small sets still repeat fairly.
     while (list.length < S.stripLen) list = list.concat(shuffle(ids));
-    list = list.slice(0, S.stripLen).map(function (id) { return { id: id, seed: newSeed() }; });
+    list = list.slice(0, S.stripLen).map(function (id) {
+      var real = null;
+      if (REAL_BY[id] && (S.stripSrc === 'real' || (S.stripSrc === 'mix' && Math.random() < 0.5))) {
+        real = pickReal(id, used);
+        used.push(real);
+      }
+      return { id: id, seed: newSeed(), real: real };
+    });
     X = { list: list, i: 0, right: 0, missed: [], state: null };
     stripsRender();
   }
@@ -243,10 +299,10 @@
   function stripsRender() {
     if (X.i >= X.list.length) return stripsDone();
     var item = X.list[X.i], st = X.state, r = R_BY[item.id];
-    if (!item.mc) item.mc = rhythmMC(item.id, S.stripSel);
+    if (!item.mc) item.mc = rhythmMC(item.id, S.stripSel, okIds(item));
     var html = '<div class="progress-line"><span>Strip ' + (X.i + 1) + ' of ' + X.list.length + '</span><span>' + X.right + ' right</span></div>' +
       '<div class="meter"><span style="width:' + Math.round(X.i / X.list.length * 100) + '%"></span></div>' +
-      '<div class="panel">' + stripHtml(item.id, item.seed) +
+      '<div class="panel">' + (item.real != null ? realHtml(item.real, !!st) : stripHtml(item.id, item.seed)) +
       '<div class="row spread"><p class="q-prompt">What is this rhythm?</p>' +
       (st ? '' : seg('stripMode', S.stripMode, [['mc', 'Choices'], ['list', 'List'], ['type', 'Type']])) + '</div>';
     if (S.stripMode === 'mc') {
@@ -262,7 +318,7 @@
         if (!ids.length) return '';
         return '<div class="pick-group"><p class="eyebrow">' + esc(g.name) + '</p><div class="chips">' + ids.map(function (id) {
           var cls = 'chip pick';
-          if (st && id === item.id) cls += ' right';
+          if (st && okIds(item).indexOf(id) !== -1) cls += ' right';
           else if (st && id === st.pickId) cls += ' wrong';
           return '<button class="' + cls + '" data-pick="' + id + '"' + (st ? ' disabled' : '') + '>' + esc(R_BY[id].name) + '</button>';
         }).join('') + '</div></div>';
@@ -273,19 +329,28 @@
     }
     if (st) {
       html += '<div class="verdict ' + (st.ok ? 'ok' : 'no') + '"><p class="v-title">' + (st.ok ? 'Correct: ' : 'It\'s ') + esc(r.name) + '</p>' +
+        (item.real != null ? realVerdict(item) : '') +
         '<p>' + esc(r.look) + '</p>' + rulesHtml(r);
       if (!st.ok && st.otherId && R_BY[st.otherId]) {
         html += '<p class="small"><strong>' + esc(R_BY[st.otherId].name) + '</strong> would look like this instead: ' + esc(R_BY[st.otherId].look) + '</p>';
       }
       if (S.stripMode === 'type') html += '<div><button class="btn link" data-act="override">' + (st.ok ? 'Actually, count it wrong' : 'I was right, count it') + '</button></div>';
       html += '</div><div class="row"><button class="btn primary big" data-act="next">' + (X.i + 1 < X.list.length ? 'Next strip' : 'See results') + '</button>' +
-        '<button class="btn" data-act="another">Another ' + esc(r.name) + '</button></div>';
+        '<button class="btn" data-act="another">Another ' + esc(r.name) + '</button></div>' +
+        (item.real != null ? '<p class="real-note">Real strip: MIT-BIH Arrhythmia Database (Moody &amp; Mark), PhysioNet, ODC-By 1.0.</p>' : '');
     }
     html += '</div><p class="kbd-hint">Keys: A–D to answer · Enter for next</p>';
     stripsEl.innerHTML = html;
     var inp = $('#strip-answer');
     if (inp && !st) inp.focus();
     else if (st) { var nx = $('[data-act="next"]', stripsEl); if (nx) nx.focus({ preventScroll: true }); }
+  }
+
+  function realVerdict(item) {
+    var x = REAL.strips[item.real], also = x.also.map(function (a) { return R_BY[a].name; });
+    return (x.note ? '<p><strong>' + esc(x.note) + '.</strong></p>' : '') +
+      (also.length ? '<p class="small">' + esc(also.join(', ')) + ' also counts as right on this strip.</p>' : '') +
+      realLegend(item.real);
   }
 
   function nameMatchesRhythm(text, r) {
@@ -344,7 +409,7 @@
       return stripsAnswer(choice === item.mc.answer, { choice: choice, otherId: other && other.id });
     }
     if (t.dataset.pick && item && !X.state) {
-      return stripsAnswer(t.dataset.pick === item.id, { pickId: t.dataset.pick, otherId: t.dataset.pick });
+      return stripsAnswer(okIds(item).indexOf(t.dataset.pick) !== -1, { pickId: t.dataset.pick, otherId: t.dataset.pick });
     }
     var act = t.dataset.act;
     if (act === 'all') { S.stripSel = STRIP_IDS.slice(); save(); return stripsSetup(); }
@@ -355,7 +420,11 @@
     }
     if (act === 'start') return stripsStart(S.stripSel);
     if (act === 'next') return stripsNext();
-    if (act === 'another') { item.seed = newSeed(); return stripsRender(); }
+    if (act === 'another') {
+      item.seed = newSeed();
+      if (item.real != null) item.real = pickReal(item.id, [item.real]);
+      return stripsRender();
+    }
     if (act === 'override') { X.state.ok = !X.state.ok; return stripsRender(); }
     if (act === 'retry') return stripsStart(Object.keys(X.missed.reduce(function (m, id) { m[id] = 1; return m; }, {})));
     if (act === 'new') { X = null; return stripsSetup(); }
@@ -366,7 +435,7 @@
     if (!v || X.state) return;
     var item = X.list[X.i];
     var guess = RHYTHMS.filter(function (r) { return nameMatchesRhythm(v, r); })[0];
-    stripsAnswer(nameMatchesRhythm(v, R_BY[item.id]), { text: v, otherId: guess && guess.id !== item.id ? guess.id : null });
+    stripsAnswer(okIds(item).some(function (id) { return nameMatchesRhythm(v, R_BY[id]); }), { text: v, otherId: guess && guess.id !== item.id ? guess.id : null });
   });
 
   VIEWS.strips = { show: function () { if (X && X.i < X.list.length) stripsRender(); else if (X) stripsDone(); else stripsSetup(); } };
@@ -382,7 +451,8 @@
     ['care', 'Rhythm causes & care', 'Causes, significance, management'],
     ['conditions', 'Conditions', 'ACS, heart failure, tamponade, dissection…'],
     ['treatments', 'Treatments & devices', 'CPR, defib, cardioversion, pacing, ICD, LVAD…'],
-    ['basics', 'ECG basics', 'Waves, intervals, paper, leads, axis']
+    ['basics', 'ECG basics', 'Waves, intervals, paper, leads, axis'],
+    ['pump', 'Na-K pump & cell', 'Pump, ions, action potential phases, refractory periods']
   ];
 
   function dirFor() { return S.cardDir === 'mixed' ? (Math.random() < 0.5 ? 'forward' : 'reverse') : S.cardDir; }
@@ -398,7 +468,9 @@
       if (t.kind === 'condition' ? !d.conditions : !d.treatments) return;
       TFIELDS.forEach(function (f) { if ((t[f[0]] || []).length) list.push({ kind: 'topic', id: t.id, field: f[0], dir: dirFor() }); });
     });
-    if (d.basics) BASICS.forEach(function (b, i) { list.push({ kind: 'basic', id: 'b' + i, idx: i, field: 'basics' }); });
+    ['basics', 'pump'].forEach(function (set) {
+      if (d[set]) QA[set].list.forEach(function (b, i) { list.push({ kind: 'basic', set: set, id: QA[set].pre + i, idx: i, field: set }); });
+    });
     return shuffle(list);
   }
 
@@ -445,8 +517,8 @@
       return band(t.name, groupName(TGROUPS, t.group)) + '<div class="card-body"><p class="ask">' + esc(tl) + '?</p>' +
         (flipped ? '<hr class="divider">' + listHtml(t[card.field]) : '<p class="hint">Tap to flip</p>') + '</div>';
     }
-    var b = BASICS[card.idx];
-    return band('ECG basics', '') + '<div class="card-body"><p class="ask">' + esc(b.q) + '</p>' +
+    var b = QA[card.set || 'basics'].list[card.idx];
+    return band(QA[card.set || 'basics'].title, '') + '<div class="card-body"><p class="ask">' + esc(b.q) + '</p>' +
       (flipped ? '<hr class="divider"><p class="answer">' + esc(b.a) + '</p>' : '<p class="hint">Tap to flip</p>') + '</div>';
   }
 
@@ -482,7 +554,7 @@
     if (card.kind === 'rules') return 'rules';
     if (card.kind === 'care') return 'care';
     if (card.kind === 'topic') return 'topic';
-    return 'basics';
+    return card.set || 'basics';
   }
 
   function cardAnswer(ok) {
@@ -529,7 +601,7 @@
   var quizEl = $('#cview-quiz');
   var Q = null;
   var QTOPICS = [['strips', 'Rhythm strips'], ['rules', 'Rhythm rules'], ['care', 'Rhythm causes & care'],
-    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics']];
+    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell']];
 
   function notIn(list, item) {
     return !list.some(function (x) { return x === item || G.sameItem(x, item); });
@@ -586,12 +658,15 @@
     },
     conditions: function () { return topicQ('condition'); },
     treatments: function () { return topicQ('treatment'); },
-    basics: function () {
-      var i = Math.floor(Math.random() * BASICS.length), b = BASICS[i];
-      var mc = mcFrom(b.a, shuffle(b.wrong));
-      return { id: 'b' + i, idx: i, stat: 'basics', prompt: esc(b.q), options: mc.options, answer: mc.answer, explain: 'basic' };
-    }
+    basics: function () { return qaQ('basics'); },
+    pump: function () { return qaQ('pump'); }
   };
+
+  function qaQ(set) {
+    var L = QA[set].list, i = Math.floor(Math.random() * L.length), b = L[i];
+    var mc = mcFrom(b.a, shuffle(b.wrong));
+    return { id: QA[set].pre + i, idx: i, set: set, stat: set, prompt: esc(b.q), options: mc.options, answer: mc.answer, explain: 'basic' };
+  }
 
   function topicQ(kind) {
     var pool = TOPICS.filter(function (t) { return t.kind === kind; });
@@ -635,7 +710,7 @@
 
   function quizSetup(error) {
     quizEl.innerHTML =
-      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments and ECG basics.</p></div>' +
+      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics and the sodium-potassium pump.</p></div>' +
       '<div class="panel"><div class="field-row"><p class="eyebrow">Questions</p>' + seg('quizLen', S.quizLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Topics</p><div class="row">' + QTOPICS.map(function (k) {
         return '<label class="check"><input type="checkbox" data-qtopic="' + k[0] + '"' + (S.quizTopics[k[0]] ? ' checked' : '') + '> ' + esc(k[1]) + '</label>';
@@ -660,7 +735,7 @@
       var t = T_BY[q.id];
       return '<p><strong>' + esc(t.name) + '</strong></p><p class="eyebrow">' + esc(q.field[1]) + '</p>' + listHtml(t[q.field[0]]);
     }
-    return '<p>' + esc(BASICS[q.idx].a) + '</p>';
+    return '<p>' + esc(QA[q.set || 'basics'].list[q.idx].a) + '</p>';
   }
 
   function quizRender() {
@@ -738,7 +813,8 @@
 
   function rhythmRef(r) {
     return '<details class="ref" data-ref-rhythm="' + r.id + '"><summary><span class="r-name">' + esc(r.name) + '</span></summary>' +
-      '<div class="ref-body">' + (STRIP_IDS.indexOf(r.id) !== -1 ? '<div class="strip-slot"></div><div><button class="btn" data-act="new-example">New example</button></div>' : '') +
+      '<div class="ref-body">' + (STRIP_IDS.indexOf(r.id) !== -1 ? '<div class="strip-slot"></div><div class="row"><button class="btn" data-act="new-example">New example</button>' +
+        (REAL_BY[r.id] ? '<button class="btn" data-act="real-example">Real example</button>' : '') + '</div>' : '') +
       '<p><strong>Look for:</strong> ' + esc(r.look) + '</p>' +
       '<div><h4 class="ref-h">Rules for interpretation</h4>' + rulesHtml(r) + '</div>' +
       '<div class="core-grid">' + CARE.map(function (f) {
@@ -758,10 +834,11 @@
   function learnRender() {
     learnEl.innerHTML =
       '<div><h2 class="title">Learn</h2><p class="lede">Everything from the Chapter 21 slides and outline. Open a rhythm to see a sample strip.</p></div>' +
-      seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics']]) +
-      '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
-      '<div class="ref-list" id="learn-list"></div>';
-    learnFilter();
+      seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump']]) +
+      (S.learn === 'pump' ? '<div id="learn-list" class="pump-view">' + pumpHtml() + '</div>' :
+        '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
+        '<div class="ref-list" id="learn-list"></div>');
+    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); } else learnFilter();
   }
 
   function learnFilter() {
@@ -795,13 +872,197 @@
     $('#learn-list').innerHTML = html || '<p class="none">Nothing matches that search.</p>';
   }
 
+
+  // ---------- Sodium-potassium pump view ----------
+  var STD = ' <span class="std-mark" title="Standard physiology; not spelled out on the slides">*</span>';
+  var pumpStep = 0, apPhase = 0, apCell = 'muscle', pumpTimer = null;
+
+  // Ion positions (x, y) per pump step: 3 Na then 2 K.
+  var PUMP_POS = [
+    [[160, 92], [160, 110], [160, 128], [70, 36], [250, 30]],
+    [[118, 38], [160, 28], [202, 38], [70, 36], [250, 30]],
+    [[96, 30], [160, 22], [224, 30], [160, 86], [160, 106]],
+    [[96, 30], [160, 22], [224, 30], [138, 166], [182, 172]]
+  ];
+  function ionDot(cls, label, i) {
+    var p = PUMP_POS[pumpStep][i];
+    return '<g class="ion ' + cls + '" data-ion="' + i + '" style="transform:translate(' + p[0] + 'px,' + p[1] + 'px)"><circle r="9"/><text y="3.5">' + label + '</text></g>';
+  }
+  function pumpSvg() {
+    var bg = '';
+    // Background ions show the gradients: Na high outside, K high inside.
+    [[30, 18], [44, 58], [96, 52], [228, 56], [276, 20], [296, 52]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" class="bg-na"/>'; });
+    [[280, 140], [26, 176]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" class="bg-na"/>'; });
+    [[30, 140], [62, 168], [96, 150], [232, 150], [262, 178], [300, 160]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" class="bg-k"/>'; });
+    [[200, 60]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" class="bg-k"/>'; });
+    return '<svg class="pump-svg" viewBox="0 0 320 196" role="img" aria-labelledby="pump-cap-t">' +
+      '<rect width="320" height="80" class="zone-out"/><rect y="116" width="320" height="80" class="zone-in"/>' +
+      '<text x="8" y="74" class="zone-label">Outside the cell · Na⁺ high · +</text>' +
+      '<text x="8" y="190" class="zone-label">Inside the cell · K⁺ high · –</text>' +
+      '<rect y="80" width="320" height="36" class="membrane"/>' +
+      '<path d="M0 84H320M0 112H320" class="membrane-line"/>' + bg +
+      '<g class="pump-body" data-face="' + (pumpStep === 1 || pumpStep === 2 ? 'out' : 'in') + '"><path d="M134 70 v52 q0 16 13 16 h26 q13 0 13 -16 v-52 h-12 v50 q0 6 -6 6 h-16 q-6 0 -6 -6 v-50 z" /></g>' +
+      '<g class="atp" data-show="1"><rect x="198" y="124" width="64" height="18" rx="9"/><text x="230" y="136.5">ATP → ADP</text></g>' +
+      [0, 1, 2].map(function (i) { return ionDot('na', 'Na⁺', i); }).join('') +
+      [3, 4].map(function (i) { return ionDot('k', 'K⁺', i); }).join('') +
+      '</svg>';
+  }
+  function pumpSet(n) {
+    pumpStep = (n + 4) % 4;
+    var root = $('.pump-view');
+    if (!root) return;
+    var pos = PUMP_POS[pumpStep], st = PUMP.steps[pumpStep];
+    $all('.ion', root).forEach(function (g) {
+      var p = pos[Number(g.dataset.ion)];
+      g.style.transform = 'translate(' + p[0] + 'px,' + p[1] + 'px)';
+    });
+    var body = $('.pump-body', root);
+    body.dataset.face = pumpStep === 1 || pumpStep === 2 ? 'out' : 'in';
+    $('.atp', root).classList.toggle('on', pumpStep === 1);
+    $('#pump-cap-t').textContent = (pumpStep + 1) + '. ' + st.title;
+    $('#pump-cap-p').innerHTML = esc(st.text) + (st.std ? STD : '');
+    $all('[data-pstep]', root).forEach(function (b) { b.setAttribute('aria-pressed', String(Number(b.dataset.pstep) === pumpStep)); });
+  }
+  function pumpPlay(on) {
+    clearInterval(pumpTimer);
+    pumpTimer = null;
+    var b = $('[data-act="pump-play"]');
+    if (on) {
+      pumpTimer = setInterval(function () {
+        if (!$('.pump-view')) return pumpPlay(false);
+        pumpSet(pumpStep + 1);
+      }, 2600);
+      pumpSet(pumpStep + 1);
+    }
+    if (b) b.textContent = on ? 'Pause' : 'Play';
+  }
+
+  // Action potential curves, in (ms, mV). Muscle: phases 4,0,1,2,3,4. Pacemaker: two beats.
+  var AP = {
+    muscle: { phases: [
+      { n: 4, pts: [[0, -90], [40, -90]] },
+      { n: 0, pts: [[40, -90], [46, 22]] },
+      { n: 1, pts: [[46, 22], [62, 2]] },
+      { n: 2, pts: [[62, 2], [120, 0], [190, -8], [215, -18]] },
+      { n: 3, pts: [[215, -18], [240, -50], [262, -82], [285, -90]] },
+      { n: 4, pts: [[285, -90], [400, -90]], tail: true }
+    ] },
+    pacemaker: { phases: [
+      { n: 4, pts: [[0, -60], [70, -52], [120, -40]] },
+      { n: 0, pts: [[120, -40], [138, 8]] },
+      { n: 3, pts: [[138, 8], [165, -20], [195, -60]] },
+      { n: 4, pts: [[195, -60], [265, -52], [315, -40]], tail: true },
+      { n: 0, pts: [[315, -40], [333, 8]], tail: true },
+      { n: 3, pts: [[333, 8], [360, -20], [390, -60]], tail: true }
+    ] }
+  };
+  var PACER_TEXT = {
+    4: 'No true rest. Sodium leaks in, so the cell drifts up from about –60 mV toward threshold (about –40 mV) on its own. A steeper drift means a faster rate.',
+    0: 'At threshold the cell depolarizes, mostly by calcium entering through the slow channels, so the upstroke is slower than in muscle.',
+    3: 'Potassium leaves and the cell repolarizes back to about –60 mV, then phase 4 starts again.'
+  };
+  function apX(ms) { return 34 + ms * 0.7; }
+  function apY(mv) { return 16 + (30 - mv) * 1.15; }
+  function apPath(pts) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + apX(p[0]).toFixed(1) + ' ' + apY(p[1]).toFixed(1); }).join(''); }
+  function apSvg() {
+    var cell = AP[apCell], grid = '';
+    [20, 0, -20, -40, -60, -80].forEach(function (mv) {
+      grid += '<path d="M34 ' + apY(mv) + 'H314" class="ap-grid"/><text x="30" y="' + (apY(mv) + 3) + '" class="ap-axis">' + mv + '</text>';
+    });
+    var refr = apCell === 'muscle'
+      ? '<rect x="' + apX(40) + '" y="10" width="' + (apX(240) - apX(40)) + '" height="150" class="ap-arp"/>' +
+        '<rect x="' + apX(240) + '" y="10" width="' + (apX(285) - apX(240)) + '" height="150" class="ap-rrp"/>' +
+        '<text x="' + apX(140) + '" y="170" class="ap-note">Absolute refractory</text><text x="' + apX(262) + '" y="182" class="ap-note">Relative</text>'
+      : '<path d="M34 ' + apY(-40) + 'H314" class="ap-threshold"/><text x="38" y="' + (apY(-40) - 3) + '" class="ap-note start">Threshold</text>';
+    var segs = cell.phases.map(function (ph) {
+      var on = ph.n === apPhase;
+      var a = ph.pts[0], z = ph.pts[ph.pts.length - 1];
+      var mid = [(a[0] + z[0]) / 2 + ({ 0: -5, 1: 6, 3: 8 }[ph.n] || 0), (a[1] + z[1]) / 2];
+      return '<g class="ap-seg' + (on ? ' on' : '') + '" data-phase="' + ph.n + '"><path d="' + apPath(ph.pts) + '" class="ap-hit"/><path d="' + apPath(ph.pts) + '" class="ap-line"/>' +
+        (ph.tail ? '' : '<text x="' + apX(mid[0]) + '" y="' + (apY(mid[1]) - 6) + '" class="ap-num">' + ph.n + '</text>') + '</g>';
+    }).join('');
+    return '<svg class="ap-svg" viewBox="0 0 320 188" role="img" aria-label="Action potential of a cardiac ' + (apCell === 'muscle' ? 'muscle' : 'pacemaker') + ' cell with phases">' +
+      grid + refr + '<text x="2" y="10" class="ap-axis start">mV</text>' + segs + '</svg>';
+  }
+  function apInfo() {
+    if (apCell === 'pacemaker') {
+      return '<p class="v-title">Phase ' + apPhase + ' in a pacemaker cell</p><p>' + esc(PACER_TEXT[apPhase]) + (apPhase === 4 ? '' : STD) + '</p>';
+    }
+    var ph = PUMP.phases.filter(function (p) { return p.n === apPhase; })[0];
+    return '<p class="v-title">' + esc(ph.name) + '</p><p>' + esc(ph.ions) + '</p><p class="small"><strong>On the ECG:</strong> ' + esc(ph.ecg) + STD + '</p>';
+  }
+  function apRender() {
+    var box = $('#ap-box');
+    if (!box) return;
+    var ids = apCell === 'muscle' ? [4, 0, 1, 2, 3] : [4, 0, 3];
+    if (ids.indexOf(apPhase) === -1) apPhase = 0;
+    box.innerHTML = seg('apCell', apCell, [['muscle', 'Muscle cell'], ['pacemaker', 'Pacemaker cell']]) + apSvg() +
+      '<div class="chips">' + ids.map(function (n) {
+        return '<button class="chip' + (n === apPhase ? ' on' : '') + '" data-phase="' + n + '" aria-pressed="' + (n === apPhase) + '">Phase ' + n + '</button>';
+      }).join('') + '</div><div class="ap-info">' + apInfo() + '</div>';
+  }
+  var PUMP_LINK = /kalemia|electrolyte|digitalis|digoxin|sodium|calcium channel/i;
+  function pumpHtml() {
+    var linked = RHYTHMS.filter(function (r) { return PUMP_LINK.test(r.causes.join(' ')); });
+    return '<div class="panel"><p class="eyebrow">Sodium-potassium exchange pump</p>' +
+      '<p class="pump-sum"><strong>3 Na⁺ out, 2 K⁺ in</strong>, every cycle, paid for with ATP. Because more positive charge leaves than enters, the inside of the cell stays negative. That resets the cell after each beat so it can fire again.</p>' +
+      pumpSvg() +
+      '<div class="pump-cap"><p class="v-title" id="pump-cap-t"></p><p id="pump-cap-p"></p></div>' +
+      '<div class="row spread"><div class="seg">' + [0, 1, 2, 3].map(function (i) { return '<button data-pstep="' + i + '" aria-label="Step ' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
+      '<div class="row"><button class="btn" data-act="pump-prev">Back</button><button class="btn" data-act="pump-play">Play</button><button class="btn primary" data-act="pump-next">Next</button></div></div></div>' +
+      '<div class="panel"><p class="eyebrow">Action potential</p><p class="small muted">Tap a phase on the curve or below. Shaded areas are the refractory periods.</p><div id="ap-box"></div></div>' +
+      '<div class="panel"><p class="eyebrow">Refractory periods</p>' + PUMP.refractory.map(function (r) {
+        return '<div><h4 class="ref-h">' + esc(r.name) + '</h4><p>' + esc(r.text) + '</p><p class="small muted">On the ECG: ' + esc(r.ecg) + STD + '</p></div>';
+      }).join('') + '</div>' +
+      '<div class="panel"><p class="eyebrow">The ions</p><div class="table-wrap"><table class="grid basics"><thead><tr><th>Ion</th><th>Higher</th><th>Job</th></tr></thead><tbody>' +
+      PUMP.ions.map(function (x) { return '<tr><td><strong>' + esc(x.ion) + '</strong></td><td>' + esc(x.where) + (x.std ? STD : '') + '</td><td>' + esc(x.role) + '</td></tr>'; }).join('') +
+      '</tbody></table></div><p class="small muted">The membrane at rest lets potassium through easily, calcium less, and sodium barely at all. Channels open and close with gating proteins.</p></div>' +
+      '<div class="panel"><p class="eyebrow">At the bedside</p><div class="core-grid">' + PUMP.clinical.map(function (c) {
+        return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>';
+      }).join('') + '</div>' +
+      '<p class="eyebrow">Rhythms in this deck with electrolyte, digoxin or channel causes</p><div class="chips">' + linked.map(function (r) {
+        return '<button class="chip" data-goto-rhythm="' + r.id + '">' + esc(r.name) + '</button>';
+      }).join('') + '</div></div>' +
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>' + PUMP.qa.length + ' questions on the pump, ions, phases and refractory periods.</p>' +
+      '<div class="row"><button class="btn primary" data-act="pump-cards">Flashcards</button><button class="btn" data-act="pump-quiz">Quiz me</button></div></div>' +
+      '<p class="std-note">* Standard physiology the slides use but don\'t spell out.</p>';
+  }
+
   learnEl.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-seg],[data-act]');
+    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-phase],[data-goto-rhythm]');
     if (!t) return;
-    if (t.dataset.seg) { S.learn = t.dataset.val; save(); return learnRender(); }
+    if (t.dataset.seg === 'apCell') { apCell = t.dataset.val; return apRender(); }
+    if (t.dataset.seg) { pumpPlay(false); S.learn = t.dataset.val; save(); return learnRender(); }
+    if (t.dataset.pstep) { pumpPlay(false); return pumpSet(Number(t.dataset.pstep)); }
+    if (t.dataset.phase) { apPhase = Number(t.dataset.phase); return apRender(); }
+    if (t.dataset.gotoRhythm) {
+      S.learn = 'rhythms'; learnQuery = ''; save(); learnRender();
+      var d = $('[data-ref-rhythm="' + t.dataset.gotoRhythm + '"]', learnEl);
+      if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); }
+      return;
+    }
+    if (t.dataset.act === 'pump-next') { pumpPlay(false); return pumpSet(pumpStep + 1); }
+    if (t.dataset.act === 'pump-prev') { pumpPlay(false); return pumpSet(pumpStep - 1); }
+    if (t.dataset.act === 'pump-play') return pumpPlay(!pumpTimer);
+    if (t.dataset.act === 'pump-cards') {
+      pumpPlay(false);
+      Object.keys(S.cardDecks).forEach(function (k) { S.cardDecks[k] = k === 'pump'; });
+      save(); showTab('cards'); return cardsStart(buildCards());
+    }
+    if (t.dataset.act === 'pump-quiz') {
+      pumpPlay(false);
+      Object.keys(S.quizTopics).forEach(function (k) { S.quizTopics[k] = k === 'pump'; });
+      save(); showTab('quiz'); return quizStart(buildQuiz());
+    }
     if (t.dataset.act === 'new-example') {
       var d = t.closest('[data-ref-rhythm]');
       $('.strip-slot', d).innerHTML = stripHtml(d.dataset.refRhythm);
+    }
+    if (t.dataset.act === 'real-example') {
+      var dr = t.closest('[data-ref-rhythm]'), slot = $('.strip-slot', dr);
+      var n = pickReal(dr.dataset.refRhythm, [Number(slot.dataset.real)]);
+      slot.dataset.real = n;
+      slot.innerHTML = realHtml(n, true) + realLegend(n) + (REAL.strips[n].note ? '<p class="real-note">' + esc(REAL.strips[n].note) + '.</p>' : '');
     }
   });
   learnEl.addEventListener('input', function (e) {
@@ -846,11 +1107,14 @@
     var topicRows = TOPICS.filter(function (t) { return S.stats[t.id]; }).sort(function (a, b) { return (acc(a.id, 'topic') || 0) - (acc(b.id, 'topic') || 0); }).map(function (t) {
       return '<tr><td>' + esc(t.name) + '</td>' + cell(t.id, 'topic') + '</tr>';
     }).join('');
-    var basics = BASICS.reduce(function (m, b, i) {
-      var s = S.stats['b' + i] && S.stats['b' + i].basics;
-      if (s) { m.c += s.c; m.n += s.c + s.w; }
-      return m;
-    }, { c: 0, n: 0 });
+    function qaTotals(set) {
+      return QA[set].list.reduce(function (m, b, i) {
+        var s = S.stats[QA[set].pre + i] && S.stats[QA[set].pre + i][set];
+        if (s) { m.c += s.c; m.n += s.c + s.w; }
+        return m;
+      }, { c: 0, n: 0 });
+    }
+    var basics = qaTotals('basics'), pump = qaTotals('pump');
     statsEl.innerHTML =
       '<div><h2 class="title">Progress</h2><p class="lede">Weakest rhythms first. Progress is saved in this browser only.</p></div>' +
       '<div class="stats-row"><div class="stat"><div class="n">' + answered + '</div><div class="l">Answers</div></div>' +
@@ -861,6 +1125,7 @@
       rhythmRows + '</tbody></table></div>' +
       (topicRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Condition or treatment</th><th style="text-align:center">Score</th></tr></thead><tbody>' + topicRows + '</tbody></table></div>' : '') +
       (basics.n ? '<p class="muted">ECG basics: ' + Math.round(basics.c / basics.n * 100) + '% of ' + basics.n + ' answers right.</p>' : '') +
+      (pump.n ? '<p class="muted">Na-K pump &amp; cell: ' + Math.round(pump.c / pump.n * 100) + '% of ' + pump.n + ' answers right.</p>' : '') +
       '<div class="row">' + (confirmReset
         ? '<span class="muted">Erase all cardiology progress?</span><button class="btn bad" data-act="reset-yes">Erase</button><button class="btn" data-act="reset-no">Keep it</button>'
         : '<button class="btn link" data-act="reset">Reset progress</button>') + '</div>';

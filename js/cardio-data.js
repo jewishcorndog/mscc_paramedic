@@ -787,3 +787,77 @@ window.CARDIO_BASICS = [
   { q: 'Wide (> 0.12 s) and fast (> 150) in an unstable patient calls for…', a: 'Immediate cardioversion', wrong: ['Adenosine', 'Vagal maneuvers', 'A 12-lead and observation'] },
   { q: 'Five-step infarct recognition, in order?', a: 'Rate and rhythm, area of infarct, other conditions, clinical presentation, recognize and treat', wrong: ['Axis, rate, QRS, ST, T', 'History, vitals, 12-lead, drugs, transport', 'P, PR, QRS, ST, QT'] }
 ];
+
+// Sodium-potassium pump and cardiac cell electrophysiology (slides 16–24, 27, 175; outline II.G–III).
+// std: true marks standard physiology the slides use but don't spell out.
+window.CARDIO_PUMP = {
+  // The pump cycle, one step per frame of the Learn diagram.
+  steps: [
+    { title: '3 Na⁺ bind inside', text: 'The pump opens toward the inside of the cell, where sodium is low. Three sodium ions lock onto it.', std: true },
+    { title: 'ATP powers the flip', text: 'The pump splits one ATP. The energy flips it to face outside, and the 3 Na⁺ are released into the fluid around the cell, where sodium is already high.', std: true },
+    { title: '2 K⁺ bind outside', text: 'Facing out, the pump now grabs two potassium ions from outside the cell, where potassium is low.', std: true },
+    { title: '2 K⁺ released inside', text: 'The phosphate drops off, the pump flips back, and the 2 K⁺ are released inside. Net result: 3 positive charges out, 2 in, so the inside stays negative and the cell is reset for the next beat.' }
+  ],
+  // Fast-response (ventricular muscle) action potential phases.
+  phases: [
+    { n: 4, name: 'Phase 4: resting', ions: 'Membrane at rest, about –90 mV in a muscle cell. The Na-K pump keeps Na⁺ out and K⁺ in. Pacemaker cells are different: Na⁺ leaks in so they drift up toward threshold on their own (automaticity).', ecg: 'Flat baseline between the T wave and the next P wave', std: false },
+    { n: 0, name: 'Phase 0: rapid depolarization', ions: 'Threshold is reached, the fast sodium channels open, and Na⁺ rushes in. The inside swings positive.', ecg: 'QRS complex (in the ventricles)', std: false },
+    { n: 1, name: 'Phase 1: early rapid repolarization', ions: 'Fast sodium channels close, sodium stops flowing in, and potassium keeps leaving the cell.', ecg: 'J point, the end of the QRS', std: false },
+    { n: 2, name: 'Phase 2: plateau', ions: 'Slow channels let Ca²⁺ in (and some Na⁺) while K⁺ leaves, so the voltage holds steady. That calcium triggers release of stored calcium and the muscle contracts.', ecg: 'ST segment', std: false },
+    { n: 3, name: 'Phase 3: rapid repolarization', ions: 'Calcium channels close and K⁺ pours out, so the inside turns negative again. The Na-K pump then restores the original ion balance.', ecg: 'T wave', std: false }
+  ],
+  refractory: [
+    { name: 'Absolute refractory period', text: 'Phase 0 to about the middle of phase 3. The cell cannot respond to any stimulus, however strong.', ecg: 'Start of the QRS to around the peak of the T wave' },
+    { name: 'Relative refractory period', text: 'Late phase 3. The cell is harder than normal to excite but a strong enough stimulus can fire it. This is why a PVC landing on the T wave (R on T) can set off VT or VF.', ecg: 'Downslope of the T wave' }
+  ],
+  // Where each ion is higher; values are typical textbook figures.
+  ions: [
+    { ion: 'Sodium (Na⁺)', where: 'Outside the cell', role: 'Rushes in through fast channels to start depolarization (phase 0). Pumped back out 3 at a time.', std: true },
+    { ion: 'Potassium (K⁺)', where: 'Inside the cell', role: 'Leaks out to repolarize (phases 1 and 3). The membrane is most permeable to it at rest. Pumped back in 2 at a time.', std: true },
+    { ion: 'Calcium (Ca²⁺)', where: 'Outside the cell', role: 'Enters through slow channels in phase 2. Plays an electrical role and the contractile role.', std: false },
+    { ion: 'Magnesium (Mg²⁺)', where: 'Inside the cell', role: 'Major intracellular cation; it also plays an important role in cardiac function.', std: false }
+  ],
+  // Bedside connections.
+  clinical: [
+    { name: 'Ischemia and MI', text: 'The pump runs on ATP. Without oxygen, cells switch to anaerobic metabolism, lose their electrochemical gradients, swell and depolarize. That irritable tissue is where dysrhythmias start.' },
+    { name: 'Enhanced automaticity', text: 'Abnormally high leakage of sodium into cells speeds up phase 4, so an ectopic site can fire before the SA node (PACs, PVCs, accelerated rhythms).' },
+    { name: 'Hyperkalemia', text: 'Too much potassium outside the cell. Listed in the slides as a cause of sinus arrest and bundle branch block. Classic ECG: tall peaked T waves, then a widening QRS.', std: true },
+    { name: 'Hypokalemia', text: 'Too little potassium. Makes the ventricles irritable: listed as a cause of PVCs, VT, and VF and a trigger for Brugada. The slides say to check serum potassium for PVCs and treat hypokalemia promptly.' },
+    { name: 'Digoxin (digitalis)', text: 'Slows the Na-K pump, which leaves more calcium in the cell for a stronger squeeze and slows AV conduction. Toxicity shows up in the slides as PACs, PJCs, accelerated junctional rhythm, AV blocks and VT. Low potassium makes toxicity worse.', std: true },
+    { name: 'Sodium channel problems', text: 'Brugada syndrome is a genetic sodium channel defect. Sodium channel blocker toxins slow phase 0 and can cause bundle branch block (wide QRS).' },
+    { name: 'Calcium channel blockers', text: 'Act on the slow channels. They slow the SA node and AV node, which is why they appear as causes of sinus arrest and heart block and as a treatment for SVT.' }
+  ],
+  qa: [
+    { q: 'The sodium-potassium pump moves…', a: '3 Na⁺ out and 2 K⁺ in per cycle', wrong: ['2 Na⁺ out and 3 K⁺ in per cycle', '3 K⁺ out and 2 Na⁺ in per cycle', '1 Na⁺ out and 1 K⁺ in per cycle'] },
+    { q: 'What powers the sodium-potassium pump?', a: 'ATP (active transport)', wrong: ['Diffusion down the concentration gradient', 'The fast sodium channels', 'Calcium released from storage'], std: true },
+    { q: 'Why does the pump leave the inside of the cell negative?', a: 'It moves more positive charges out (3) than in (2)', wrong: ['It pumps chloride into the cell', 'It moves more positive charges in than out', 'It blocks all potassium channels'] },
+    { q: 'What does the Na-K pump do for the cell after a beat?', a: 'Repolarizes it and returns it to its resting state', wrong: ['Starts phase 0 depolarization', 'Triggers contraction', 'Opens the slow calcium channels'] },
+    { q: 'Where is sodium concentration higher at rest?', a: 'Outside the cell', wrong: ['Inside the cell', 'Equal on both sides', 'Inside the sarcoplasmic reticulum'], std: true },
+    { q: 'Where is potassium concentration higher at rest?', a: 'Inside the cell', wrong: ['Outside the cell', 'Equal on both sides', 'In the plasma only'], std: true },
+    { q: 'At rest, the cell membrane is most permeable to…', a: 'Potassium', wrong: ['Sodium', 'Calcium', 'Magnesium'] },
+    { q: 'Resting membrane potential: the inside of the cell is…', a: 'Negative compared with the outside (about –70 to –90 mV)', wrong: ['Positive compared with the outside', 'Equal to the outside (0 mV)', 'About +20 mV'] },
+    { q: 'Major intracellular cation that also affects cardiac function?', a: 'Magnesium', wrong: ['Sodium', 'Chloride', 'Calcium'] },
+    { q: 'Three major electrolytes that affect cardiac function?', a: 'Calcium, potassium, and sodium', wrong: ['Chloride, bicarbonate, and sodium', 'Magnesium, phosphate, and chloride', 'Potassium, chloride, and glucose'] },
+    { q: 'Phase 0 of the action potential is caused by…', a: 'Fast sodium channels opening and Na⁺ rushing in', wrong: ['K⁺ leaving the cell', 'Ca²⁺ entering through slow channels', 'The Na-K pump running'] },
+    { q: 'Phase 1 of the action potential?', a: 'Early rapid repolarization: fast Na⁺ channels close, K⁺ keeps leaving', wrong: ['Plateau: Ca²⁺ enters', 'Rapid depolarization: Na⁺ rushes in', 'Resting: pump restores balance'] },
+    { q: 'Phase 2 (plateau) of the action potential?', a: 'Ca²⁺ enters through slow channels and triggers contraction', wrong: ['Na⁺ rushes in through fast channels', 'K⁺ pours out and the cell turns negative', 'The cell is at rest'] },
+    { q: 'Phase 3 of the action potential?', a: 'Rapid repolarization as K⁺ leaves; the inside turns negative', wrong: ['Rapid depolarization as Na⁺ enters', 'Plateau as Ca²⁺ enters', 'Slow pacemaker depolarization'] },
+    { q: 'Phase 4 of the action potential?', a: 'Rest between action potentials (pacemaker cells slowly depolarize)', wrong: ['The rapid upstroke', 'The plateau', 'Early rapid repolarization'] },
+    { q: 'What makes pacemaker cells fire on their own?', a: 'Slow phase 4 depolarization up to threshold', wrong: ['A fast phase 0 with no threshold', 'A longer plateau', 'A more negative resting potential'] },
+    { q: 'Why is the SA node the chief pacemaker?', a: 'It reaches threshold faster than other pacemaker cells', wrong: ['It has the most cells', 'It is closest to the ventricles', 'It has no refractory period'] },
+    { q: 'The slow channels are selective mostly for…', a: 'Calcium (and to a lesser extent sodium)', wrong: ['Potassium', 'Chloride', 'Magnesium'] },
+    { q: 'Calcium plays which roles in cardiac cells?', a: 'Electrical and contractile', wrong: ['Only electrical', 'Only contractile', 'Neither; it is only a buffer'] },
+    { q: 'Absolute refractory period means the cell…', a: 'Cannot respond to any stimulus', wrong: ['Responds only to a strong stimulus', 'Responds more easily than normal', 'Is at its resting potential'] },
+    { q: 'Relative refractory period means the cell…', a: 'Can fire only with a stronger than normal stimulus', wrong: ['Cannot respond at all', 'Fires on its own', 'Is fully repolarized'] },
+    { q: 'On the ECG, the relative refractory period falls on…', a: 'The downslope of the T wave', wrong: ['The P wave', 'The QRS complex', 'The PR segment'], std: true },
+    { q: 'On the ECG, phase 0 in the ventricles lines up with…', a: 'The QRS complex', wrong: ['The T wave', 'The P wave', 'The ST segment'], std: true },
+    { q: 'Enhanced automaticity is commonly caused by…', a: 'Abnormally high leakage of sodium into cells', wrong: ['Potassium leaking into cells', 'Too much ATP', 'A faster Na-K pump'] },
+    { q: 'In early MI, cells that lose their electrochemical gradients…', a: 'Swell and depolarize (still reversible at first)', wrong: ['Shrink and hyperpolarize', 'Fire faster but stay normal', 'Immediately turn to scar'] },
+    { q: 'Digoxin works by…', a: 'Slowing the Na-K pump so more calcium stays in the cell', wrong: ['Blocking fast sodium channels', 'Blocking beta receptors', 'Opening potassium channels'], std: true },
+    { q: 'Which potassium problem makes digoxin toxicity worse?', a: 'Hypokalemia', wrong: ['Hyperkalemia', 'Neither', 'Only hypercalcemia matters'], std: true },
+    { q: 'Classic first ECG sign of hyperkalemia?', a: 'Tall, peaked T waves', wrong: ['U waves', 'Delta waves', 'Short QT with J waves'], std: true },
+    { q: 'Hypokalemia in the slides is a cause of…', a: 'PVCs, VT and VF', wrong: ['Sinus bradycardia only', 'Pericarditis', 'Wandering atrial pacemaker'] },
+    { q: 'Brugada syndrome is a genetic defect in…', a: 'Sodium channels', wrong: ['Potassium channels', 'The Na-K pump', 'Calcium storage'] },
+    { q: 'Calcium channel blockers act on which channels?', a: 'The slow channels', wrong: ['The fast sodium channels', 'Potassium leak channels', 'The Na-K pump'] }
+  ]
+};
