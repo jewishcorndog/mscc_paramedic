@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paramedic Drug Box</title>
-<meta name="description" content="Flashcards, quizzes and write-out drills for the Motlow State paramedic pharmacology drug list (TN protocols).">
+<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols) and cardiology.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -12,10 +12,15 @@
 </head>
 <body>
 <header class="masthead">
-  <h1 class="brand"><span class="star" aria-hidden="true">✳</span> Drug Box</h1>
-  <span class="sub">Motlow State Paramedic · TN protocols</span>
+  <h1 class="brand"><span class="star" aria-hidden="true">✳</span> <span id="brand-name">Drug Box</span></h1>
+  <span class="sub" id="brand-sub">Motlow State Paramedic · TN protocols</span>
+  <div class="seg subject" role="group" aria-label="Subject">
+    <button data-subject="pharm" aria-pressed="true">Pharmacology</button>
+    <button data-subject="cardio" aria-pressed="false">Cardiology</button>
+  </div>
 </header>
 
+<div id="subj-pharm">
 <nav class="tabs" aria-label="Study modes">
   <div class="tabs-inner" role="tablist">
     <button class="tab" role="tab" id="tab-cards" data-tab="cards" aria-selected="true">Cards</button>
@@ -33,11 +38,35 @@
   <section class="view" id="view-drugs" role="tabpanel" aria-labelledby="tab-drugs" hidden></section>
   <section class="view" id="view-progress" role="tabpanel" aria-labelledby="tab-progress" hidden></section>
 </main>
+</div>
+
+<div id="subj-cardio" hidden>
+<nav class="tabs" aria-label="Cardiology study modes">
+  <div class="tabs-inner" role="tablist">
+    <button class="tab" role="tab" id="ctab-strips" data-ctab="strips" aria-selected="true">Strips</button>
+    <button class="tab" role="tab" id="ctab-cards" data-ctab="cards" aria-selected="false">Cards</button>
+    <button class="tab" role="tab" id="ctab-quiz" data-ctab="quiz" aria-selected="false">Quiz</button>
+    <button class="tab" role="tab" id="ctab-learn" data-ctab="learn" aria-selected="false">Learn</button>
+    <button class="tab" role="tab" id="ctab-stats" data-ctab="stats" aria-selected="false">Stats</button>
+  </div>
+</nav>
+
+<main>
+  <section class="view" id="cview-strips" role="tabpanel" aria-labelledby="ctab-strips"></section>
+  <section class="view" id="cview-cards" role="tabpanel" aria-labelledby="ctab-cards" hidden></section>
+  <section class="view" id="cview-quiz" role="tabpanel" aria-labelledby="ctab-quiz" hidden></section>
+  <section class="view" id="cview-learn" role="tabpanel" aria-labelledby="ctab-learn" hidden></section>
+  <section class="view" id="cview-stats" role="tabpanel" aria-labelledby="ctab-stats" hidden></section>
+</main>
+</div>
 
 <div class="overlay" id="setup" hidden></div>
 
 <script src="js/drugs.js"></script>
 <script src="js/grading.js"></script>
 <script src="js/app.js"></script>
+<script src="js/ecg.js"></script>
+<script src="js/cardio-data.js"></script>
+<script src="js/cardio.js"></script>
 </body>
 </html>
