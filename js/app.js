@@ -130,11 +130,11 @@
   var VIEWS = {};
   function showTab(tab) {
     S.tab = tab; save();
-    $all('.tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === tab)); });
-    $all('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + tab; });
+    $all('#subj-pharm .tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === tab)); });
+    $all('#subj-pharm .view').forEach(function (v) { v.hidden = v.id !== 'view-' + tab; });
     VIEWS[tab].show();
   }
-  $all('.tab').forEach(function (b) {
+  $all('#subj-pharm .tab').forEach(function (b) {
     b.addEventListener('click', function () { showTab(b.dataset.tab); });
   });
 
@@ -990,7 +990,7 @@
 
   // ---------- Keyboard shortcuts ----------
   document.addEventListener('keydown', function (e) {
-    if (!setupEl.hidden) return;
+    if (!setupEl.hidden || document.body.dataset.subject === 'cardio') return;
     var tag = (e.target.tagName || '').toLowerCase();
     var typing = tag === 'input' || tag === 'textarea' || tag === 'select';
     if (S.tab === 'cards' && C && C.queue.length && !typing) {
