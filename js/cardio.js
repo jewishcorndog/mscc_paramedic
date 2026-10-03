@@ -244,7 +244,8 @@
       if (!list.length) return '';
       return '<div class="chip-group"><button class="btn link group-btn" data-rgroup="' + g.id + '">' + esc(g.name) + '</button><div class="chips">' +
         list.map(function (r) {
-          return '<button class="chip" data-rhythm="' + r.id + '" aria-pressed="' + (selected.indexOf(r.id) !== -1) + '">' + esc(r.name) + '</button>';
+          return '<button class="chip" data-rhythm="' + r.id + '" aria-pressed="' + (selected.indexOf(r.id) !== -1) + '">' + esc(r.name) +
+            (S.stripSrc !== 'gen' && REAL_BY[r.id] ? ' <span class="real-tag">real</span>' : '') + '</button>';
         }).join('') + '</div></div>';
     }).join('');
   }
@@ -257,8 +258,8 @@
 
   function stripsSetup() {
     var n = S.stripSel.length, y = window.scrollY;
-    var realCount = S.stripSel.filter(function (id) { return REAL_BY[id]; }).length;
-    var canStart = S.stripSrc === 'real' ? realCount : n;
+    var noReal = S.stripSel.filter(function (id) { return !REAL_BY[id]; });
+    var realCount = n - noReal.length;
     stripsEl.innerHTML =
       '<div><h2 class="title">Rhythm strips</h2><p class="lede">Name the rhythm on a 6-second lead II strip. Drawn strips are made fresh every time; real strips are recorded patients from the MIT-BIH Arrhythmia Database.</p></div>' +
       '<div class="panel">' +
@@ -267,28 +268,34 @@
       '<button class="btn link" data-act="weak">Weakest 6</button></div></div>' + rhythmChips(S.stripSel) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Strips</p>' +
       seg('stripSrc', S.stripSrc, [['gen', 'Drawn'], ['real', 'Real'], ['mix', 'Mix']]) +
-      (S.stripSrc === 'gen' ? '' : '<p class="muted small">Real strips exist for ' + realCount + ' of your ' + n + ' rhythms' +
-        (S.stripSrc === 'real' ? '; the round uses only those.' : '; the rest stay drawn.') + ' Real strips have some noise and wander, like a monitor in the field.</p>') + '</div>' +
+      (S.stripSrc === 'gen' || !n ? '' : '<p class="muted small">' +
+        (noReal.length ? 'Real strips exist for ' + realCount + ' of your ' + n + ' rhythms (marked <span class="real-tag">real</span>). ' +
+          '<strong>No real strips yet for ' + esc(noReal.map(function (id) { return R_BY[id].name; }).join(', ')) + '</strong>, so those will be drawn. '
+          : 'All of your rhythms have real strips. ') +
+        'Real strips have some noise and wander, like a monitor in the field.</p>') + '</div>' +
       '<div class="field-row"><p class="eyebrow">Answer by</p>' +
       seg('stripMode', S.stripMode, [['mc', 'Choices'], ['list', 'List'], ['type', 'Type it']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Strips per round</p>' + seg('stripLen', S.stripLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       (n ? '' : '<p class="muted small">Tap rhythms above to add them.</p>') +
-      (n && !canStart ? '<p class="muted small">None of these rhythms has a real strip yet. Pick Mix or Drawn, or add rhythms like AF or VT.</p>' : '') +
-      '<div><button class="btn primary big" data-act="start"' + (canStart ? '' : ' disabled') + '>Start ' + S.stripLen + ' strips</button></div></div>';
+      '<div><button class="btn primary big" data-act="start"' + (n ? '' : ' disabled') + '>Start ' + S.stripLen + ' strips</button></div></div>';
     window.scrollTo(0, y);
   }
 
   function stripsStart(ids) {
-    var list = [], used = [];
-    if (S.stripSrc === 'real') ids = ids.filter(function (id) { return REAL_BY[id]; });
+    var list = [], used = [], last = {};
     if (!ids.length) return stripsSetup();
     // Spread rhythms evenly, then shuffle, so small sets still repeat fairly.
     while (list.length < S.stripLen) list = list.concat(shuffle(ids));
     list = list.slice(0, S.stripLen).map(function (id) {
       var real = null;
       if (REAL_BY[id] && (S.stripSrc === 'real' || (S.stripSrc === 'mix' && Math.random() < 0.5))) {
-        real = pickReal(id, used);
+        // Use every real strip of a rhythm before repeating one, and never the same one twice running.
+        if (REAL_BY[id].every(function (n) { return used.indexOf(n) !== -1; })) {
+          used = used.filter(function (n) { return REAL_BY[id].indexOf(n) === -1; });
+        }
+        real = pickReal(id, used.concat(last[id] == null ? [] : [last[id]]));
         used.push(real);
+        last[id] = real;
       }
       return { id: id, seed: newSeed(), real: real };
     });
@@ -329,7 +336,7 @@
     }
     if (st) {
       html += '<div class="verdict ' + (st.ok ? 'ok' : 'no') + '"><p class="v-title">' + (st.ok ? 'Correct: ' : 'It\'s ') + esc(r.name) + '</p>' +
-        (item.real != null ? realVerdict(item) : '') +
+        (item.real != null ? realVerdict(item) : S.stripSrc === 'real' ? '<p class="small">No real strip of this rhythm yet, so this one was drawn.</p>' : '') +
         '<p>' + esc(r.look) + '</p>' + rulesHtml(r);
       if (!st.ok && st.otherId && R_BY[st.otherId]) {
         html += '<p class="small"><strong>' + esc(R_BY[st.otherId].name) + '</strong> would look like this instead: ' + esc(R_BY[st.otherId].look) + '</p>';

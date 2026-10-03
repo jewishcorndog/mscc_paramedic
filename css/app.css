@@ -568,3 +568,4 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 @media (prefers-reduced-motion: reduce) {
   .ion, .pump-body, .atp { transition: none; }
 }
+.real-tag { font: 600 0.68rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--heart); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }

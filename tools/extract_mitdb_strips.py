@@ -21,7 +21,7 @@ import wfdb
 FS = 360          # database sampling rate
 OUT_HZ = 180      # stored rate (every 2nd sample)
 WIN = 6 * FS      # 6-second strip
-PER_RHYTHM = 8    # strips kept per app rhythm
+PER_RHYTHM = 12   # strips kept per app rhythm
 BEATS = set('NLRBAaJSVrFejnE/fQ?')
 
 def rhythm_segments(ann, sig_len):
@@ -148,13 +148,20 @@ def main(db):
         by_rec = {}
         for cnd in cands:
             by_rec.setdefault((cnd[0], cnd[4]), []).append(cnd)
-        picks, i = [], 0
-        while len(picks) < PER_RHYTHM and any(by_rec.values()):
-            for rec in sorted(by_rec):
-                lst = by_rec[rec]
-                if lst and len(picks) < PER_RHYTHM:
-                    picks.append(lst.pop(len(lst) * (i % 3 + 1) // 4 if len(lst) > 3 else 0))
-            i += 1
+        # Share the picks out across groups, then space each group's picks evenly through the recording.
+        keys = sorted(by_rec)
+        want = dict.fromkeys(keys, 0)
+        total = 0
+        while total < PER_RHYTHM and any(want[k] < len(by_rec[k]) for k in keys):
+            for k in keys:
+                if want[k] < len(by_rec[k]) and total < PER_RHYTHM:
+                    want[k] += 1
+                    total += 1
+        picks = []
+        for k in keys:
+            lst = sorted(by_rec[k], key=lambda c: c[1])
+            n = want[k]
+            picks += [lst[int((j + 0.5) * len(lst) / n)] for j in range(n)]
         for rec, w0, x, beats, note, also in picks:
             if rid == 'sinus-arrest':
                 # Record 232 tags its sinus beats as atrial; unlabeled reads truer on a pause strip.
