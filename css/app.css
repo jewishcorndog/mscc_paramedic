@@ -566,7 +566,36 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .ap-seg.on .ap-num { fill: var(--heart); }
 #ap-box { display: grid; gap: 10px; }
 .ap-info p { margin: 0 0 4px; }
+.cx-svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
+.cx-ecg { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }
+.cx-heart { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.cx-vessel { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.cx-groove, .cx-septum { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 2; fill: none; }
+.cx-atria, .cx-vents { fill: var(--heart); opacity: 0; transition: opacity 0.6s, fill 0.6s; }
+.cx-atria[data-state="on"], .cx-vents[data-state="on"] { opacity: 0.16; }
+.cx-atria[data-state="done"] { opacity: 0.07; }
+.cx-vents[data-state="rec"] { fill: var(--accent); opacity: 0.1; }
+.cx-label { font: 600 9px var(--font-body); fill: var(--muted); text-anchor: middle; }
+.cx-part { cursor: pointer; }
+.cx-hit { stroke: transparent; stroke-width: 16; fill: none; }
+.cx-path { stroke: var(--line); stroke-width: 2.4; fill: none; stroke-linecap: round; transition: stroke 0.4s; }
+.cx-path.thick { stroke-width: 3.6; }
+.cx-node { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; transition: fill 0.4s; }
+.cx-part.done .cx-path { stroke: var(--accent); }
+.cx-part.done .cx-node { fill: var(--accent); }
+.cx-part.on .cx-path { stroke: var(--heart); }
+.cx-part.on .cx-node { fill: var(--heart); stroke: var(--heart); }
+.cx-part.on .cx-path.thick { stroke-width: 4.4; }
+.cx-w { stroke: var(--line); stroke-width: 2; fill: none; stroke-linejoin: round; transition: stroke 0.4s; }
+.cx-w.done { stroke: var(--ink); }
+.cx-w.on { stroke: var(--heart); stroke-width: 3; }
+.cx-cap { min-height: 11em; }
+.cx-cap p { margin: 0 0 6px; }
+.cx-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0 0 8px; }
+.cx-facts dt { font-weight: 700; color: var(--muted); font-size: 0.85rem; }
+.cx-facts dd { margin: 0; }
+@media (max-width: 560px) { .cx-facts { grid-template-columns: 1fr; } .cx-facts dd { margin-bottom: 4px; } }
 @media (prefers-reduced-motion: reduce) {
-  .ion, .pump-body, .atp { transition: none; }
+  .ion, .pump-body, .atp, .cx-atria, .cx-vents, .cx-path, .cx-node, .cx-w { transition: none; }
 }
 .real-tag { font: 600 0.68rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--heart); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }

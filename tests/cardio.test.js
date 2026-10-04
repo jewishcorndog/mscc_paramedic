@@ -164,4 +164,16 @@ t('block strips show their criteria inside the strip', () => {
   }
 });
 
+t('conduction pathway runs in order and links real rhythms', () => {
+  const C = globalThis.CARDIO_CONDUCTION, ids = new Set(globalThis.CARDIO_RHYTHMS.map(r => r.id));
+  assert.deepStrictEqual(C.steps.map(s => s.id), ['sa', 'atria', 'av', 'his', 'bb', 'purkinje', 'repol']);
+  C.steps.forEach(s => s.problems.forEach(id => assert(ids.has(id), 'unknown rhythm ' + id)));
+  C.blocks.forEach(b => assert(b.id === null || ids.has(b.id), 'unknown block ' + b.id));
+  assert(C.qa.length >= 20);
+  C.qa.forEach(b => {
+    assert(b.q && b.a && b.wrong.length >= 3, b.q);
+    assert(!b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, 'bad choices: ' + b.q);
+  });
+});
+
 console.log(n + ' cardiology test groups passed');

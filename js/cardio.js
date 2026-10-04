@@ -9,8 +9,10 @@
   var TGROUPS = window.CARDIO_TOPIC_GROUPS;
   var BASICS = window.CARDIO_BASICS;
   var PUMP = window.CARDIO_PUMP;
-  // Question-and-answer sets: ECG basics and the sodium-potassium pump.
-  var QA = { basics: { list: BASICS, pre: 'b', title: 'ECG basics' }, pump: { list: PUMP.qa, pre: 'p', title: 'Na-K pump & cell' } };
+  var CONDUCT = window.CARDIO_CONDUCTION;
+  // Question-and-answer sets: ECG basics, the sodium-potassium pump and the conduction pathway.
+  var QA = { basics: { list: BASICS, pre: 'b', title: 'ECG basics' }, pump: { list: PUMP.qa, pre: 'p', title: 'Na-K pump & cell' },
+    conduct: { list: CONDUCT.qa, pre: 'c', title: 'Conduction pathway' } };
   var ECG = window.ECG;
   var G = window.Grading;
   var R_BY = {}, T_BY = {};
@@ -95,16 +97,19 @@
     stripMode: 'mc',
     stripLen: 20,
     stripSrc: 'mix',
-    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false },
+    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false },
     cardDir: 'forward',
     quizLen: 20,
-    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true },
+    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true },
     learn: 'rhythms',
     stats: {}
   }, loadSaved());
   // Older saves predate the pump deck.
   if (S.cardDecks.pump === undefined) S.cardDecks.pump = false;
   if (S.quizTopics.pump === undefined) S.quizTopics.pump = true;
+  // ...and the conduction pathway deck.
+  if (S.cardDecks.conduct === undefined) S.cardDecks.conduct = false;
+  if (S.quizTopics.conduct === undefined) S.quizTopics.conduct = true;
   S.stripSel = S.stripSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
 
   function save() {
@@ -459,7 +464,8 @@
     ['conditions', 'Conditions', 'ACS, heart failure, tamponade, dissection…'],
     ['treatments', 'Treatments & devices', 'CPR, defib, cardioversion, pacing, ICD, LVAD…'],
     ['basics', 'ECG basics', 'Waves, intervals, paper, leads, axis'],
-    ['pump', 'Na-K pump & cell', 'Pump, ions, action potential phases, refractory periods']
+    ['pump', 'Na-K pump & cell', 'Pump, ions, action potential phases, refractory periods'],
+    ['conduct', 'Conduction pathway', 'SA node to Purkinje fibers, rates, blocks, ectopic beats']
   ];
 
   function dirFor() { return S.cardDir === 'mixed' ? (Math.random() < 0.5 ? 'forward' : 'reverse') : S.cardDir; }
@@ -475,7 +481,7 @@
       if (t.kind === 'condition' ? !d.conditions : !d.treatments) return;
       TFIELDS.forEach(function (f) { if ((t[f[0]] || []).length) list.push({ kind: 'topic', id: t.id, field: f[0], dir: dirFor() }); });
     });
-    ['basics', 'pump'].forEach(function (set) {
+    ['basics', 'pump', 'conduct'].forEach(function (set) {
       if (d[set]) QA[set].list.forEach(function (b, i) { list.push({ kind: 'basic', set: set, id: QA[set].pre + i, idx: i, field: set }); });
     });
     return shuffle(list);
@@ -608,7 +614,7 @@
   var quizEl = $('#cview-quiz');
   var Q = null;
   var QTOPICS = [['strips', 'Rhythm strips'], ['rules', 'Rhythm rules'], ['care', 'Rhythm causes & care'],
-    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell']];
+    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway']];
 
   function notIn(list, item) {
     return !list.some(function (x) { return x === item || G.sameItem(x, item); });
@@ -666,7 +672,8 @@
     conditions: function () { return topicQ('condition'); },
     treatments: function () { return topicQ('treatment'); },
     basics: function () { return qaQ('basics'); },
-    pump: function () { return qaQ('pump'); }
+    pump: function () { return qaQ('pump'); },
+    conduct: function () { return qaQ('conduct'); }
   };
 
   function qaQ(set) {
@@ -717,7 +724,7 @@
 
   function quizSetup(error) {
     quizEl.innerHTML =
-      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics and the sodium-potassium pump.</p></div>' +
+      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump and the conduction pathway.</p></div>' +
       '<div class="panel"><div class="field-row"><p class="eyebrow">Questions</p>' + seg('quizLen', S.quizLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Topics</p><div class="row">' + QTOPICS.map(function (k) {
         return '<label class="check"><input type="checkbox" data-qtopic="' + k[0] + '"' + (S.quizTopics[k[0]] ? ' checked' : '') + '> ' + esc(k[1]) + '</label>';
@@ -841,11 +848,12 @@
   function learnRender() {
     learnEl.innerHTML =
       '<div><h2 class="title">Learn</h2><p class="lede">Everything from the Chapter 21 slides and outline. Open a rhythm to see a sample strip.</p></div>' +
-      seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump']]) +
+      seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump'], ['conduct', 'Conduction']]) +
       (S.learn === 'pump' ? '<div id="learn-list" class="pump-view">' + pumpHtml() + '</div>' :
+        S.learn === 'conduct' ? '<div id="learn-list" class="pump-view cx-view">' + cxHtml() + '</div>' :
         '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
         '<div class="ref-list" id="learn-list"></div>');
-    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); } else learnFilter();
+    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); } else if (S.learn === 'conduct') cxSet(cxStep); else learnFilter();
   }
 
   function learnFilter() {
@@ -1035,14 +1043,128 @@
       '<p class="std-note">* Standard physiology the slides use but don\'t spell out.</p>';
   }
 
+
+  // ---------- Electrical conduction pathway view ----------
+  var cxStep = 0, cxTimer = null;
+  var CX_N = CONDUCT.steps.length;
+
+  // Heart pieces, drawn as if facing the patient (their right atrium on the left).
+  // Each pathway part lights up on its step; earlier parts stay lit while the impulse travels on.
+  var CX_PARTS = [
+    { step: 0, cls: 'cx-node', d: 'M110 72m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0' },
+    { step: 1, cls: 'cx-path', d: 'M110 72C96 98 118 128 150 140M110 72C122 94 138 116 150 140M110 72C88 112 112 142 150 140M114 68C150 52 196 58 226 82' },
+    { step: 2, cls: 'cx-node', d: 'M152 142m-9 0a9 6 0 1 0 18 0a9 6 0 1 0 -18 0' },
+    { step: 3, cls: 'cx-path thick', d: 'M156 147L162 172' },
+    { step: 4, cls: 'cx-path thick', d: 'M162 172C152 196 144 222 140 246M162 172C170 182 176 188 182 196M182 196C198 200 208 206 214 214M182 196C186 216 188 234 188 250' },
+    { step: 5, cls: 'cx-path', d: 'M140 246C146 262 152 270 160 274M140 246C124 236 112 220 106 200M106 200C100 184 96 168 96 152M188 250C178 264 168 270 160 274M214 214C222 196 226 176 226 154M188 250C198 240 204 230 208 214M126 232l-4 4M110 204l-6 0M196 234l4 4M224 184l6 -2M150 270l-4 -10M172 268l4 -10' }
+  ];
+  // Mini ECG, one piece per step: start of P, rest of P, PR segment, end of PR, Q, R-S, ST-T.
+  var CX_WAVE = [
+    'M40 50C46 50 50 40 58 40', 'M58 40C66 40 70 50 76 50', 'M76 50H100', 'M100 50H112',
+    'M112 50L116 56', 'M116 56L124 10L132 62L137 50', 'M137 50H165C175 50 180 34 192 34C204 34 208 50 218 50'
+  ];
+  var CX_RATES = [
+    { site: 'SA node', rate: '60–100/min', id: 'nsr', note: 'Normal sinus rhythm' },
+    { site: 'AV junction', rate: '40–60/min', id: 'junctional-escape', note: 'Junctional escape' },
+    { site: 'Ventricles (bundle branches, Purkinje)', rate: '20–40/min', id: 'idioventricular', note: 'Idioventricular' }
+  ];
+
+  function cxSvg() {
+    var heart = 'M160 58C140 30 70 30 62 85C56 140 88 220 160 285C232 220 264 140 258 85C250 30 180 30 160 58Z';
+    return '<svg class="cx-svg" viewBox="0 0 320 292" role="img" aria-labelledby="cx-cap-t">' +
+      '<defs><clipPath id="cx-clip"><path d="' + heart + '"/></clipPath></defs>' +
+      '<path d="M98 18V62M122 18V58" class="cx-vessel"/><text x="110" y="14" class="cx-label">SVC</text>' +
+      '<g clip-path="url(#cx-clip)"><rect width="320" height="138" class="cx-atria"/><rect y="138" width="320" height="160" class="cx-vents"/></g>' +
+      '<path d="' + heart + '" class="cx-heart"/>' +
+      '<path d="M64 132C110 146 210 146 256 132" class="cx-groove"/><path d="M160 58V136M160 176V284" class="cx-septum"/>' +
+      '<text x="80" y="112" class="cx-label">RA</text><text x="236" y="112" class="cx-label">LA</text>' +
+      '<text x="120" y="176" class="cx-label">RV</text><text x="212" y="176" class="cx-label">LV</text>' +
+      CX_PARTS.map(function (pt) {
+        return '<g class="cx-part" data-cstep="' + pt.step + '"><path d="' + pt.d + '" class="cx-hit"/><path d="' + pt.d + '" class="' + pt.cls + '"/></g>';
+      }).join('') +
+      '</svg>' +
+      '<svg class="cx-ecg" viewBox="0 0 320 76" aria-hidden="true"><path d="M10 50H40M218 50H310" class="cx-w base"/>' +
+      CX_WAVE.map(function (d, i) { return '<path d="' + d + '" class="cx-w" data-wave="' + i + '"/>'; }).join('') +
+      '<text x="58" y="70" class="cx-label">P</text><text x="94" y="70" class="cx-label">PR</text><text x="126" y="70" class="cx-label">QRS</text><text x="192" y="70" class="cx-label">T</text></svg>';
+  }
+  function cxSet(n) {
+    cxStep = (n + CX_N) % CX_N;
+    var root = $('.cx-view');
+    if (!root) return;
+    var st = CONDUCT.steps[cxStep], last = cxStep === CX_N - 1;
+    $all('.cx-part', root).forEach(function (g) {
+      var k = Number(g.dataset.cstep);
+      g.classList.toggle('on', k === cxStep);
+      g.classList.toggle('done', k < cxStep && !last);
+    });
+    $('.cx-atria', root).dataset.state = cxStep === 1 ? 'on' : cxStep > 1 && !last ? 'done' : '';
+    $('.cx-vents', root).dataset.state = cxStep === 5 ? 'on' : last ? 'rec' : '';
+    $all('.cx-w[data-wave]', root).forEach(function (w) {
+      var k = Number(w.dataset.wave);
+      w.setAttribute('class', 'cx-w' + (k === cxStep ? ' on' : k < cxStep ? ' done' : ''));
+    });
+    var chips = st.problems.filter(function (id) { return R_BY[id]; });
+    $('#cx-cap-t').textContent = (cxStep + 1) + '. ' + st.name;
+    $('#cx-cap-p').innerHTML =
+      '<p>' + esc(st.does) + '</p>' +
+      '<dl class="cx-facts"><dt>Where</dt><dd>' + esc(st.where) + (st.std ? STD : '') + '</dd>' +
+      (st.rate ? '<dt>Rate if it takes over</dt><dd>' + esc(st.rate) + '</dd>' : '') +
+      '<dt>On the ECG</dt><dd>' + esc(st.ecg) + STD + '</dd></dl>' +
+      (st.extra ? '<p class="small">' + esc(st.extra) + '</p>' : '') +
+      (chips.length ? '<p class="eyebrow">Rhythms that start or stall here</p><div class="chips">' + chips.map(function (id) {
+        return '<button class="chip" data-goto-rhythm="' + id + '">' + esc(R_BY[id].name) + '</button>';
+      }).join('') + '</div>' : '');
+    $all('[data-cstep]', $('.cx-steps', root)).forEach(function (b) { b.setAttribute('aria-pressed', String(Number(b.dataset.cstep) === cxStep)); });
+  }
+  function cxPlay(on) {
+    clearInterval(cxTimer);
+    cxTimer = null;
+    var b = $('[data-act="cx-play"]');
+    if (on) {
+      cxTimer = setInterval(function () {
+        if (!$('.cx-view')) return cxPlay(false);
+        cxSet(cxStep + 1);
+      }, 2800);
+      cxSet(cxStep + 1);
+    }
+    if (b) b.textContent = on ? 'Pause' : 'Play';
+  }
+  function cxHtml() {
+    return '<div class="panel"><p class="eyebrow">Electrical conduction system</p>' +
+      '<p class="pump-sum">Each beat starts in the <strong>SA node</strong>, spreads through the atria, pauses at the <strong>AV node</strong>, then races down the <strong>bundle of His</strong>, the <strong>bundle branches</strong> and the <strong>Purkinje fibers</strong> into the ventricles. Tap any part of the heart, or step through it, to see what it does and which part of the ECG it makes.</p>' +
+      cxSvg() +
+      '<div class="row spread"><div class="seg cx-steps">' + CONDUCT.steps.map(function (st, i) { return '<button data-cstep="' + i + '" aria-label="' + esc(st.name) + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
+      '<div class="row"><button class="btn" data-act="cx-prev">Back</button><button class="btn" data-act="cx-play">Play</button><button class="btn primary" data-act="cx-next">Next</button></div></div>' +
+      '<div class="pump-cap cx-cap"><p class="v-title" id="cx-cap-t"></p><div id="cx-cap-p"></div></div></div>' +
+      '<div class="panel"><p class="eyebrow">Backup pacemakers</p><p>The fastest pacemaker runs the heart. If the SA node fails or its impulse is blocked, the next site down takes over at its own slower rate.</p>' +
+      '<div class="table-wrap"><table class="grid basics"><thead><tr><th>Site and its rhythm</th><th>Intrinsic rate</th></tr></thead><tbody>' +
+      CX_RATES.map(function (r) {
+        return '<tr><td><strong>' + esc(r.site) + '</strong><br>' +
+          (R_BY[r.id] ? '<button class="chip" data-goto-rhythm="' + r.id + '">' + esc(r.note) + '</button>' : esc(r.note)) + '</td><td>' + esc(r.rate) + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>' +
+      '<div class="panel"><p class="eyebrow">Where the blocks happen</p><div class="table-wrap"><table class="grid basics"><tbody>' +
+      CONDUCT.blocks.map(function (b) {
+        return '<tr><td>' + (b.id && R_BY[b.id] ? '<button class="chip" data-goto-rhythm="' + b.id + '">' + esc(b.name) + '</button>' : '<strong>' + esc(b.name) + '</strong>') +
+          '</td><td>' + esc(b.where) + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>' +
+      '<div class="panel"><p class="eyebrow">When something else fires</p><div class="core-grid">' + CONDUCT.ectopic.map(function (c) {
+        return '<div><h4>' + esc(c.name) + '</h4><p>' + esc(c.text) + '</p></div>';
+      }).join('') + '</div></div>' +
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>' + CONDUCT.qa.length + ' questions on the pathway, its rates, blocks and ectopic beats.</p>' +
+      '<div class="row"><button class="btn primary" data-act="cx-cards">Flashcards</button><button class="btn" data-act="cx-quiz">Quiz me</button></div></div>' +
+      '<p class="std-note">* Standard ECG and physiology facts the slides use but don\'t spell out.</p>';
+  }
+
   learnEl.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-phase],[data-goto-rhythm]');
+    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-phase],[data-goto-rhythm]');
     if (!t) return;
     if (t.dataset.seg === 'apCell') { apCell = t.dataset.val; return apRender(); }
-    if (t.dataset.seg) { pumpPlay(false); S.learn = t.dataset.val; save(); return learnRender(); }
+    if (t.dataset.seg) { pumpPlay(false); cxPlay(false); S.learn = t.dataset.val; save(); return learnRender(); }
     if (t.dataset.pstep) { pumpPlay(false); return pumpSet(Number(t.dataset.pstep)); }
+    if (t.dataset.cstep) { cxPlay(false); return cxSet(Number(t.dataset.cstep)); }
     if (t.dataset.phase) { apPhase = Number(t.dataset.phase); return apRender(); }
     if (t.dataset.gotoRhythm) {
+      pumpPlay(false); cxPlay(false);
       S.learn = 'rhythms'; learnQuery = ''; save(); learnRender();
       var d = $('[data-ref-rhythm="' + t.dataset.gotoRhythm + '"]', learnEl);
       if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); }
@@ -1051,14 +1173,19 @@
     if (t.dataset.act === 'pump-next') { pumpPlay(false); return pumpSet(pumpStep + 1); }
     if (t.dataset.act === 'pump-prev') { pumpPlay(false); return pumpSet(pumpStep - 1); }
     if (t.dataset.act === 'pump-play') return pumpPlay(!pumpTimer);
-    if (t.dataset.act === 'pump-cards') {
-      pumpPlay(false);
-      Object.keys(S.cardDecks).forEach(function (k) { S.cardDecks[k] = k === 'pump'; });
+    if (t.dataset.act === 'cx-next') { cxPlay(false); return cxSet(cxStep + 1); }
+    if (t.dataset.act === 'cx-prev') { cxPlay(false); return cxSet(cxStep - 1); }
+    if (t.dataset.act === 'cx-play') return cxPlay(!cxTimer);
+    if (t.dataset.act === 'pump-cards' || t.dataset.act === 'cx-cards') {
+      var deck = t.dataset.act === 'cx-cards' ? 'conduct' : 'pump';
+      pumpPlay(false); cxPlay(false);
+      Object.keys(S.cardDecks).forEach(function (k) { S.cardDecks[k] = k === deck; });
       save(); showTab('cards'); return cardsStart(buildCards());
     }
-    if (t.dataset.act === 'pump-quiz') {
-      pumpPlay(false);
-      Object.keys(S.quizTopics).forEach(function (k) { S.quizTopics[k] = k === 'pump'; });
+    if (t.dataset.act === 'pump-quiz' || t.dataset.act === 'cx-quiz') {
+      var topic = t.dataset.act === 'cx-quiz' ? 'conduct' : 'pump';
+      pumpPlay(false); cxPlay(false);
+      Object.keys(S.quizTopics).forEach(function (k) { S.quizTopics[k] = k === topic; });
       save(); showTab('quiz'); return quizStart(buildQuiz());
     }
     if (t.dataset.act === 'new-example') {
@@ -1121,7 +1248,7 @@
         return m;
       }, { c: 0, n: 0 });
     }
-    var basics = qaTotals('basics'), pump = qaTotals('pump');
+    var basics = qaTotals('basics'), pump = qaTotals('pump'), conduct = qaTotals('conduct');
     statsEl.innerHTML =
       '<div><h2 class="title">Progress</h2><p class="lede">Weakest rhythms first. Progress is saved in this browser only.</p></div>' +
       '<div class="stats-row"><div class="stat"><div class="n">' + answered + '</div><div class="l">Answers</div></div>' +
@@ -1133,6 +1260,7 @@
       (topicRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Condition or treatment</th><th style="text-align:center">Score</th></tr></thead><tbody>' + topicRows + '</tbody></table></div>' : '') +
       (basics.n ? '<p class="muted">ECG basics: ' + Math.round(basics.c / basics.n * 100) + '% of ' + basics.n + ' answers right.</p>' : '') +
       (pump.n ? '<p class="muted">Na-K pump &amp; cell: ' + Math.round(pump.c / pump.n * 100) + '% of ' + pump.n + ' answers right.</p>' : '') +
+      (conduct.n ? '<p class="muted">Conduction pathway: ' + Math.round(conduct.c / conduct.n * 100) + '% of ' + conduct.n + ' answers right.</p>' : '') +
       '<div class="row">' + (confirmReset
         ? '<span class="muted">Erase all cardiology progress?</span><button class="btn bad" data-act="reset-yes">Erase</button><button class="btn" data-act="reset-no">Keep it</button>'
         : '<button class="btn link" data-act="reset">Reset progress</button>') + '</div>';

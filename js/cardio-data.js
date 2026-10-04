@@ -861,3 +861,57 @@ window.CARDIO_PUMP = {
     { q: 'Calcium channel blockers act on which channels?', a: 'The slow channels', wrong: ['The fast sodium channels', 'Potassium leak channels', 'The Na-K pump'] }
   ]
 };
+
+// Electrical conduction system (slides 25–28, 34–40; outline IV.C and VI).
+// std: true marks standard anatomy the slides use but don't spell out.
+window.CARDIO_CONDUCTION = {
+  // One step per stop on the pathway, in firing order. wave: which part of the ECG it makes.
+  steps: [
+    { id: 'sa', name: 'SA node', where: 'Wall of the right atrium, medial to the opening of the superior vena cava', does: 'The chief pacemaker. It reaches threshold faster than any other pacemaker cells, so its rapid rate keeps the slower pacemakers from taking over.', rate: '60–100/min', ecg: 'Start of the P wave', wave: 'p0', problems: ['sinus-brady', 'sinus-tach', 'sinus-arrhythmia', 'sinus-arrest'] },
+    { id: 'atria', name: 'Internodal pathways and atria', where: 'Three internodal pathways run through the right atrium to the AV node; Bachmann\'s bundle carries the impulse across to the left atrium', does: 'Spread the impulse through both atria so they depolarize and contract together.', rate: 'Atrial ectopic sites can fire, but the atria are not a normal backup pacemaker', ecg: 'P wave (atrial depolarization)', wave: 'p', problems: ['pac', 'wap', 'flutter', 'afib'], std: true },
+    { id: 'av', name: 'AV node', where: 'Floor of the right atrium, medial to the right AV (tricuspid) valve', does: 'Holds the impulse back briefly so the atria can finish emptying into the ventricles before they contract. With the bundle of His it forms the AV junction, normally the only electrical link between atria and ventricles.', rate: 'AV junction: 40–60/min', ecg: 'Flat PR segment after the P wave (part of the PR interval)', wave: 'pr', problems: ['avb-1', 'avb-2-1', 'svt', 'pjc', 'junctional-escape', 'accel-junctional', 'wpw'] },
+    { id: 'his', name: 'Bundle of His', where: 'Passes through a small opening in the heart\'s fibrous skeleton to the top of the interventricular septum', does: 'Carries the impulse from the AV node into the ventricles, then divides into the right and left bundle branches.', rate: 'AV junction: 40–60/min', ecg: 'End of the PR interval', wave: 'pr2', problems: ['avb-2-2', 'avb-3'] },
+    { id: 'bb', name: 'Right and left bundle branches', where: 'Down each side of the interventricular septum. The left branch splits into anterior and posterior fascicles', does: 'Carry the impulse to the right and left ventricles at the same time, so both depolarize together.', rate: 'Ventricles: 20–40/min', ecg: 'Start of the QRS complex (septal depolarization)', wave: 'q', problems: ['avb-2-2', 'avb-3'], extra: 'Bundle branch block: a delay in one branch makes the QRS 0.12 s or wider.' },
+    { id: 'purkinje', name: 'Purkinje fibers', where: 'A network spreading through the inner walls of both ventricles', does: 'Deliver the impulse to the ventricular muscle cells, which depolarize from the inside out and contract.', rate: 'Ventricles: 20–40/min', ecg: 'QRS complex (ventricular depolarization)', wave: 'qrs', problems: ['pvc', 'vt', 'vf', 'idioventricular'] },
+    { id: 'repol', name: 'Ventricles recover', where: 'Ventricular muscle', does: 'The ventricles repolarize so they can fire again. No impulse travels the pathway in this step.', rate: '', ecg: 'ST segment and T wave (ventricular repolarization)', wave: 't', problems: [] }
+  ],
+  // Where each block happens along the pathway.
+  blocks: [
+    { name: 'First-degree AV block', where: 'A delay, not a true block, usually at the AV node', id: 'avb-1' },
+    { name: 'Second-degree type I (Wenckebach)', where: 'Usually at the AV node', id: 'avb-2-1' },
+    { name: 'Second-degree type II', where: 'Usually below the bundle of His', id: 'avb-2-2' },
+    { name: 'Third-degree (complete heart block)', where: 'At or below the AV node; no atrial impulses reach the ventricles', id: 'avb-3' },
+    { name: 'Bundle branch block', where: 'In the right or left bundle branch, below the bundle of His', id: null }
+  ],
+  ectopic: [
+    { name: 'Ectopic beat', text: 'A contraction started by cells other than the SA node. The new pacemaker is called an ectopic focus.' },
+    { name: 'Enhanced automaticity', text: 'An ectopic site depolarizes faster than normal, usually from abnormally high sodium leakage into the cells, and fires before the SA node.' },
+    { name: 'Reentry', text: 'The same impulse reactivates tissue a second time because conduction is delayed or blocked in part of the pathway. It is behind most SVTs (AVNRT, and AVRT through an accessory pathway as in WPW).' },
+    { name: 'Autonomic control', text: 'Acetylcholine (parasympathetic, vagus nerve) slows the SA and AV nodes; norepinephrine (sympathetic) speeds them. Vagal maneuvers work by boosting the parasympathetic side.' }
+  ],
+  qa: [
+    { q: 'Correct order of the conduction pathway?', a: 'SA node, internodal pathways, AV node, bundle of His, bundle branches, Purkinje fibers', wrong: ['AV node, SA node, bundle of His, Purkinje fibers, bundle branches', 'SA node, bundle of His, AV node, Purkinje fibers, bundle branches', 'SA node, AV node, Purkinje fibers, bundle branches, bundle of His'] },
+    { q: 'Where is the SA node?', a: 'Right atrium, medial to the opening of the superior vena cava', wrong: ['Left atrium, near the pulmonary veins', 'Interventricular septum', 'Medial to the mitral valve'] },
+    { q: 'Where is the AV node?', a: 'Medial to the right AV (tricuspid) valve', wrong: ['Medial to the superior vena cava', 'At the apex of the left ventricle', 'In the left atrium'] },
+    { q: 'The AV junction is made of…', a: 'The AV node and the bundle of His', wrong: ['The SA node and the AV node', 'The bundle branches and Purkinje fibers', 'The internodal pathways and the AV node'] },
+    { q: 'In a normal heart, the only electrical link between atria and ventricles is…', a: 'The AV junction', wrong: ['The interatrial septum', 'Bachmann\'s bundle', 'The Purkinje fibers'] },
+    { q: 'Why does the AV node delay the impulse?', a: 'So the atria finish emptying into the ventricles before they contract', wrong: ['To let the SA node recharge', 'To speed up ventricular contraction', 'To protect the Purkinje fibers from calcium'], std: true },
+    { q: 'Where does the bundle of His divide into the bundle branches?', a: 'At the interventricular septum', wrong: ['In the right atrium', 'At the apex', 'Inside the AV node'] },
+    { q: 'The left bundle branch divides into…', a: 'Anterior and posterior fascicles', wrong: ['Right and left fascicles', 'Three internodal pathways', 'Bachmann\'s bundle and the His bundle'], std: true },
+    { q: 'What carries the impulse from the right atrium to the left atrium?', a: 'Bachmann\'s bundle', wrong: ['The bundle of His', 'The right bundle branch', 'The Purkinje fibers'], std: true },
+    { q: 'Intrinsic rate of the SA node?', a: '60 to 100/min', wrong: ['40 to 60/min', '20 to 40/min', '100 to 150/min'] },
+    { q: 'Intrinsic rate of the AV junction?', a: '40 to 60/min', wrong: ['60 to 100/min', '20 to 40/min', '10 to 20/min'] },
+    { q: 'Intrinsic rate of the bundle branches and Purkinje fibers?', a: '20 to 40/min', wrong: ['40 to 60/min', '60 to 100/min', '100 to 150/min'] },
+    { q: 'Why is the SA node normally in charge?', a: 'It reaches threshold first, so its faster rate overrides slower pacemakers', wrong: ['It is the largest node', 'It is closest to the ventricles', 'It is the only tissue with automaticity'] },
+    { q: 'Which part of the pathway makes the P wave?', a: 'SA node firing and atrial depolarization', wrong: ['AV node delay', 'Bundle branches', 'Ventricular repolarization'] },
+    { q: 'The PR interval covers conduction through…', a: 'The atria and the AV node up to ventricular depolarization', wrong: ['The ventricles only', 'The SA node only', 'Ventricular repolarization'] },
+    { q: 'Which part of the pathway makes the QRS complex?', a: 'Bundle branches and Purkinje fibers depolarizing the ventricles', wrong: ['The SA node', 'The AV node delay', 'Atrial repolarization'] },
+    { q: 'First-degree AV block is a delay usually at…', a: 'The AV node', wrong: ['The SA node', 'The bundle branches', 'The Purkinje fibers'] },
+    { q: 'Second-degree AV block type II usually occurs…', a: 'Below the bundle of His', wrong: ['At the SA node', 'In the atria', 'In the AV node only'] },
+    { q: 'Third-degree AV block is a complete block…', a: 'At or below the AV node', wrong: ['At the SA node', 'In Bachmann\'s bundle', 'Only in the Purkinje fibers'] },
+    { q: 'A contraction started by cells other than the SA node is…', a: 'An ectopic beat', wrong: ['A sinus beat', 'A fusion beat only', 'A refractory beat'] },
+    { q: 'Reentry happens when…', a: 'An impulse is delayed or blocked and reactivates tissue a second time', wrong: ['The SA node fires twice as fast', 'Sodium leaks into cells', 'The AV node is removed'] },
+    { q: 'Which chemical slows the SA and AV nodes?', a: 'Acetylcholine (parasympathetic)', wrong: ['Norepinephrine', 'Epinephrine', 'Dopamine'] },
+    { q: 'WPW conducts around the AV node through…', a: 'An accessory pathway (bypass tract)', wrong: ['The bundle of His', 'Bachmann\'s bundle', 'The left posterior fascicle'] }
+  ]
+};
