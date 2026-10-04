@@ -139,4 +139,29 @@ t('sodium-potassium pump content is complete', () => {
   assert(/3 Na⁺ out and 2 K⁺ in/.test(P.qa[0].a));
 });
 
+t('block strips show their criteria inside the strip', () => {
+  // Pair each P with a QRS that follows within 0.5 s; unpaired P waves are dropped beats.
+  function pairs(id, seed) {
+    const ev = ECG.generate(id, seed).spec.events;
+    const P = ev.filter(e => e.k === 'P').map(e => e.t), Q = ev.filter(e => e.k === 'N' || e.k === 'W').map(e => e.t);
+    return P.map(tp => { const q = Q.find(tq => tq > tp && tq - tp < 0.5); return { tp, pr: q == null ? null : q - tp }; });
+  }
+  for (let seed = 1; seed <= 60; seed++) {
+    const w = pairs('avb-2-1', seed);
+    const drops = w.filter(x => x.pr == null && x.tp > 0 && x.tp < 6);
+    assert(drops.length >= 1 && drops[0].tp >= 1.2 && drops[0].tp <= 2.3, 'Wenckebach drop not inside the strip, seed ' + seed);
+    // PR before each drop is longer than the PR right after it.
+    drops.forEach(d => {
+      const i = w.indexOf(d), before = w[i - 1], after = w[i + 1];
+      if (before && after && after.pr != null) assert(before.pr - after.pr >= 0.12, 'Wenckebach PR does not lengthen visibly, seed ' + seed);
+    });
+    const m = pairs('avb-2-2', seed);
+    const prs = m.filter(x => x.pr != null).map(x => x.pr);
+    assert(Math.max(...prs) - Math.min(...prs) < 0.01, 'Mobitz II PR not constant, seed ' + seed);
+    const md = m.filter(x => x.pr == null && x.tp > 0 && x.tp < 6);
+    assert(md.length >= 1 && md[0].tp >= 1.2 && md[0].tp <= 2.3, 'Mobitz II drop not inside the strip, seed ' + seed);
+    assert(ECG.generate('avb-2-2', seed).spec.ratio !== '2:1', 'Mobitz II should not be 2:1');
+  }
+});
+
 console.log(n + ' cardiology test groups passed');

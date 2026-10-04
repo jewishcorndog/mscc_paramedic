@@ -145,6 +145,14 @@
     return { events: ev, rate: rate };
   }
 
+  // Pattern offset so the P wave at index start lands on the dropped slot of a len-beat cycle,
+  // with that first dropped P between 1.2 and about 2.2 s.
+  function dropStart(times, len) {
+    var j = 0;
+    while (j < times.length && times[j] < 1.2) j++;
+    return ((len - 1 - j) % len + len) % len;
+  }
+
   function fibWaves(rng, n, amp, fLo, fHi) {
     var w = [];
     for (var i = 0; i < n; i++) w.push({ a: amp * U(rng, 0.5, 1), f: U(rng, fLo, fHi), p: U(rng, 0, 6.28) });
@@ -301,34 +309,36 @@
       });
       return { events: ev, rate: rate };
     },
-    'avb-1': function (rng) { return sinusBase(rng, U(rng, 58, 88), U(rng, 0.27, 0.38)); },
+    'avb-1': function (rng) { return sinusBase(rng, U(rng, 56, 80), U(rng, 0.28, 0.40), { pAmp: 0.2 }); },
+    // Second-degree blocks: P waves march on at a steady rate and a QRS drops out of the pattern.
+    // The first dropped P is placed 1.2 to 2.2 s into the strip so the drop is never lost at an edge.
     'avb-2-1': function (rng) {
-      var rate = U(rng, 72, 96), rr = 60 / rate, ev = [];
-      var len = choice(rng, [3, 4, 4, 5]); // P waves per cycle, last one dropped
-      var prs = [0.16, 0.26, 0.33, 0.38].slice(0, len - 1);
-      var times = regularTimes(rng, rate, 0.008), start = Math.floor(rng() * len);
+      var rate = U(rng, 60, 72), rr = 60 / rate, ev = [];
+      var len = choice(rng, [3, 4, 4]); // P waves per cycle; the last one is not conducted
+      var prs = len === 3 ? [0.2, 0.36] : [0.2, 0.3, 0.38];
+      var times = regularTimes(rng, rate, 0.004), start = dropStart(times, len);
       times.forEach(function (tp, i) {
         var k = (i + start) % len;
-        if (k === len - 1) ev.push({ k: 'P', t: tp, amp: 0.16 });
-        else conducted(ev, tp, prs[k] + U(rng, -0.01, 0.01), rr * 1.2);
+        if (k === len - 1) ev.push({ k: 'P', t: tp, amp: 0.2 });
+        else conducted(ev, tp, prs[k] + U(rng, -0.008, 0.008), rr, { pAmp: 0.2 });
       });
-      return { events: ev, rate: rate };
+      return { events: ev, rate: rate, ratio: len + ':' + (len - 1) };
     },
     'avb-2-2': function (rng) {
-      var rate = U(rng, 72, 100), rr = 60 / rate, ev = [], pr = U(rng, 0.15, 0.2);
-      var len = choice(rng, [2, 3, 3, 4]), wide = rng() < 0.55;
-      var times = regularTimes(rng, rate, 0.008), start = Math.floor(rng() * len);
+      var rate = U(rng, 62, 80), rr = 60 / rate, ev = [], pr = U(rng, 0.16, 0.2);
+      var len = choice(rng, [3, 3, 4]), wide = rng() < 0.55;
+      var times = regularTimes(rng, rate, 0.004), start = dropStart(times, len);
       times.forEach(function (tp, i) {
         var k = (i + start) % len;
-        if (k === len - 1) ev.push({ k: 'P', t: tp, amp: 0.16 });
-        else conducted(ev, tp, pr, rr * 1.4, { wide: wide });
+        if (k === len - 1) ev.push({ k: 'P', t: tp, amp: 0.2 });
+        else conducted(ev, tp, pr, rr, { wide: wide, pAmp: 0.2 });
       });
       return { events: ev, rate: rate, ratio: len + ':' + (len - 1) };
     },
     'avb-3': function (rng) {
-      var ev = [], atrial = U(rng, 70, 98), ventricular = rng() < 0.5;
-      var vrate = ventricular ? U(rng, 28, 40) : U(rng, 40, 55), vrr = 60 / vrate;
-      regularTimes(rng, atrial, 0.006).forEach(function (tp) { ev.push({ k: 'P', t: tp, amp: 0.16 }); });
+      var ev = [], atrial = U(rng, 70, 92), ventricular = rng() < 0.5;
+      var vrate = ventricular ? U(rng, 28, 40) : U(rng, 40, 52), vrr = 60 / vrate;
+      regularTimes(rng, atrial, 0.004).forEach(function (tp) { ev.push({ k: 'P', t: tp, amp: 0.2 }); });
       regularTimes(rng, vrate, 0.006).forEach(function (tq) {
         ev.push(ventricular ? { k: 'V', t: tq, rr: vrr, sign: 1 } : { k: 'N', t: tq, rr: vrr });
       });
@@ -415,8 +425,10 @@
     var a = row(s, hz, 0, 3, 0, h), b = row(s, hz, 3, 6, 0, h);
     var id2 = ++uid;
     var narrow = '<svg class="ecg ecg-narrow" viewBox="0 0 75 ' + (h * 2 + 3) + '" role="img" aria-label="ECG strip, 6 seconds in two rows, lead II">' + title +
-      '<g>' + paper(id2, 75, h) + ticks(0, 3, 0) + '<path d="' + a.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 0, 3) + '</g>' +
-      '<g transform="translate(0 ' + (h + 3) + ')">' + paper(id2 + 'b', 75, h) + ticks(3, 6, 0) + '<path d="' + b.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 3, 6) + '</g></svg>';
+      '<g>' + paper(id2, 75, h) + ticks(0, 3, 0) + '<path d="' + a.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 0, 3) +
+      '<text x="73.5" y="' + (h - 1.5) + '" class="ecg-row-label">0–3 s, continues below</text></g>' +
+      '<g transform="translate(0 ' + (h + 3) + ')">' + paper(id2 + 'b', 75, h) + ticks(3, 6, 0) + '<path d="' + b.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 3, 6) +
+      '<text x="73.5" y="' + (h - 1.5) + '" class="ecg-row-label">3–6 s</text></g></svg>';
     var cap = opts.cap || ['Lead II', '6 seconds · 25 mm/s'];
     return '<div class="ecg-wrap">' + wide + narrow + '<div class="ecg-cap"><span>' + cap[0] + '</span><span>' + cap[1] + '</span></div></div>';
   }
