@@ -414,7 +414,7 @@
     }).join('');
   }
 
-  // Wide layout: one 6 s row. Narrow layout: two 3 s rows stacked.
+  // One continuous 6 s strip at every screen size.
   // opts: { cap: [left, right], marks: [[sample, text]] }
   function render(strip, label, opts) {
     opts = opts || {};
@@ -422,15 +422,8 @@
     var full = row(s, hz, 0, SECONDS, 0, h);
     var wide = '<svg class="ecg ecg-wide" viewBox="0 0 150 ' + h + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="ECG strip, 6 seconds, lead II">' + title +
       paper(id, 150, h) + ticks(0, 6, 0) + '<path d="' + full.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 0, 6) + '</svg>';
-    var a = row(s, hz, 0, 3, 0, h), b = row(s, hz, 3, 6, 0, h);
-    var id2 = ++uid;
-    var narrow = '<svg class="ecg ecg-narrow" viewBox="0 0 75 ' + (h * 2 + 3) + '" role="img" aria-label="ECG strip, 6 seconds in two rows, lead II">' + title +
-      '<g>' + paper(id2, 75, h) + ticks(0, 3, 0) + '<path d="' + a.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 0, 3) +
-      '<text x="73.5" y="' + (h - 1.5) + '" class="ecg-row-label">0–3 s, continues below</text></g>' +
-      '<g transform="translate(0 ' + (h + 3) + ')">' + paper(id2 + 'b', 75, h) + ticks(3, 6, 0) + '<path d="' + b.path + '" class="ecg-trace"/>' + marks(opts.marks, hz, 3, 6) +
-      '<text x="73.5" y="' + (h - 1.5) + '" class="ecg-row-label">3–6 s</text></g></svg>';
     var cap = opts.cap || ['Lead II', '6 seconds · 25 mm/s'];
-    return '<div class="ecg-wrap">' + wide + narrow + '<div class="ecg-cap"><span>' + cap[0] + '</span><span>' + cap[1] + '</span></div></div>';
+    return '<div class="ecg-wrap">' + wide + '<div class="ecg-cap"><span>' + cap[0] + '</span><span>' + cap[1] + '</span></div></div>';
   }
 
   // A recorded strip from window.REAL_STRIPS (hundredths of a mV) in the same shape generate() returns.

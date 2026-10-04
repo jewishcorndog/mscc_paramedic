@@ -43,7 +43,7 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is generated
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
 with a random rate, PR interval and beat placement inside the rhythm's textbook range,
-so no two are the same. On a phone the 6 seconds are split into two 3-second rows.
+so no two are the same.
 
 Real strips come from the [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/)
 (Moody GB, Mark RG. The impact of the MIT-BIH Arrhythmia Database. IEEE Eng in Med and Biol

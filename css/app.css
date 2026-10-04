@@ -478,7 +478,6 @@ table.grid td.cell { text-align: center; }
 
 .ecg-wrap { display: grid; gap: 4px; }
 .ecg { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); }
-.ecg-narrow { display: none; }
 .ecg-bg { fill: var(--ecg-bg); }
 .ecg-minor { fill: none; stroke: var(--ecg-minor); stroke-width: 0.1; }
 .ecg-major { fill: none; stroke: var(--ecg-major); stroke-width: 0.22; }
@@ -488,8 +487,10 @@ table.grid td.cell { text-align: center; }
 .ecg-mark { font: 600 2.6px var(--font-mono); fill: var(--heart); text-anchor: middle; }
 .real-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
 @media (max-width: 560px) {
-  .ecg-wide { display: none; }
-  .ecg-narrow { display: block; }
+  .ecg-trace { stroke-width: 0.55; }
+  /* Let the strip use the panel's side padding so the 6 seconds are as wide as possible. */
+  .panel > .ecg-wrap, .card-body > .ecg-wrap { margin-inline: -10px; }
+  .ecg-cap { padding-inline: 10px; }
 }
 
 .rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
@@ -569,4 +570,3 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
   .ion, .pump-body, .atp { transition: none; }
 }
 .real-tag { font: 600 0.68rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--heart); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
-.ecg-row-label { font: 600 2.4px var(--font-body); fill: var(--muted); text-anchor: end; }

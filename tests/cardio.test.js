@@ -94,7 +94,7 @@ t('wenckebach drops beats; complete heart block has more P waves than QRS', () =
 t('same seed draws the same strip', () => {
   assert.strictEqual(ECG.strip('vf', 42).replace(/[sl]\d+/g, ''), ECG.strip('vf', 42).replace(/[sl]\d+/g, ''));
   const svg = ECG.strip('nsr', 3);
-  assert(svg.indexOf('ecg-wide') !== -1 && svg.indexOf('ecg-narrow') !== -1);
+  assert(svg.indexOf('ecg-wide') !== -1 && svg.indexOf('ecg-narrow') === -1, 'one strip, not two rows');
 });
 
 t('typed rhythm names match aliases and tolerate typos', () => {
