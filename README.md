@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has two
+Study app for the Motlow State Community College paramedic program. It has three
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -10,6 +10,12 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
+- **Legal** (Law Box): medical-legal issues and ethics. It covers the legal system and
+  duty to act, scope of practice and medical direction, consent and refusal, negligence
+  and abandonment, HIPAA, mandatory reporting and crime scenes, DNRs and advance
+  directives, documentation, and ethics. No class slides for this chapter are in the
+  repo yet, so it follows the standard paramedic curriculum; Tennessee specifics are
+  tagged **TN**.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -39,6 +45,17 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | **Quiz** | Multiple-choice questions mixed from the same topics. |
 | **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. |
 | **Stats** | Accuracy per rhythm (strips, rules, care) and per condition, with a button to drill your weakest strips. |
+
+## Legal modes
+
+| Tab | What it does |
+| --- | --- |
+| **Cards** | Flashcard decks: terms (term to meaning, meaning to term, or mixed), key facts, scenarios ("what do you do?"), and the key points of each topic. Pick which areas to include. |
+| **Quiz** | Multiple-choice questions on terms, key facts and scenarios, with the reason after each scenario. |
+| **Learn** | Reference by area: each topic's key points and what to do on scene, a searchable glossary, and every scenario with its answer. |
+| **Stats** | Accuracy per area for terms, facts and scenarios, with a button to study your weakest area. |
+
+Legal content lives in `js/legal-data.js`.
 
 The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is generated
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
@@ -82,7 +99,8 @@ It's a static site with no build step:
   abbreviations (2nd/3rd degree HB, VF/VT, ALOC, CCB OD…).
 - **Doses** count only when every number in the deck's dose is in your answer.
 
-Run the tests with `node tests/grading.test.js` and `node tests/cardio.test.js`.
+Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js` and
+`node tests/legal.test.js`.
 
 ## Updating the drug list
 

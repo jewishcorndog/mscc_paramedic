@@ -38,6 +38,8 @@
   --na: #e07b16;
   --k: #6a4bc4;
   --membrane: #e9d9b8;
+  --law: #4b3f8f;
+  --law-ink: #4b3f8f;
 
   --font-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
   --font-body: 'Source Sans 3', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -72,6 +74,8 @@
     --na: #f39a3d;
     --k: #a68cf0;
     --membrane: #4a4231;
+    --law: #6f62c0;
+    --law-ink: #b0a6f2;
     color-scheme: dark;
   }
 }
@@ -99,6 +103,8 @@
   --na: #f39a3d;
   --k: #a68cf0;
   --membrane: #4a4231;
+  --law: #6f62c0;
+  --law-ink: #b0a6f2;
   color-scheme: dark;
 }
 
@@ -569,3 +575,13 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
   .ion, .pump-body, .atp { transition: none; }
 }
 .real-tag { font: 600 0.68rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--heart); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
+
+/* ---------- Legal ---------- */
+.label-band.law { --lab: var(--law); color: #fff; }
+.label-band.law .label-meta { color: rgba(255, 255, 255, 0.85); }
+.label-band.law.hidden-name { --lab: var(--surface-2); color: var(--ink); }
+.label-band.law.hidden-name .label-meta { color: var(--muted); }
+.case { margin: 0; padding: 10px 12px; border-left: 3px solid var(--law); background: var(--surface-2); border-radius: 0 6px 6px 0; }
+.tn-tag { font: 600 0.68rem var(--font-mono); letter-spacing: 0.04em; color: var(--law-ink); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 2px; }
+.label-band .tn-tag { color: inherit; }
+.ref > summary .tn-tag { margin-left: 8px; }

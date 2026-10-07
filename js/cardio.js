@@ -1,5 +1,5 @@
 /* Cardiology: rhythm strips, flashcards, quiz, reference and stats over
-   window.CARDIO_* data, plus the Pharmacology / Cardiology subject switch. */
+   window.CARDIO_* data, plus the subject switch (Pharmacology, Cardiology, Legal). */
 (function () {
   'use strict';
 
@@ -204,17 +204,23 @@
   var subject = 'pharm';
   try { subject = localStorage.getItem(SUBJ_KEY) || 'pharm'; } catch (e) { /* storage blocked */ }
 
+  // [brand, subtitle, page title] per subject.
+  var SUBJECTS = {
+    pharm: ['Drug Box', 'Motlow State Paramedic · TN protocols', 'Paramedic Drug Box'],
+    cardio: ['Rhythm Box', 'Motlow State Paramedic · Ch. 21 Cardiology', 'Paramedic Rhythm Box'],
+    legal: ['Law Box', 'Motlow State Paramedic · Medical-legal & ethics', 'Paramedic Law Box']
+  };
   function setSubject(sub) {
-    subject = sub === 'cardio' ? 'cardio' : 'pharm';
+    subject = SUBJECTS[sub] ? sub : 'pharm';
     try { localStorage.setItem(SUBJ_KEY, subject); } catch (e) { /* storage blocked */ }
     document.body.dataset.subject = subject;
-    $('#subj-pharm').hidden = subject !== 'pharm';
-    $('#subj-cardio').hidden = subject !== 'cardio';
+    Object.keys(SUBJECTS).forEach(function (k) { $('#subj-' + k).hidden = subject !== k; });
     $all('[data-subject]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.subject === subject)); });
-    $('#brand-name').textContent = subject === 'cardio' ? 'Rhythm Box' : 'Drug Box';
-    $('#brand-sub').textContent = subject === 'cardio' ? 'Motlow State Paramedic · Ch. 21 Cardiology' : 'Motlow State Paramedic · TN protocols';
-    document.title = subject === 'cardio' ? 'Paramedic Rhythm Box' : 'Paramedic Drug Box';
+    $('#brand-name').textContent = SUBJECTS[subject][0];
+    $('#brand-sub').textContent = SUBJECTS[subject][1];
+    document.title = SUBJECTS[subject][2];
     if (subject === 'cardio') showTab(VIEWS[S.tab] ? S.tab : 'strips');
+    if (subject === 'legal') window.LegalBox.show();
   }
   $all('[data-subject]').forEach(function (b) {
     b.addEventListener('click', function () { setSubject(b.dataset.subject); window.scrollTo(0, 0); });
