@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paramedic Drug Box</title>
-<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols) and cardiology.">
+<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols), cardiology and pathophysiology.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -17,6 +17,7 @@
   <div class="seg subject" role="group" aria-label="Subject">
     <button data-subject="pharm" aria-pressed="true">Pharmacology</button>
     <button data-subject="cardio" aria-pressed="false">Cardiology</button>
+    <button data-subject="patho" aria-pressed="false">Patho</button>
   </div>
 </header>
 
@@ -60,6 +61,24 @@
 </main>
 </div>
 
+<div id="subj-patho" hidden>
+<nav class="tabs" aria-label="Pathophysiology study modes">
+  <div class="tabs-inner" role="tablist">
+    <button class="tab" role="tab" id="ptab-learn" data-ptab="learn" aria-selected="true">Learn</button>
+    <button class="tab" role="tab" id="ptab-cards" data-ptab="cards" aria-selected="false">Cards</button>
+    <button class="tab" role="tab" id="ptab-quiz" data-ptab="quiz" aria-selected="false">Quiz</button>
+    <button class="tab" role="tab" id="ptab-stats" data-ptab="stats" aria-selected="false">Stats</button>
+  </div>
+</nav>
+
+<main>
+  <section class="view" id="pview-learn" role="tabpanel" aria-labelledby="ptab-learn"></section>
+  <section class="view" id="pview-cards" role="tabpanel" aria-labelledby="ptab-cards" hidden></section>
+  <section class="view" id="pview-quiz" role="tabpanel" aria-labelledby="ptab-quiz" hidden></section>
+  <section class="view" id="pview-stats" role="tabpanel" aria-labelledby="ptab-stats" hidden></section>
+</main>
+</div>
+
 <div class="overlay" id="setup" hidden></div>
 
 <script src="js/drugs.js"></script>
@@ -68,6 +87,9 @@
 <script src="js/ecg.js"></script>
 <script src="js/cardio-data.js"></script>
 <script src="js/real-strips.js"></script>
+<script src="js/abg.js"></script>
+<script src="js/patho-data.js"></script>
+<script src="js/patho.js"></script>
 <script src="js/cardio.js"></script>
 </body>
 </html>

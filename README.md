@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has two
+Study app for the Motlow State Community College paramedic program. It has three
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -10,6 +10,10 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
+- **Pathophysiology** (Patho Box), a paramedic-level overview: the cell (metabolism,
+  adaptation, injury, death), fluids and electrolytes, acid-base, perfusion and shock,
+  inflammation and immunity, and the stress response. No class slides for this unit
+  have been added yet, so it is written from standard paramedic pathophysiology.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -64,6 +68,20 @@ interpretation" blank for most rhythms after the atrial ones (they are tables in
 book), so those rules use standard ECG criteria and the app labels them that way. The
 same goes for a few ECG basics (box times, rate methods, 12-lead wall/lead groups).
 
+## Pathophysiology modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | **Topics**: 30 topics in six groups, each with what it is, how it happens, signs and findings, and what it means in the field. **Shock**: the six shock types side by side (problem, heart rate, skin, neck veins, lungs, first care) plus the stages. **ABG**: practice blood gases; read one, then show the step-by-step interpretation, or type in your own values. **Key facts**: normal values, formulas and definitions. |
+| **Cards** | Flashcards from the topics (pick groups, name → info or info → name), the key facts, and practice ABGs. |
+| **Quiz** | Multiple choice mixed from the topic groups, key facts and ABG interpretation. |
+| **Stats** | Accuracy per topic, weakest first, with a button to study your weakest 5. |
+
+Content lives in `js/patho-data.js`. `js/abg.js` interprets blood gases (acidosis or
+alkalosis, respiratory or metabolic, uncompensated, partially or fully compensated, or
+combined) and makes practice gases whose pH is computed from the PaCO₂ and HCO₃⁻
+(Henderson-Hasselbalch), so every generated gas is internally consistent.
+
 ## Running it
 
 It's a static site with no build step:
@@ -82,7 +100,7 @@ It's a static site with no build step:
   abbreviations (2nd/3rd degree HB, VF/VT, ALOC, CCB OD…).
 - **Doses** count only when every number in the deck's dose is in your answer.
 
-Run the tests with `node tests/grading.test.js` and `node tests/cardio.test.js`.
+Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js` and `node tests/patho.test.js`.
 
 ## Updating the drug list
 
