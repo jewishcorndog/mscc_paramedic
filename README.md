@@ -10,10 +10,10 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
-- **Pathophysiology** (Patho Box), a paramedic-level overview: the cell (metabolism,
-  adaptation, injury, death), fluids and electrolytes, acid-base, perfusion and shock,
-  inflammation and immunity, and the stress response. No class slides for this unit
-  have been added yet, so it is written from standard paramedic pathophysiology.
+- **Pathophysiology** (Patho Box), built from Chapter 11 of *Sanders' Paramedic Textbook*
+  (6th ed.), *General Principles of Pathophysiology*: the lecture slides, including the
+  tables and flowcharts that are pictures on the slides. It covers the whole chapter, with
+  pH and acid-base balance in the most depth.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -72,15 +72,17 @@ same goes for a few ECG basics (box times, rate methods, 12-lead wall/lead group
 
 | Tab | What it does |
 | --- | --- |
-| **Learn** | **Topics**: 30 topics in six groups, each with what it is, how it happens, signs and findings, and what it means in the field. **Shock**: the six shock types side by side (problem, heart rate, skin, neck veins, lungs, first care) plus the stages. **ABG**: practice blood gases; read one, then show the step-by-step interpretation, or type in your own values. **Key facts**: normal values, formulas and definitions. |
-| **Cards** | Flashcards from the topics (pick groups, name → info or info → name), the key facts, and practice ABGs. |
-| **Quiz** | Multiple choice mixed from the topic groups, key facts and ABG interpretation. |
-| **Stats** | Accuracy per topic, weakest first, with a button to study your weakest 5. |
+| **Learn** | **pH**: the acid-base balance (carbonic acid and the lungs against bicarbonate and the kidneys) as a seesaw with a pH gauge from 6.9 to 8.0. Pick one of 22 patients (opioid overdose, DKA, vomiting, cardiac arrest…) to see what tips the balance, then step to the body's compensation and watch the pH move back. Below it are the chapter's cause and compensation flowcharts for each disturbance. **Topics**: 31 topics in six groups (pH and acid-base, the cell, fluids and electrolytes, hypoperfusion and shock, inflammation and immunity, stress and disease). **Shock**: the shock types side by side. **ABG**: practice blood gases with a step-by-step interpretation, or type in your own. **Facts**: 94 key facts and normal values, searchable. |
+| **Cards** | pH scenario cards (name the disturbance and its compensation), topic cards, key facts and practice ABGs. The pH page has a button for a pH-only deck. |
+| **Quiz** | Multiple choice from pH scenarios, the topic groups, key facts and ABG interpretation. The pH page has a button for a pH-only quiz. |
+| **Stats** | Accuracy overall, on pH scenarios and on ABGs, and per topic, weakest first. |
 
-Content lives in `js/patho-data.js`. `js/abg.js` interprets blood gases (acidosis or
-alkalosis, respiratory or metabolic, uncompensated, partially or fully compensated, or
-combined) and makes practice gases whose pH is computed from the PaCO₂ and HCO₃⁻
-(Henderson-Hasselbalch), so every generated gas is internally consistent.
+Content lives in `js/patho-data.js`. Material the slides don't spell out (reading an ABG,
+IV fluid tonicity, specific electrolyte disorders, the shock comparison) is marked with *.
+Table 11-2 gives serum bicarbonate as 22–30 mEq/L; blood gas interpretation uses the usual
+arterial range of 22–26. `js/abg.js` interprets blood gases and makes practice gases whose
+pH is computed from the PaCO₂ and HCO₃⁻ (Henderson-Hasselbalch), so every gas is
+internally consistent.
 
 ## Running it
 

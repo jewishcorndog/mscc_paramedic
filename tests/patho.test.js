@@ -26,7 +26,33 @@ t('every topic has an about list and the fields the app reads', () => {
 });
 
 t('the topics the Learn tab links to exist', () => {
-  ['shock-stages', 'perfusion', 'compensation'].forEach(id => assert.ok(T.some(x => x.id === id), id));
+  ['shock-types', 'compensatory', 'mods', 'compensation', 'ph', 'buffers', 'resp-acidosis', 'metab-acidosis', 'resp-alkalosis', 'metab-alkalosis', 'mixed']
+    .forEach(id => assert.ok(T.some(x => x.id === id), id));
+});
+
+t('pH scenarios: known kinds, unique ids, and gases that match their kind', () => {
+  const SC = globalThis.PATHO_PH_SCENARIOS, K = globalThis.PATHO_PH_KINDS;
+  assert.strictEqual(new Set(SC.map(x => x.id)).size, SC.length);
+  Object.keys(K).forEach(k => {
+    assert.ok(K[k].name && K[k].short && K[k].cause.length && K[k].comp.length, k);
+    assert.ok(SC.some(x => x.kind === k), 'no scenario for ' + k);
+  });
+  SC.forEach(x => {
+    assert.ok(K[x.kind], x.id);
+    const e = ABG.example(x.kind, x.co2, x.hco3);
+    const before = ABG.interpret(e.before.ph, e.before.co2, e.before.hco3);
+    assert.strictEqual(before.primary, x.kind, x.id + ' before');
+    if (x.kind.startsWith('mixed')) { assert.strictEqual(e.after, null); return; }
+    assert.strictEqual(before.comp, 'none', x.id);
+    const after = ABG.interpret(e.after.ph, e.after.co2, e.after.hco3);
+    assert.strictEqual(after.primary + '/' + after.comp, x.kind + '/partial', x.id + ' after');
+    assert.ok(Math.abs(e.after.ph - 7.4) < Math.abs(e.before.ph - 7.4), x.id + ' moves toward 7.4');
+  });
+});
+
+t('acid-base comes first and has the most facts', () => {
+  assert.strictEqual(GR[0].id, 'acidbase');
+  assert.ok(F.filter(f => /pH|acid|alkal|bicarb|buffer|CO₂|H⁺/.test(f.q + f.a)).length >= 25);
 });
 
 t('every fact has three distinct wrong answers that differ from the answer', () => {

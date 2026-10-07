@@ -107,5 +107,22 @@
     return out;
   }
 
-  window.ABG = { interpret: interpret, generate: generate, phFrom: phFrom, targets: TARGETS, labels: allLabels, names: NAMES, cap: cap };
+  // A teaching example for one disturbance: the gas before compensation and
+  // after partial compensation (the other system moves pH about 60% of the
+  // way back but not into the normal range). Mixed disturbances have none.
+  function example(kind, co2, hco3) {
+    var before = { co2: co2, hco3: hco3, ph: phFrom(co2, hco3) };
+    if (!/^(resp|metab)-/.test(kind)) return { before: before, after: null };
+    var acid = before.ph < 7.4;
+    var target = before.ph + (7.4 - before.ph) * 0.6;
+    target = acid ? Math.min(target, 7.32) : Math.max(target, 7.48);
+    var f = Math.pow(10, target - 6.1);
+    var after = kind.indexOf('resp') === 0
+      ? { co2: co2, hco3: Math.round(0.03 * co2 * f) }
+      : { co2: Math.round(hco3 / (0.03 * f)), hco3: hco3 };
+    after.ph = phFrom(after.co2, after.hco3);
+    return { before: before, after: after };
+  }
+
+  window.ABG = { example: example, interpret: interpret, generate: generate, phFrom: phFrom, targets: TARGETS, labels: allLabels, names: NAMES, cap: cap };
 })();
