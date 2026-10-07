@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paramedic Drug Box</title>
-<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols), cardiology, and medical-legal and ethics.">
+<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols), cardiology and medical-legal issues.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -64,17 +64,17 @@
 <div id="subj-legal" hidden>
 <nav class="tabs" aria-label="Legal study modes">
   <div class="tabs-inner" role="tablist">
-    <button class="tab" role="tab" id="ltab-cards" data-ltab="cards" aria-selected="true">Cards</button>
+    <button class="tab" role="tab" id="ltab-learn" data-ltab="learn" aria-selected="true">Learn</button>
+    <button class="tab" role="tab" id="ltab-cards" data-ltab="cards" aria-selected="false">Cards</button>
     <button class="tab" role="tab" id="ltab-quiz" data-ltab="quiz" aria-selected="false">Quiz</button>
-    <button class="tab" role="tab" id="ltab-learn" data-ltab="learn" aria-selected="false">Learn</button>
     <button class="tab" role="tab" id="ltab-stats" data-ltab="stats" aria-selected="false">Stats</button>
   </div>
 </nav>
 
 <main>
-  <section class="view" id="lview-cards" role="tabpanel" aria-labelledby="ltab-cards"></section>
+  <section class="view" id="lview-learn" role="tabpanel" aria-labelledby="ltab-learn"></section>
+  <section class="view" id="lview-cards" role="tabpanel" aria-labelledby="ltab-cards" hidden></section>
   <section class="view" id="lview-quiz" role="tabpanel" aria-labelledby="ltab-quiz" hidden></section>
-  <section class="view" id="lview-learn" role="tabpanel" aria-labelledby="ltab-learn" hidden></section>
   <section class="view" id="lview-stats" role="tabpanel" aria-labelledby="ltab-stats" hidden></section>
 </main>
 </div>

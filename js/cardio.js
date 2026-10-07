@@ -201,20 +201,20 @@
 
   // ---------- Subject switch ----------
   var SUBJ_KEY = 'mscc-subject';
-  var subject = 'pharm';
-  try { subject = localStorage.getItem(SUBJ_KEY) || 'pharm'; } catch (e) { /* storage blocked */ }
-
-  // [brand, subtitle, page title] per subject.
+  // Brand name, subtitle and page title per subject.
   var SUBJECTS = {
     pharm: ['Drug Box', 'Motlow State Paramedic · TN protocols', 'Paramedic Drug Box'],
     cardio: ['Rhythm Box', 'Motlow State Paramedic · Ch. 21 Cardiology', 'Paramedic Rhythm Box'],
-    legal: ['Law Box', 'Motlow State Paramedic · Medical-legal & ethics', 'Paramedic Law Box']
+    legal: ['Law Box', 'Motlow State Paramedic · Ch. 6 Medical & Legal', 'Paramedic Law Box']
   };
+  var subject = 'pharm';
+  try { subject = localStorage.getItem(SUBJ_KEY) || 'pharm'; } catch (e) { /* storage blocked */ }
+
   function setSubject(sub) {
     subject = SUBJECTS[sub] ? sub : 'pharm';
     try { localStorage.setItem(SUBJ_KEY, subject); } catch (e) { /* storage blocked */ }
     document.body.dataset.subject = subject;
-    Object.keys(SUBJECTS).forEach(function (k) { $('#subj-' + k).hidden = subject !== k; });
+    Object.keys(SUBJECTS).forEach(function (k) { var el = $('#subj-' + k); if (el) el.hidden = k !== subject; });
     $all('[data-subject]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.subject === subject)); });
     $('#brand-name').textContent = SUBJECTS[subject][0];
     $('#brand-sub').textContent = SUBJECTS[subject][1];

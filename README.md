@@ -10,12 +10,12 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
-- **Legal** (Law Box): medical-legal issues and ethics. It covers the legal system and
-  duty to act, scope of practice and medical direction, consent and refusal, negligence
-  and abandonment, HIPAA, mandatory reporting and crime scenes, DNRs and advance
-  directives, documentation, and ethics. No class slides for this chapter are in the
-  repo yet, so it follows the standard paramedic curriculum; Tennessee specifics are
-  tagged **TN**.
+- **Legal** (Law Box), built from Chapter 6 (*Medical and Legal Issues*) of *Sanders'
+  Paramedic Textbook* (6th ed.), the lecture slides, with a focus on negligence: the four
+  elements, breach types, damages, ordinary vs gross negligence, and the defenses. It also
+  covers the legal system, scope of practice, consent and refusal, confidentiality,
+  transport, resuscitation and advance directives, crime scenes and documentation.
+  Anything beyond the slides is marked * and Tennessee specifics are tagged **TN**.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -50,9 +50,9 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 
 | Tab | What it does |
 | --- | --- |
+| **Learn** | The **Negligence** page: the four elements (each with an example and what happens if it is missing), ordinary vs gross negligence side by side, malfeasance/misfeasance/nonfeasance, damages, defenses, and a "which element is missing?" drill. Also every topic, a searchable glossary, and every scenario with its answer. |
 | **Cards** | Flashcard decks: terms (term to meaning, meaning to term, or mixed), key facts, scenarios ("what do you do?"), and the key points of each topic. Pick which areas to include. |
-| **Quiz** | Multiple-choice questions on terms, key facts and scenarios, with the reason after each scenario. |
-| **Learn** | Reference by area: each topic's key points and what to do on scene, a searchable glossary, and every scenario with its answer. |
+| **Quiz** | Multiple-choice questions on terms, key facts, scenarios and missing negligence elements, with the reason after each scenario. |
 | **Stats** | Accuracy per area for terms, facts and scenarios, with a button to study your weakest area. |
 
 Legal content lives in `js/legal-data.js`.

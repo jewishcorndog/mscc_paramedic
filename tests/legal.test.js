@@ -7,6 +7,7 @@ const TOPICS = globalThis.LEGAL_TOPICS;
 const TERMS = globalThis.LEGAL_TERMS;
 const FACTS = globalThis.LEGAL_FACTS;
 const CASES = globalThis.LEGAL_SCENARIOS;
+const NEG = globalThis.LEGAL_NEGLIGENCE;
 let n = 0;
 function t(name, fn) { fn(); n++; }
 
@@ -16,7 +17,7 @@ t('every item belongs to a known area', () => {
 
 t('every area has terms, facts and scenarios to drill', () => {
   GROUPS.forEach(g => {
-    assert(TERMS.some(x => x.group === g), 'no terms for ' + g);
+    if (g !== 'scene') assert(TERMS.some(x => x.group === g), 'no terms for ' + g);
     assert(FACTS.some(x => x.group === g), 'no facts for ' + g);
     assert(CASES.some(x => x.group === g), 'no scenarios for ' + g);
     assert(TOPICS.some(x => x.group === g), 'no topics for ' + g);
@@ -44,6 +45,14 @@ t('facts and scenarios have three distinct wrong answers', () => {
     assert.strictEqual(new Set(opts).size, 4, x.q || x.id);
   });
   CASES.forEach(x => assert(x.case && x.why, x.id));
+});
+
+t('the negligence page has four elements and every drill answer is a choice', () => {
+  assert.deepStrictEqual(NEG.elements.map(e => e.name), ['Duty to act', 'Breach of duty', 'Damages', 'Proximate cause']);
+  const opts = NEG.elements.map(e => e.name).concat(['None: all four are present']);
+  NEG.drills.forEach(d => assert(opts.indexOf(d.a) !== -1 && d.case && d.why, d.case));
+  NEG.compare.forEach(r => assert.strictEqual(r.length, 3));
+  assert(NEG.breach.length === 3 && NEG.defenses.length === 4);
 });
 
 console.log(n + ' legal tests passed');

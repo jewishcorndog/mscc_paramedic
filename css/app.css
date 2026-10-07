@@ -585,3 +585,11 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .tn-tag { font: 600 0.68rem var(--font-mono); letter-spacing: 0.04em; color: var(--law-ink); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 2px; }
 .label-band .tn-tag { color: inherit; }
 .ref > summary .tn-tag { margin-left: 8px; }
+.neg-chain { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.neg-el { display: flex; gap: 8px; align-items: flex-start; padding: 10px; border: 1px solid var(--line); border-top: 4px solid var(--law); border-radius: 8px; background: var(--surface-2); }
+.neg-el p { margin: 0; }
+.neg-n { font: 700 1.5rem/1 var(--font-display); color: var(--law-ink); }
+.neg-name { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; line-height: 1.1; text-transform: uppercase; }
+.neg-view { display: grid; gap: 14px; }
+.neg-compare td { vertical-align: top; }
+@media (max-width: 640px) { .neg-chain { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
