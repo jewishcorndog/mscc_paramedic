@@ -1,6 +1,7 @@
-/* Anatomy & Physiology: reference by body system, flashcards, quiz and stats
-   over window.AP_* data. The subject switch in cardio.js calls
-   window.APBox.show(). */
+/* Anatomy & Physiology (Chapter 10, Review of Human Systems): a blood-flow
+   overview with every body system on one page, reference by system,
+   flashcards, quiz and stats over window.AP_* data. The subject switch in
+   cardio.js calls window.APBox.show(). */
 (function () {
   'use strict';
 
@@ -10,6 +11,13 @@
   var FACTS = window.AP_FACTS;
   var NORMALS = window.AP_NORMALS;
   var CASES = window.AP_SCENARIOS;
+  var FLOW = window.AP_FLOW;
+  // "What comes next?" items, one per step of the route (the loop wraps around).
+  var FLOWQ = FLOW.steps.map(function (st, i) {
+    var next = FLOW.steps[(i + 1) % FLOW.steps.length];
+    return { id: 'flow-' + i, group: 'cv', from: st.name, a: next.name, why: next.text };
+  });
+  var FLOW_NAMES = FLOW.steps.map(function (st) { return st.name; });
   var GROUP_IDS = GROUPS.map(function (g) { return g.id; });
 
   // Stable ids for stats: terms and normals by name, facts by position.
@@ -26,14 +34,16 @@
   var S = Object.assign({
     tab: 'learn',
     groups: GROUP_IDS.slice(),
-    cardDecks: { terms: true, facts: true, normals: false, cases: false, topics: false },
+    cardDecks: { flow: true, terms: true, facts: true, normals: false, cases: false, topics: false },
     cardDir: 'forward',
     quizLen: 20,
-    quizTopics: { terms: true, facts: true, normals: true, cases: true },
-    learn: 'topics',
+    quizTopics: { flow: true, terms: true, facts: true, normals: true, cases: true },
+    learn: 'overview',
     stats: {}
   }, loadSaved());
   S.groups = S.groups.filter(function (g) { return GROUP_IDS.indexOf(g) !== -1; });
+  if (S.cardDecks.flow === undefined) S.cardDecks.flow = true;
+  if (S.quizTopics.flow === undefined) S.quizTopics.flow = true;
 
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage blocked */ }
@@ -79,6 +89,7 @@
     for (var i = 0; i < GROUPS.length; i++) if (GROUPS[i].id === id) return GROUPS[i].name;
     return '';
   }
+  var STD = ' <span class="std-mark" title="Goes beyond the Chapter 10 slides">*</span>';
   function verdictPill(p) { return p >= 0.8 ? 'high' : p >= 0.5 ? 'mid' : 'low'; }
   function inGroups(x) { return S.groups.indexOf(x.group) !== -1; }
 
@@ -123,6 +134,7 @@
   var cardsEl = $('#aview-cards');
   var C = null;
   var DECKS = [
+    ['flow', 'Blood flow', 'Where does the blood go next?'],
     ['terms', 'Terms', 'Medial, preload, surfactant, glomerulus…'],
     ['facts', 'Key facts', 'Short questions on structure and function'],
     ['normals', 'Normal values', 'Vital signs, labs and volumes'],
@@ -133,6 +145,7 @@
 
   function buildCards() {
     var list = [], d = S.cardDecks;
+    if (d.flow) FLOWQ.filter(inGroups).forEach(function (f) { list.push({ kind: 'flow', id: f.id, item: f, field: 'fact' }); });
     if (d.terms) TERMS.filter(inGroups).forEach(function (t) { list.push({ kind: 'term', id: t.id, item: t, field: 'term', dir: dirFor() }); });
     if (d.facts) FACTS.filter(inGroups).forEach(function (f) { list.push({ kind: 'fact', id: f.id, item: f, field: 'fact' }); });
     if (d.normals) NORMALS.filter(inGroups).forEach(function (n) { list.push({ kind: 'normal', id: n.id, item: n, field: 'fact' }); });
@@ -169,6 +182,10 @@
     if (card.kind === 'fact') {
       return band('Key fact', g) + '<div class="card-body"><p class="ask">' + esc(x.q) + '</p>' +
         (flipped ? '<hr class="divider"><p class="answer">' + esc(x.a) + '</p>' : hint) + '</div>';
+    }
+    if (card.kind === 'flow') {
+      return band('Blood flow', g) + '<div class="card-body"><p class="ask">After the ' + esc(x.from.toLowerCase()) + ', where does the blood go next?</p>' +
+        (flipped ? '<hr class="divider"><p class="answer">' + esc(x.a) + '</p><p class="small">' + esc(x.why) + '</p>' : hint) + '</div>';
     }
     if (card.kind === 'normal') {
       return band('Normal value', g) + '<div class="card-body"><p class="ask">' + esc(x.name) + '?</p>' +
@@ -250,7 +267,7 @@
   // =====================================================================
   var quizEl = $('#aview-quiz');
   var Q = null;
-  var QTOPICS = [['terms', 'Terms'], ['facts', 'Key facts'], ['normals', 'Normal values'], ['cases', 'Applied']];
+  var QTOPICS = [['flow', 'Blood flow'], ['terms', 'Terms'], ['facts', 'Key facts'], ['normals', 'Normal values'], ['cases', 'Applied']];
 
   var QGEN = {
     terms: function (pool) {
@@ -266,6 +283,10 @@
       var f = pick(pool), mc = mcFrom(f.a, shuffle(f.wrong));
       return { item: f, stat: 'fact', prompt: esc(f.q), options: mc.options, answer: mc.answer };
     },
+    flow: function (pool) {
+      var f = pick(pool), mc = mcFrom(f.a, shuffle(FLOW_NAMES.filter(function (n) { return n !== f.from; })));
+      return { item: f, stat: 'fact', flow: true, prompt: 'After the <q>' + esc(f.from.toLowerCase()) + '</q>, where does the blood go next?', options: mc.options, answer: mc.answer };
+    },
     normals: function (pool) {
       var n = pick(pool), mc = mcFrom(n.value, shuffle(n.wrong));
       return { item: n, stat: 'fact', normal: true, prompt: 'What is the normal adult value for <q>' + esc(n.name) + '</q>?', options: mc.options, answer: mc.answer };
@@ -275,7 +296,7 @@
       return { item: c, stat: 'case', block: '<p class="ap-case">' + esc(c.case) + '</p>', prompt: 'What is the best answer?', options: mc.options, answer: mc.answer };
     }
   };
-  var QSRC = { terms: TERMS, facts: FACTS, normals: NORMALS, cases: CASES };
+  var QSRC = { flow: FLOWQ, terms: TERMS, facts: FACTS, normals: NORMALS, cases: CASES };
 
   function buildQuiz() {
     var topics = QTOPICS.map(function (k) { return k[0]; }).filter(function (k) {
@@ -294,7 +315,7 @@
   }
   function quizSetup(error) {
     quizEl.innerHTML =
-      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions on terms, key facts, normal values and applied cases, from the body systems you pick.</p></div>' +
+      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions on blood flow, terms, key facts, normal values and applied cases, from the body systems you pick.</p></div>' +
       '<div class="panel"><div class="field-row"><p class="eyebrow">Questions</p>' + seg('quizLen', S.quizLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Question types</p><div class="row">' + QTOPICS.map(function (k) {
         return '<label class="check"><input type="checkbox" data-qtopic="' + k[0] + '"' + (S.quizTopics[k[0]] ? ' checked' : '') + '> ' + esc(k[1]) + '</label>';
@@ -311,6 +332,7 @@
     var x = q.item;
     if (q.stat === 'term') return '<p><strong>' + esc(x.term) + '</strong>: ' + esc(x.def) + '</p>';
     if (q.stat === 'case') return '<p><strong>' + esc(x.a) + '</strong></p><p>' + esc(x.why) + '</p>';
+    if (q.flow) return '<p><strong>' + esc(x.a) + '</strong></p><p>' + esc(x.why) + '</p>';
     if (q.normal) return '<p><strong>' + esc(x.name) + '</strong>: ' + esc(x.value) + '</p>' + (x.note ? '<p>' + esc(x.note) + '</p>' : '');
     return '<p><strong>' + esc(x.a) + '</strong></p>';
   }
@@ -384,7 +406,7 @@
   var learnQuery = '';
   function hay(parts) { return parts.join(' ').toLowerCase(); }
   function topicRef(t) {
-    return '<details class="ref"><summary><span class="r-name">' + esc(t.name) + '</span></summary>' +
+    return '<details class="ref"><summary><span class="r-name">' + esc(t.name) + '</span>' + (t.std ? STD : '') + '</summary>' +
       '<div class="ref-body"><p>' + esc(t.about.join(' ')) + '</p><div class="core-grid">' +
       '<div class="span2"><h4>Key points</h4>' + listHtml(t.points) + '</div>' +
       '<div class="span2"><h4>In the field</h4>' + listHtml(t.field) + '</div></div></div></details>';
@@ -397,14 +419,95 @@
     return '<div class="table-wrap"><table class="grid basics"><tbody>' + rows.join('') + '</tbody></table></div>';
   }
 
+  // ---------- Overview: blood flow, then every body system ----------
+  var flowI = 0;
+  var order = null; // "put it in order" drill: { chips: shuffled step indexes, done: steps placed, miss: last wrong tap }
+  // Schematic of the loop; the patient's right side is on the viewer's left.
+  // Part ids are the ones AP_FLOW steps list in "on".
+  function flowSvg(on) {
+    function cls(id, extra) { return 'ap-part ' + extra + (on.indexOf(id) !== -1 ? ' on' : ''); }
+    return '<svg class="ap-loop" viewBox="0 0 320 424" role="img" aria-label="Blood flow: body, venae cavae, right atrium, right ventricle, pulmonary arteries, lungs, pulmonary veins, left atrium, left ventricle, aorta, back to the body">' +
+      '<defs><marker id="ap-arrow-poor" viewBox="0 0 10 10" refX="6" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><path d="M0 0L10 5L0 10z" class="ap-tip poor"/></marker>' +
+      '<marker id="ap-arrow-rich" viewBox="0 0 10 10" refX="6" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><path d="M0 0L10 5L0 10z" class="ap-tip rich"/></marker></defs>' +
+      '<g class="' + cls('lungs', 'ap-organ') + '"><rect x="70" y="10" width="180" height="66" rx="30"/>' +
+      '<path class="ap-cap" d="M96 60 q8 -8 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0"/>' +
+      '<text x="160" y="38" class="ap-lbl">Lungs</text></g>' +
+      '<path class="' + cls('pa', 'ap-vessel poor') + '" d="M140 246 H160 V84" marker-end="url(#ap-arrow-poor)"/>' +
+      '<path class="' + cls('pvn', 'ap-vessel rich') + '" d="M250 43 H284 V180 H268" marker-end="url(#ap-arrow-rich)"/>' +
+      '<path class="' + cls('ao', 'ap-vessel rich') + '" d="M260 262 H292 V384 H268" marker-end="url(#ap-arrow-rich)"/>' +
+      '<path class="' + cls('vc', 'ap-vessel poor') + '" d="M60 384 H28 V180 H52" marker-end="url(#ap-arrow-poor)"/>' +
+      '<g class="' + cls('ra', 'ap-ch poor') + '"><rect x="60" y="150" width="80" height="60" rx="8"/><text x="100" y="185" class="ap-lbl">RA</text></g>' +
+      '<g class="' + cls('rv', 'ap-ch poor') + '"><rect x="60" y="216" width="80" height="78" rx="8"/><text x="100" y="260" class="ap-lbl">RV</text></g>' +
+      '<g class="' + cls('la', 'ap-ch rich') + '"><rect x="180" y="150" width="80" height="60" rx="8"/><text x="220" y="185" class="ap-lbl">LA</text></g>' +
+      '<g class="' + cls('lv', 'ap-ch rich') + '"><rect x="180" y="216" width="80" height="78" rx="8" class="thick"/><text x="220" y="260" class="ap-lbl">LV</text></g>' +
+      '<line class="' + cls('tri', 'ap-valve') + '" x1="78" y1="213" x2="122" y2="213"/>' +
+      '<line class="' + cls('mit', 'ap-valve') + '" x1="198" y1="213" x2="242" y2="213"/>' +
+      '<line class="' + cls('pvalve', 'ap-valve') + '" x1="150" y1="238" x2="150" y2="254"/>' +
+      '<line class="' + cls('avalve', 'ap-valve') + '" x1="274" y1="254" x2="274" y2="270"/>' +
+      '<text x="100" y="140" class="ap-sub">Right heart</text><text x="220" y="140" class="ap-sub">Left heart</text>' +
+      '<text x="166" y="120" class="ap-sub start">PA</text><text x="278" y="120" class="ap-sub end">PV</text>' +
+      '<text x="286" y="330" class="ap-sub end">Aorta</text><text x="34" y="330" class="ap-sub start">VC</text>' +
+      '<g class="' + cls('body', 'ap-organ') + '"><rect x="60" y="352" width="200" height="64" rx="12"/>' +
+      '<path class="ap-cap" d="M84 404 q8 -8 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0"/>' +
+      '<text x="160" y="380" class="ap-lbl">Body tissues</text></g>' +
+      '</svg>';
+  }
+  function o2Class(o2) { return o2 === 'rich' ? 'rich' : o2 === 'poor' ? 'poor' : 'mixed'; }
+  function stepHtml() {
+    var st = FLOW.steps[flowI];
+    return '<p class="small muted">Step ' + (flowI + 1) + ' of ' + FLOW.steps.length + '</p>' +
+      '<p class="ap-step-name">' + esc(st.name) + '</p>' +
+      '<p class="ap-tags"><span class="ap-tag">' + (st.circuit === 'heart' ? 'In the heart' : st.circuit === 'pulmonary' ? 'Pulmonary circuit' : 'Systemic circuit') + '</span>' +
+      '<span class="ap-tag ' + o2Class(st.o2) + '">Oxygen-' + esc(st.o2) + '</span></p>' +
+      '<p>' + esc(st.text) + '</p>' +
+      '<div class="row"><button class="btn" data-act="flow-prev">Back</button><button class="btn primary" data-act="flow-next">Next step</button></div>';
+  }
+  function flowBoxHtml() {
+    return '<div class="ap-flow"><div class="ap-flow-fig">' + flowSvg(FLOW.steps[flowI].on) +
+      '<p class="small muted ap-key"><span class="ap-dot poor"></span>Oxygen-poor <span class="ap-dot rich"></span>Oxygen-rich · patient\'s right is on the left</p></div>' +
+      '<div class="ap-flow-text">' + stepHtml() + '<ol class="ap-steps">' + FLOW.steps.map(function (st, i) {
+        return '<li><button class="ap-step-btn" data-step="' + i + '" aria-current="' + (i === flowI) + '">' + esc(st.name) + '</button></li>';
+      }).join('') + '</ol></div></div>';
+  }
+  function orderHtml() {
+    if (!order) order = { chips: shuffle(FLOW.steps.map(function (st, i) { return i; }).slice(1)), done: 1, miss: null };
+    var finished = order.done >= FLOW.steps.length;
+    return '<p class="eyebrow">Put it in order</p><p>Start in the body capillaries and tap each stop in order.</p>' +
+      '<ol class="ap-order">' + FLOW.steps.slice(0, order.done).map(function (st) { return '<li>' + esc(st.name) + '</li>'; }).join('') + '</ol>' +
+      (finished
+        ? '<div class="verdict ok"><p class="v-title">Full loop</p><p>From the arterioles it is back to the body capillaries.</p></div><div><button class="btn" data-act="order-new">Again</button></div>'
+        : '<div class="chips">' + order.chips.filter(function (i) { return i >= order.done; }).map(function (i) {
+          return '<button class="chip" data-order="' + i + '">' + esc(FLOW.steps[i].name) + '</button>';
+        }).join('') + '</div>' + (order.miss !== null ? '<p class="error">Not yet: ' + esc(FLOW.steps[order.miss].name) + ' comes later.</p>' : ''));
+  }
+  function overviewHtml() {
+    return '<div class="panel"><p class="eyebrow">How blood moves</p><p>' + esc(FLOW.summary) + '</p><div id="ap-flow-box">' + flowBoxHtml() + '</div></div>' +
+      '<div class="panel"><p class="eyebrow">Two circuits</p><div class="table-wrap"><table class="grid basics"><thead><tr><th></th><th>Pulmonary</th><th>Systemic</th></tr></thead><tbody>' +
+      FLOW.compare.map(function (r) { return '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td></tr>'; }).join('') +
+      '</tbody></table></div></div>' +
+      '<div class="panel"><p class="eyebrow">The vessels, in order</p><ol class="ap-chain">' + FLOW.vessels.map(function (v) {
+        return '<li><strong>' + esc(v[0]) + '</strong> <span class="small muted">' + esc(v[1]) + '</span></li>';
+      }).join('') + '</ol></div>' +
+      '<div class="panel" id="ap-order-box">' + orderHtml() + '</div>' +
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>Blood flow plus everything in the circulatory system.</p>' +
+      '<div class="row"><button class="btn primary" data-act="flow-cards">Flashcards</button><button class="btn" data-act="flow-quiz">Quiz me</button></div></div>' +
+      '<div><h3 class="title ap-h3">All body systems</h3><p class="lede">Every system from the chapter in one place. Tap one to open its topics.</p></div>' +
+      '<div class="ap-sys-grid">' + GROUPS.map(function (g) {
+        return '<button class="ap-sys" data-sys="' + g.id + '"><span class="ap-sys-name">' + esc(g.name) + '</span><span class="ap-sys-does">' + esc(g.does) + '</span>' +
+          '<span class="small muted">' + esc(g.organs) + '</span></button>';
+      }).join('') + '</div>';
+  }
+
   function learnRender() {
+    var ov = S.learn === 'overview';
     learnEl.innerHTML =
-      '<div><h2 class="title">Anatomy &amp; physiology</h2><p class="lede">How the body is built and how it works, one system at a time, with what each one means for your patients.</p>' +
-      '<p class="std-note">Built from the standard paramedic A&amp;P curriculum, not from your class slides. Upload the chapter slides and this section can be matched to them.</p></div>' +
-      seg('learn', S.learn, [['topics', 'Systems'], ['terms', 'Terms'], ['normals', 'Normals'], ['cases', 'Applied']]) +
-      '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
-      '<div class="ref-list" id="learn-list"></div>';
-    learnFilter();
+      '<div><h2 class="title">Anatomy &amp; physiology</h2><p class="lede">From Chapter 10 (Review of Human Systems). Start with how blood moves through the heart and body, then every body system in one place.</p>' +
+      '<p class="std-note">* Goes beyond the slides (standard paramedic curriculum). Normal values and applied cases are extra practice.</p></div>' +
+      seg('learn', S.learn, [['overview', 'Overview'], ['topics', 'Systems'], ['terms', 'Terms'], ['normals', 'Normals'], ['cases', 'Applied']]) +
+      (ov ? '<div id="learn-list" class="ap-overview">' + overviewHtml() + '</div>'
+        : '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
+          '<div class="ref-list" id="learn-list"></div>');
+    if (!ov) learnFilter();
   }
   function learnFilter() {
     var q = learnQuery.toLowerCase().trim();
@@ -434,14 +537,46 @@
           return c.group === g.id && (!q || hay([c.case, c.a, c.why]).indexOf(q) !== -1);
         }).map(caseRef).join('');
       }
-      return body ? '<p class="eyebrow ref-group">' + esc(g.name) + '</p>' + body : '';
+      return body ? '<p class="eyebrow ref-group" id="ap-g-' + g.id + '">' + esc(g.name) + '</p>' + body : '';
     }).join('');
     if (S.learn === 'normals' && html) html = '<p class="small muted">Normal adult values. Ranges differ a little between textbooks and labs.</p>' + html;
     $('#learn-list', learnEl).innerHTML = html || '<p class="none">Nothing matches that search.</p>';
   }
+  function flowStep(i) {
+    flowI = (i + FLOW.steps.length) % FLOW.steps.length;
+    $('#ap-flow-box', learnEl).innerHTML = flowBoxHtml();
+  }
   learnEl.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-seg]');
-    if (t) { S.learn = t.dataset.val; save(); learnRender(); }
+    var t = e.target.closest('[data-seg],[data-act],[data-step],[data-order],[data-sys]');
+    if (!t) return;
+    if (t.dataset.seg) { S.learn = t.dataset.val; save(); return learnRender(); }
+    if (t.dataset.step) return flowStep(Number(t.dataset.step));
+    if (t.dataset.order) {
+      var i = Number(t.dataset.order);
+      if (i === order.done) { order.done++; order.miss = null; } else order.miss = i;
+      $('#ap-order-box', learnEl).innerHTML = orderHtml();
+      return;
+    }
+    if (t.dataset.sys) {
+      S.learn = 'topics'; learnQuery = ''; save(); learnRender();
+      var h = $('#ap-g-' + t.dataset.sys, learnEl);
+      if (h) h.scrollIntoView({ block: 'start' });
+      return;
+    }
+    var act = t.dataset.act;
+    if (act === 'flow-next') return flowStep(flowI + 1);
+    if (act === 'flow-prev') return flowStep(flowI - 1);
+    if (act === 'order-new') { order = null; $('#ap-order-box', learnEl).innerHTML = orderHtml(); return; }
+    if (act === 'flow-cards') {
+      S.groups = ['cv'];
+      S.cardDecks = { flow: true, terms: true, facts: true, normals: false, cases: true, topics: false };
+      save(); C = null; showTab('cards'); return cardsStart(buildCards());
+    }
+    if (act === 'flow-quiz') {
+      S.groups = ['cv'];
+      S.quizTopics = { flow: true, terms: true, facts: true, normals: true, cases: true };
+      save(); showTab('quiz'); return quizStart(buildQuiz());
+    }
   });
   learnEl.addEventListener('input', function (e) {
     if (e.target.id === 'learn-q') { learnQuery = e.target.value; learnFilter(); }
@@ -468,7 +603,7 @@
   }
   function areaRows() {
     return GROUPS.map(function (g) {
-      var cols = [tally(TERMS, 'term', g.id), tally(FACTS.concat(NORMALS), 'fact', g.id), tally(CASES, 'case', g.id)];
+      var cols = [tally(TERMS, 'term', g.id), tally(FACTS.concat(NORMALS, FLOWQ), 'fact', g.id), tally(CASES, 'case', g.id)];
       var all = cols.reduce(function (m, t) { return { c: m.c + t.c, n: m.n + t.n }; }, { c: 0, n: 0 });
       return { g: g, cols: cols, all: all, weak: all.n ? 1 - all.c / all.n : 0.5 };
     });
@@ -487,7 +622,7 @@
       '<div class="table-wrap"><table class="grid"><thead><tr><th>System</th><th style="text-align:center">Terms</th><th style="text-align:center">Facts</th><th style="text-align:center">Applied</th></tr></thead><tbody>' +
       rows.map(function (r) { return '<tr><td>' + esc(r.g.name) + '</td>' + r.cols.map(cell).join('') + '</tr>'; }).join('') +
       '</tbody></table></div>' +
-      '<p class="small muted">Facts include normal values.</p>' +
+      '<p class="small muted">Facts include normal values and blood flow (under Circulatory).</p>' +
       '<div class="row">' + (confirmReset
         ? '<span class="muted">Erase all A&amp;P progress?</span><button class="btn bad" data-act="reset-yes">Erase</button><button class="btn" data-act="reset-no">Keep it</button>'
         : '<button class="btn link" data-act="reset">Reset progress</button>') + '</div>';
@@ -499,7 +634,7 @@
     if (act === 'weak') {
       var weakest = areaRows().sort(function (a, b) { return b.weak - a.weak; })[0];
       S.groups = [weakest.g.id];
-      S.cardDecks = { terms: true, facts: true, normals: true, cases: true, topics: false };
+      S.cardDecks = { flow: true, terms: true, facts: true, normals: true, cases: true, topics: false };
       save(); C = null;
       showTab('cards');
       return cardsStart(buildCards());
@@ -517,7 +652,9 @@
     var tag = (e.target.tagName || '').toLowerCase();
     var typing = tag === 'input' || tag === 'textarea' || tag === 'select';
     var idx = 'abcd'.indexOf((e.key || '').toLowerCase());
-    if (S.tab === 'cards' && C && C.queue.length && !typing) {
+    if (S.tab === 'learn' && S.learn === 'overview' && !typing && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+      flowStep(flowI + (e.key === 'ArrowRight' ? 1 : -1));
+    } else if (S.tab === 'cards' && C && C.queue.length && !typing) {
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!C.flipped) { C.flipped = true; cardsRender(); } }
       else if (C.flipped && e.key === '1') cardAnswer(false);
       else if (C.flipped && e.key === '2') cardAnswer(true);

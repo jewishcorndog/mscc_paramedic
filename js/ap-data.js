@@ -1,6 +1,10 @@
-/* Anatomy & Physiology content, from the standard paramedic A&P curriculum
-   (no class slides for this chapter yet). Read by js/ap.js.
+/* Anatomy & Physiology content, from Chapter 10 (Review of Human Systems) of
+   Sanders' Paramedic Textbook (6th ed.), the lecture slides. Topics marked
+   std: true go beyond the slides (standard paramedic curriculum); normal values
+   and applied cases are extra practice. Read by js/ap.js.
 
+   AP_FLOW       the blood-flow overview: the route step by step, pulmonary vs
+                 systemic circulation, and the vessel chain
    AP_GROUPS     body systems, in study order
    AP_TOPICS     reference pages: about, key points, and why it matters in the field
    AP_TERMS      glossary (term → meaning)
@@ -10,18 +14,22 @@
 (function () {
   'use strict';
 
+  // Body systems in the order of the Chapter 10 slides. "does" and "organs" feed
+  // the "All body systems" overview on the Learn tab.
   window.AP_GROUPS = [
-    { id: 'org', name: 'Body organization' },
-    { id: 'cell', name: 'Cells & fluids' },
-    { id: 'msk', name: 'Skin, bones & muscles' },
-    { id: 'nerv', name: 'Nervous system' },
-    { id: 'endo', name: 'Endocrine' },
-    { id: 'cv', name: 'Heart & circulation' },
-    { id: 'blood', name: 'Blood & immune' },
-    { id: 'resp', name: 'Respiratory' },
-    { id: 'gi', name: 'Abdomen & digestion' },
-    { id: 'renal', name: 'Kidneys & electrolytes' },
-    { id: 'repro', name: 'Reproductive' }
+    { id: 'org', name: 'Body organization', does: 'The map: anatomic position, planes, regions and cavities, so everyone describes the body the same way.', organs: 'Thoracic, abdominal and pelvic cavities; four abdominal quadrants' },
+    { id: 'cell', name: 'Cells & tissues', does: 'Cells are the basic unit of life; four tissue types build every organ.', organs: 'Cell membrane, cytoplasm and organelles, nucleus; epithelial, connective, muscle, nervous tissue' },
+    { id: 'skin', name: 'Integumentary', does: 'Largest organ system: protects against injury, dehydration and germs, and regulates temperature.', organs: 'Skin (epidermis, dermis), hair, nails, sebaceous and sweat glands' },
+    { id: 'msk', name: 'Skeletal & muscular', does: 'A framework of 206 bones for support and protection, moved by muscle, which also keeps posture and makes heat.', organs: 'Bones, joints, cartilage, ligaments, tendons, skeletal muscle' },
+    { id: 'nerv', name: 'Nervous', does: 'A main control system: collects information, decides, and sends commands in fractions of a second.', organs: 'Brain, spinal cord, cranial and spinal nerves, autonomic nervous system' },
+    { id: 'endo', name: 'Endocrine', does: 'The other control system: glands release hormones into the blood for slower, longer-lasting effects.', organs: 'Hypothalamus, pituitary, thyroid, parathyroids, adrenals, pancreatic islets, ovaries, testes' },
+    { id: 'cv', name: 'Circulatory', does: 'The heart pumps blood through the vessels to deliver oxygen and nutrients and carry away CO₂ and waste.', organs: 'Heart, arteries, arterioles, capillaries, venules, veins' },
+    { id: 'blood', name: 'Blood & lymphatic', does: 'Blood carries oxygen, nutrients, hormones and heat; the lymphatic system returns tissue fluid, absorbs fat and fights infection.', organs: 'Plasma, red and white cells, platelets; lymph vessels and nodes, spleen, tonsils, thymus' },
+    { id: 'resp', name: 'Respiratory', does: 'Moves air in and out and exchanges oxygen and CO₂ between the air and the blood.', organs: 'Nose, pharynx, larynx, trachea, bronchial tree, alveoli, lungs' },
+    { id: 'gi', name: 'Digestive', does: 'Breaks food down and absorbs water, electrolytes and nutrients for the cells.', organs: 'Mouth, esophagus, stomach, small and large intestine; liver, gallbladder, pancreas' },
+    { id: 'renal', name: 'Urinary', does: 'Filters waste from the blood and keeps body fluid volume and makeup constant.', organs: 'Two kidneys, two ureters, bladder, urethra' },
+    { id: 'repro', name: 'Reproductive', does: 'Makes sex cells and hormones; in females, carries a pregnancy.', organs: 'Testes, prostate, seminal vesicles; ovaries, uterine tubes, uterus, vagina, mammary glands' },
+    { id: 'senses', name: 'Special senses', does: 'Tells the brain about the outside world: smell, taste, sight, hearing and balance.', organs: 'Nose (olfactory receptors), tongue, eyes, ears' }
   ];
 
   window.AP_TOPICS = [
@@ -77,6 +85,7 @@
       ]
     },
     {
+      std: true,
       id: 'homeostasis', group: 'org', name: 'Homeostasis & feedback',
       aliases: ['negative feedback', 'positive feedback', 'compensation'],
       about: ['Homeostasis is the body keeping its internal environment (temperature, pH, glucose, blood pressure, fluid) stable. Most of the signs you see in a sick patient are the body\'s attempts to compensate.'],
@@ -93,20 +102,41 @@
 
     // ---------- Cells & fluids ----------
     {
-      id: 'cell', group: 'cell', name: 'The cell & tissues',
-      aliases: ['cell membrane', 'mitochondria', 'nucleus', 'tissue types', 'organelles'],
-      about: ['The cell is the basic unit of life. Groups of similar cells form tissues, tissues form organs, and organs work together as systems.'],
+      id: 'cell', group: 'cell', name: 'The cell',
+      aliases: ['cell membrane', 'cytoplasmic membrane', 'mitochondria', 'nucleus', 'organelles', 'ribosomes', 'golgi', 'lysosomes', 'endoplasmic reticulum', 'mitosis'],
+      about: ['The cell is the basic unit of life. It has three main parts: the cytoplasmic membrane, the cytoplasm and the nucleus. Groups of similar cells form tissues, tissues form organs, and organs work together as systems.'],
       points: [
-        'Cell membrane: a selectively permeable phospholipid bilayer that controls what goes in and out.',
-        'Nucleus: holds the DNA and directs the cell.',
-        'Mitochondria: the "powerhouse," where aerobic metabolism makes ATP.',
-        'Four tissue types: epithelial (covers and lines), connective (supports; includes bone, fat and blood), muscle (moves), nervous (conducts signals).'
+        'Cytoplasmic (cell) membrane: two layers of phospholipids that form the outer boundary, support the contents and regulate what moves in and out.',
+        'Cytoplasm: everything between the membrane and the nucleus, including the organelles.',
+        'Endoplasmic reticulum: a chain of connecting sacs and canals winding through the cytoplasm.',
+        'Ribosomes: the "factories" where proteins are made, on the ER or free in the cytoplasm.',
+        'Golgi apparatus: concentrates and packages materials for secretion (for example, mucus).',
+        'Lysosomes: hold enzymes and act as the cell\'s digestive system.',
+        'Mitochondria: the "power plants," where aerobic metabolism makes ATP.',
+        'Nucleus: holds the genetic material and controls cell division and the other organelles.',
+        'Chief cell functions: movement, conductivity, metabolic absorption, secretion, excretion, respiration and reproduction. Cells (except reproductive cells) divide by mitosis.'
       ],
       field: [
         'Every cell needs a steady supply of oxygen and glucose. Shock is a failure to deliver them, which is why perfusion is the center of patient care.'
       ]
     },
     {
+      id: 'tissues', group: 'cell', name: 'The four tissue types',
+      aliases: ['epithelial', 'connective', 'muscle tissue', 'nervous tissue', 'neuron', 'myelin', 'adipose', 'bone', 'blood'],
+      about: ['Four main types of tissue make up all the organs of the body: epithelial, connective, muscle and nervous.'],
+      points: [
+        'Epithelial: continuous sheets with no blood vessels that cover the body and line cavities. Named by shape (squamous, cuboidal, columnar) and arrangement (simple, stratified, transitional).',
+        'Connective: the most abundant tissue. Includes areolar (loose packing), adipose (fat), fibrous (tendons), cartilage, bone, blood and hematopoietic tissue (makes blood cells).',
+        'Muscle: skeletal (striated, voluntary), cardiac (striated, involuntary) and smooth (nonstriated, involuntary).',
+        'Nervous: neurons conduct the electrical signal (action potential) through the cell body, dendrites and axon; neuroglia support them; myelin insulates the axon and speeds the impulse.',
+        'An organ is two or more tissues working together; a system is a group of organs doing a bigger job.'
+      ],
+      field: [
+        'Bone has an excellent blood supply and heals better than cartilage, so fractures bleed and cartilage injuries heal slowly.'
+      ]
+    },
+    {
+      std: true,
       id: 'metabolism', group: 'cell', name: 'Aerobic & anaerobic metabolism',
       aliases: ['ATP', 'lactic acid', 'krebs', 'glycolysis', 'cellular respiration'],
       about: ['Cells burn glucose to make ATP, the energy molecule. How much ATP they get depends on whether oxygen is available.'],
@@ -121,6 +151,7 @@
       ]
     },
     {
+      std: true,
       id: 'fluids', group: 'cell', name: 'Body water & fluid movement',
       aliases: ['osmosis', 'diffusion', 'tonicity', 'isotonic', 'hypotonic', 'hypertonic', 'intracellular', 'extracellular'],
       about: ['Water is about 60% of adult body weight. Two thirds of it is inside cells (intracellular); one third is outside (extracellular), split between the spaces between cells (interstitial) and the blood plasma (intravascular).'],
@@ -139,13 +170,14 @@
 
     // ---------- Skin, bones & muscles ----------
     {
-      id: 'skin', group: 'msk', name: 'The skin',
-      aliases: ['integumentary', 'epidermis', 'dermis', 'subcutaneous', 'burns'],
-      about: ['The skin is the largest organ. It protects against infection, holds in fluid, senses the environment and regulates temperature.'],
+      id: 'skin', group: 'skin', name: 'The skin',
+      aliases: ['integumentary', 'epidermis', 'dermis', 'subcutaneous', 'burns', 'hair', 'nails', 'glands'],
+      about: ['The integumentary system, the skin and its accessory structures, is the largest organ system. It protects the body from injury, dehydration and invading microorganisms, and it regulates temperature.'],
       points: [
         'Epidermis: the outer layer; no blood vessels.',
         'Dermis: blood vessels, nerves, sweat and oil glands, hair follicles.',
         'Subcutaneous layer: fat and connective tissue that insulate and cushion.',
+        'Hair (root, shaft, and the arrector pili muscle that makes it stand up), nails, sebaceous (oil) glands and sweat glands.',
         'Temperature control: sweating, and widening or narrowing of skin blood vessels.',
         'Burn depth follows the layers: superficial (epidermis), partial thickness (into the dermis, blisters), full thickness (through the dermis, may be painless).'
       ],
@@ -155,11 +187,12 @@
       ]
     },
     {
-      id: 'skeleton', group: 'msk', name: 'The skeleton & joints',
+      id: 'skeleton', group: 'msk', name: 'The skeleton',
       aliases: ['bones', 'vertebrae', 'spine', 'axial', 'appendicular', 'ligament', 'joint'],
       about: ['The adult skeleton has 206 bones. It supports and protects the body, lets it move, stores calcium and makes blood cells in the red marrow.'],
       points: [
-        'Axial skeleton: skull, spine, ribs and sternum. Appendicular skeleton: arms, legs, shoulder and pelvic girdles.',
+        'Axial skeleton: skull (cranial vault, facial bones, auditory ossicles), hyoid, vertebral column and thoracic cage. Appendicular skeleton: the extremities with the shoulder and pelvic girdles.',
+        'Bones are long, short, flat or irregular, made of compact and cancellous (spongy) bone. Children grow at the epiphyseal (growth) plate.',
         'Spine: 7 cervical, 12 thoracic, 5 lumbar, 5 fused sacral and 4 fused coccygeal vertebrae (33).',
         '12 pairs of ribs attach to the 12 thoracic vertebrae.',
         'The femur is the longest and strongest bone; a femur fracture can lose 1 to 1.5 L of blood into the thigh.',
@@ -171,14 +204,31 @@
       ]
     },
     {
-      id: 'muscle', group: 'msk', name: 'Muscle types',
-      aliases: ['skeletal', 'smooth', 'cardiac', 'striated', 'voluntary'],
-      about: ['There are three kinds of muscle, each with a different job and control.'],
+      id: 'joints', group: 'msk', name: 'Joints & movement',
+      aliases: ['fibrous joint', 'cartilaginous joint', 'synovial', 'flexion', 'extension', 'biomechanics'],
+      about: ['Joints connect bones together. How much a joint moves depends on what holds the bones together.'],
+      points: [
+        'Fibrous joints: bones united by fibrous tissue, little or no movement (skull sutures).',
+        'Cartilaginous joints: bones united by hyaline cartilage or fibrocartilage, slight movement (between vertebral bodies, the pubic symphysis).',
+        'Synovial joints: a capsule filled with synovial fluid, free movement (shoulder, knee, hip).',
+        'Movement is described from the anatomic position: flexion and extension, abduction (away from the midline) and adduction (toward it), rotation.'
+      ],
+      field: [
+        'A dislocation is a joint injury: check pulses, movement and sensation distal to it and splint it as found if it will not move easily.'
+      ]
+    },
+    {
+      id: 'muscle', group: 'msk', name: 'Muscles & how they contract',
+      aliases: ['skeletal', 'smooth', 'cardiac', 'striated', 'voluntary', 'sarcomere', 'prime mover', 'antagonist', 'isometric'],
+      about: ['The muscular system moves the body, maintains posture and produces heat. There are three kinds of muscle, each with a different job and control.'],
       points: [
         'Skeletal muscle: voluntary, striated; moves the bones.',
         'Smooth muscle: involuntary; in the walls of blood vessels, airways, the GI tract and the bladder.',
         'Cardiac muscle: involuntary, striated, found only in the heart; it has automaticity (makes its own impulses).',
-        'Muscle contraction needs calcium and ATP.'
+        'Skeletal muscle fibers are filled with myofilaments; the sarcomere, with thick and thin myofilaments, is the contractile unit.',
+        'A motor neuron carries the impulse to the fiber, chemicals are released, and the muscle contracts. Contraction needs calcium and ATP.',
+        'The prime mover does most of a movement, synergists help it, and antagonists oppose it.',
+        'Isometric contraction: tension without movement (pushing on a wall). Isotonic contraction: the muscle shortens and moves the load.'
       ],
       field: [
         'Bronchospasm in asthma and vasoconstriction in shock are smooth muscle at work, which is why drugs that relax smooth muscle (beta-2 agonists) open the airways.'
@@ -203,6 +253,7 @@
       ]
     },
     {
+      std: true,
       id: 'brain', group: 'nerv', name: 'The brain & its coverings',
       aliases: ['cerebrum', 'cerebellum', 'brainstem', 'medulla', 'meninges', 'CSF'],
       about: ['The brain uses about 20% of the body\'s oxygen and has almost no stored glucose, so it is the first organ to show hypoxia or hypoglycemia.'],
@@ -219,6 +270,7 @@
       ]
     },
     {
+      std: true,
       id: 'spinal-cord', group: 'nerv', name: 'Spinal cord & spinal nerves',
       aliases: ['dermatome', 'phrenic', 'reflex', 'spinal nerves'],
       about: ['The spinal cord carries signals between the brain and body and handles simple reflexes. It runs inside the vertebral canal and ends at about L1 to L2.'],
@@ -236,6 +288,7 @@
 
     // ---------- Endocrine ----------
     {
+      std: true,
       id: 'glands', group: 'endo', name: 'Endocrine glands & hormones',
       aliases: ['pituitary', 'thyroid', 'adrenal', 'hypothalamus', 'ADH', 'cortisol', 'parathyroid'],
       about: ['Endocrine glands release hormones into the blood. Each hormone acts only on cells with a matching receptor.'],
@@ -253,6 +306,7 @@
       ]
     },
     {
+      std: true,
       id: 'pancreas', group: 'endo', name: 'Pancreas & blood glucose',
       aliases: ['insulin', 'glucagon', 'islets', 'diabetes', 'glucose', 'glycogen'],
       about: ['The islets of Langerhans in the pancreas keep blood glucose in a narrow range with two opposing hormones.'],
@@ -271,11 +325,29 @@
 
     // ---------- Heart & circulation ----------
     {
+      id: 'circulation', group: 'cv', name: 'Pulmonary & systemic circulation',
+      aliases: ['blood flow', 'pulmonary trunk', 'pulmonary veins', 'aorta', 'route of blood', 'hepatic portal'],
+      about: ['Blood travels in two circuits in a row. The right heart pumps it through the lungs (pulmonary circulation) to pick up oxygen; the left heart pumps it through the rest of the body (systemic circulation) to deliver it. See the Blood flow page for the route step by step.'],
+      points: [
+        'Pulmonary circulation: right ventricle → pulmonary trunk → right and left pulmonary arteries → lungs, where O₂ and CO₂ are exchanged → pulmonary veins → left atrium.',
+        'The pulmonary arteries are the only arteries that carry deoxygenated blood; the pulmonary veins are the only veins that carry oxygenated blood.',
+        'Systemic circulation: left ventricle → aorta → the coronary arteries, the arteries of the head and neck, limbs, thorax, abdomen and pelvis.',
+        'Systemic veins return the blood: coronary veins and the veins of the head, neck, limbs, thorax, abdomen and pelvis, ending in the superior and inferior venae cavae.',
+        'The hepatic portal system carries blood from the stomach and intestines through the liver before it returns to the heart.',
+        'Peripheral circulation: arteries → arterioles → capillaries (exchange) → venules → veins.'
+      ],
+      field: [
+        'A problem anywhere in the loop (the pump, the volume, the vessels or the lungs) cuts oxygen delivery to the cells. That is shock.',
+        'Venous blood from a lower leg clot travels through the right heart and lodges in the pulmonary arteries (pulmonary embolism).'
+      ]
+    },
+    {
       id: 'heart', group: 'cv', name: 'The heart: chambers, valves & blood flow',
       aliases: ['atria', 'ventricles', 'valves', 'pericardium', 'myocardium', 'blood flow'],
       about: ['The heart is two pumps side by side. The right side pumps to the lungs (pulmonary circulation); the left side pumps to the body (systemic circulation).'],
       points: [
         'Layers: pericardium (sac), epicardium, myocardium (muscle), endocardium (lining).',
+        'The chambers are separated by a septum and by valves; the conduction system is muscle tissue that excites itself in a steady rhythm.',
         'Flow: vena cava → right atrium → tricuspid valve → right ventricle → pulmonic valve → pulmonary arteries → lungs.',
         'Then: pulmonary veins → left atrium → mitral valve → left ventricle → aortic valve → aorta → body.',
         'Pulmonary arteries carry deoxygenated blood; pulmonary veins carry oxygenated blood.',
@@ -288,6 +360,7 @@
       ]
     },
     {
+      std: true,
       id: 'output', group: 'cv', name: 'Cardiac output & blood pressure',
       aliases: ['stroke volume', 'preload', 'afterload', 'Starling', 'MAP', 'perfusion'],
       about: ['Cardiac output is how much blood the heart pumps in a minute: heart rate × stroke volume. Blood pressure is cardiac output × systemic vascular resistance.'],
@@ -311,7 +384,7 @@
       points: [
         'Arteries: thick, muscular walls under high pressure. Arterioles control resistance and where blood goes.',
         'Capillaries: one cell thick; oxygen, nutrients and waste diffuse across.',
-        'Veins: thin walls, low pressure, with one-way valves. They hold most of the blood volume (capacitance vessels).',
+        'Veins: walls thinner and less elastic than arteries, with fewer smooth muscle cells; low pressure with one-way valves. They hold most of the blood volume (capacitance vessels).',
         'Pulse points: carotid, brachial, radial, femoral, popliteal, posterior tibial, dorsalis pedis.'
       ],
       field: [
@@ -324,7 +397,7 @@
     {
       id: 'blood', group: 'blood', name: 'Blood components',
       aliases: ['plasma', 'RBC', 'WBC', 'platelets', 'hemoglobin', 'hematocrit', 'blood types'],
-      about: ['An adult has about 70 mL of blood per kilogram (about 5 to 6 L). Blood is about 55% plasma and 45% formed elements.'],
+      about: ['Blood carries nutrients and oxygen to the tissues, CO₂ and waste away from them, and hormones from the glands. It also helps regulate temperature and fluid balance and protects against bacteria. An adult has about 70 mL of blood per kilogram (about 5 to 6 L): about 55% plasma and 45% formed elements.'],
       points: [
         'Plasma: mostly water, with proteins (albumin, clotting factors), electrolytes and glucose.',
         'Red blood cells: carry oxygen on hemoglobin; live about 120 days.',
@@ -341,8 +414,9 @@
     {
       id: 'immune', group: 'blood', name: 'Lymphatic & immune systems',
       aliases: ['lymph', 'spleen', 'antibody', 'antigen', 'immunity', 'inflammation'],
-      about: ['The lymphatic system returns extra tissue fluid to the blood and carries white blood cells. The spleen, lymph nodes, tonsils and thymus are lymphatic organs.'],
+      about: ['The lymphatic system is part of the circulatory system with three jobs: it keeps the fluid balance in the tissues, absorbs fat from the digestive tract, and is part of the immune system. The spleen, lymph nodes, tonsils and thymus are lymphatic organs.'],
       points: [
+        'Lymph capillaries start in the tissues and have one-way valves; lymph nodes along the vessels filter out microorganisms and foreign material.',
         'Spleen (LUQ): filters blood, removes old red cells, and stores blood and platelets.',
         'Innate immunity is fast and general: skin, inflammation, neutrophils.',
         'Acquired immunity is specific and has memory: B cells make antibodies, T cells attack infected cells.',
@@ -361,7 +435,8 @@
       aliases: ['larynx', 'trachea', 'epiglottis', 'bronchi', 'alveoli', 'carina'],
       about: ['The upper airway warms, filters and humidifies air. The lower airway starts below the vocal cords and ends at the alveoli, where gas exchange happens.'],
       points: [
-        'Upper airway: nose, mouth, pharynx, larynx. The epiglottis covers the glottis when swallowing.',
+        'Upper airway: nasal cavities (vestibules with hairs that trap particles, olfactory membranes, connections to the sinuses and middle ear), nasopharynx, oropharynx (down to the epiglottis) and laryngopharynx (epiglottis to the glottis and esophagus).',
+        'Larynx: the air passage between the pharynx and trachea, a sphincter that keeps solids and liquids out of the lungs, and the voice box. The epiglottis covers the glottis when swallowing.',
         'The cricoid cartilage is the only complete ring of cartilage in the airway.',
         'The trachea splits at the carina into the right and left mainstem bronchi.',
         'The right mainstem bronchus is shorter, wider and more vertical, so aspirated objects and deep tubes go right.',
@@ -374,6 +449,7 @@
       ]
     },
     {
+      std: true,
       id: 'breathing', group: 'resp', name: 'Ventilation, respiration & control',
       aliases: ['tidal volume', 'minute volume', 'dead space', 'diaphragm', 'chemoreceptors', 'pleura', 'gas exchange'],
       about: ['Ventilation is moving air in and out. Respiration is gas exchange: oxygen into the blood and CO₂ out, in the lungs (external) and at the cells (internal).'],
@@ -398,9 +474,9 @@
       about: ['The GI tract is a hollow tube from mouth to anus. Food is moved along by peristalsis (waves of smooth muscle contraction).'],
       points: [
         'Esophagus: carries food from the pharynx to the stomach, behind the trachea.',
-        'Stomach (LUQ): acid and enzymes begin breaking down protein.',
+        'Stomach (LUQ): a storage and mixing chamber. Food mixed with its secretions becomes chyme, which is pushed through the pyloric sphincter into the duodenum. Mucus protects the stomach wall.',
         'Small intestine (duodenum, jejunum, ileum): where most digestion and absorption of nutrients happen.',
-        'Large intestine (colon): absorbs water and forms stool.',
+        'Large intestine (colon): absorbs water and salts, secretes mucus and forms feces.',
         'Appendix: hangs off the start of the colon in the RLQ.'
       ],
       field: [
@@ -413,9 +489,9 @@
       aliases: ['liver', 'gallbladder', 'pancreas', 'spleen', 'retroperitoneal', 'peritoneum', 'referred pain'],
       about: ['Solid organs have a rich blood supply and bleed when injured. The peritoneum lines the abdominal cavity; some organs sit behind it in the retroperitoneum.'],
       points: [
-        'Liver (RUQ): makes bile and clotting factors, stores glycogen, and clears drugs and toxins.',
-        'Gallbladder: stores bile and squeezes it out after a fatty meal.',
-        'Pancreas: digestive enzymes (exocrine) and insulin and glucagon (endocrine).',
+        'Liver (RUQ): the largest internal organ and very vascular. Secretes bile, detoxifies drugs, metabolizes iron, helps keep blood glucose normal, and makes blood proteins (including clotting factors).',
+        'Gallbladder: stores bile. Fat entering the duodenum makes it contract and push concentrated bile into the small intestine.',
+        'Pancreas: exocrine juice that neutralizes stomach acid in the chyme and digests food, and endocrine hormones (insulin, glucagon) into the blood.',
         'Retroperitoneal organs: kidneys, pancreas, most of the duodenum, aorta and inferior vena cava.',
         'Referred pain: gallbladder to the right shoulder; spleen or blood under the diaphragm to the left shoulder (Kehr sign).'
       ],
@@ -430,7 +506,9 @@
       aliases: ['kidney', 'nephron', 'ureter', 'bladder', 'urethra', 'renin', 'RAAS'],
       about: ['The kidneys filter the blood, make urine, and control fluid volume, electrolytes, acid-base balance and blood pressure. They sit in the retroperitoneum at about T12 to L3.'],
       points: [
-        'The nephron is the working unit; the glomerulus is where blood is filtered.',
+        'The nephron is the working unit; more than 2 million of them make urine in three steps: filtration (at the glomerulus), reabsorption and secretion.',
+        'Urine amount and makeup are controlled by hormones (aldosterone, ADH, atrial natriuretic factor), autoregulation and the sympathetic nervous system.',
+        'The kidneys also help control red blood cell production and vitamin D metabolism.',
         'Urine flows kidney → ureter → bladder → urethra.',
         'Low kidney perfusion releases renin, which leads to angiotensin II (strong vasoconstrictor) and aldosterone (keeps sodium and water). This is the renin-angiotensin-aldosterone system (RAAS).',
         'ADH from the posterior pituitary makes the kidneys hold on to water.',
@@ -442,6 +520,7 @@
       ]
     },
     {
+      std: true,
       id: 'electrolytes', group: 'renal', name: 'Electrolytes & acid-base balance',
       aliases: ['sodium', 'potassium', 'calcium', 'pH', 'buffer', 'bicarbonate'],
       about: ['Electrolytes are charged particles (ions) dissolved in body water. They control fluid shifts, nerve signals and muscle contraction.'],
@@ -464,8 +543,9 @@
       aliases: ['ovary', 'uterus', 'fallopian', 'cervix', 'menstrual cycle', 'ovulation'],
       about: ['The female reproductive organs sit in the pelvis: ovaries, fallopian tubes, uterus, cervix and vagina.'],
       points: [
-        'Ovaries make eggs and the hormones estrogen and progesterone.',
-        'Fallopian tubes carry the egg to the uterus; fertilization normally happens in the tube.',
+        'Ovaries contain follicles, each with an oocyte (egg), and make estrogen and progesterone.',
+        'Uterine (fallopian) tubes: cilia and smooth muscle move the oocyte toward the uterus; fertilization normally happens in the tube.',
+        'Uterus: about the size and shape of a pear. Vagina: passage for menstrual flow and childbirth. Vulva: the external genitalia. Mammary glands make milk.',
         'The menstrual cycle is about 28 days, with ovulation around day 14.',
         'An ectopic pregnancy implants outside the uterus, most often in a fallopian tube, and can rupture and bleed heavily.'
       ],
@@ -474,6 +554,7 @@
       ]
     },
     {
+      std: true,
       id: 'pregnancy', group: 'repro', name: 'Pregnancy changes & the fetus',
       aliases: ['placenta', 'umbilical cord', 'amniotic', 'supine hypotension', 'third trimester'],
       about: ['Pregnancy changes almost every system, and those changes alter how a pregnant patient looks when sick or injured.'],
@@ -495,11 +576,31 @@
       about: ['The male reproductive organs are the testes, the ducts that carry sperm, the prostate and other glands, and the penis.'],
       points: [
         'Testes make sperm and testosterone and sit outside the body in the scrotum to stay cooler.',
-        'The prostate wraps around the urethra below the bladder; enlargement can block urine flow.',
-        'The urethra carries both urine and semen in males.'
+        'Sperm mature in the epididymis, then travel through the ductus (vas) deferens.',
+        'Seminal vesicles make about 60% of the seminal fluid. The prostate, about the size of a walnut, wraps around the urethra below the bladder; enlargement can block urine flow.',
+        'The male urethra has three parts (prostatic, membranous, spongy) and carries both urine and semen.'
       ],
       field: [
         'Sudden, severe testicular pain can be testicular torsion, which needs surgery within hours to save the testicle.'
+      ]
+    },
+
+    // ---------- Special senses ----------
+    {
+      id: 'senses', group: 'senses', name: 'Smell, taste, sight, hearing & balance',
+      aliases: ['eye', 'ear', 'olfactory', 'taste', 'cochlea', 'semicircular canals', 'retina', 'cornea', 'ossicles'],
+      about: ['The special senses give the brain information from the outside world: smell, taste, sight, hearing and balance.'],
+      points: [
+        'Smell: olfactory receptors detect even slight odors but tire easily.',
+        'Taste: nerves in the tongue, soft palate, uvula and upper esophagus sense sour, salty, sweet, bitter and savory.',
+        'Eye: sclera (white), cornea (clear front), vascular tunic, pupil, retina (light-sensing layer). The anterior chamber holds aqueous humor; the posterior chamber holds vitreous humor. Accessory structures: eyebrows, eyelids, conjunctiva, lacrimal (tear) glands.',
+        'Outer ear: sound travels down the auditory canal and vibrates the eardrum (tympanic membrane).',
+        'Middle ear: the ossicles (malleus, incus, stapes) carry the vibration to the oval window. The eustachian tube equalizes pressure.',
+        'Inner ear (bony labyrinth): the cochlea holds the organ of Corti for hearing; the vestibule and semicircular canals handle balance.'
+      ],
+      field: [
+        'Inner ear problems cause vertigo and vomiting; ask about recent ear infections or head injury.',
+        'Flush chemical eye exposures right away and keep flushing during transport.'
       ]
     }
   ];
@@ -525,7 +626,23 @@
     { group: 'org', term: 'Negative feedback', def: 'A control loop that reverses a change to bring a value back to normal.' },
 
     // Cells & fluids
-    { group: 'cell', term: 'Cell membrane', def: 'Selectively permeable phospholipid bilayer that surrounds the cell and controls what enters and leaves.' },
+    { group: 'cell', term: 'Cytoplasm', def: 'Everything inside the cell between the cytoplasmic membrane and the nucleus, including the organelles.' },
+    { group: 'cell', term: 'Organelles', def: 'Specialized structures in the cytoplasm that each do a job the cell needs to survive.' },
+    { group: 'cell', term: 'Endoplasmic reticulum', def: 'A chain of connecting sacs and canals that winds through the cytoplasm.' },
+    { group: 'cell', term: 'Ribosomes', def: 'The cell\'s protein "factories," attached to the ER or free in the cytoplasm.' },
+    { group: 'cell', term: 'Golgi apparatus', def: 'Organelle that concentrates and packages materials, such as mucus, for secretion.' },
+    { group: 'cell', term: 'Lysosomes', def: 'Organelles filled with enzymes that act as the cell\'s digestive system.' },
+    { group: 'cell', term: 'Nucleus', def: 'Large organelle that holds the genetic material and controls cell division and the other organelles.' },
+    { group: 'cell', term: 'Mitosis', def: 'The cell division all human cells except reproductive cells use to reproduce.' },
+    { group: 'cell', term: 'Stem cells', def: 'Cells that can differentiate into any kind of cell.' },
+    { group: 'cell', term: 'Epithelial tissue', def: 'Sheets of cells with no blood vessels that cover the body and line its cavities.' },
+    { group: 'cell', term: 'Connective tissue', def: 'The most abundant tissue, with cells spread apart in intercellular material; includes fat, tendons, cartilage, bone and blood.' },
+    { group: 'cell', term: 'Adipose tissue', def: 'Fat tissue that stores lipids, insulates, protects and stores energy.' },
+    { group: 'cell', term: 'Hematopoietic tissue', def: 'Tissue in the bone marrow, spleen, tonsils and lymph nodes that forms blood and lymphatic cells.' },
+    { group: 'cell', term: 'Neuron', def: 'A nerve cell, made of a cell body, dendrites and an axon, that conducts the action potential.' },
+    { group: 'cell', term: 'Neuroglia', def: 'Support cells that nourish, protect and insulate the neurons.' },
+    { group: 'cell', term: 'Myelin', def: 'Fatty covering that insulates the axon and speeds up nerve impulses.' },
+    { group: 'cell', term: 'Cell membrane', aliases: ['cytoplasmic membrane'], def: 'Selectively permeable phospholipid bilayer that surrounds the cell and controls what enters and leaves.' },
     { group: 'cell', term: 'Mitochondria', def: 'Organelles where aerobic metabolism produces most of the cell\'s ATP.' },
     { group: 'cell', term: 'ATP', aliases: ['adenosine triphosphate'], def: 'Adenosine triphosphate, the energy molecule cells use to power their work.' },
     { group: 'cell', term: 'Aerobic metabolism', def: 'Breaking down glucose with oxygen; yields about 36 to 38 ATP plus CO₂ and water.' },
@@ -540,14 +657,26 @@
     { group: 'cell', term: 'Interstitial fluid', def: 'Fluid in the spaces between the cells, outside the blood vessels.' },
 
     // Skin, bones & muscles
-    { group: 'msk', term: 'Epidermis', def: 'Outer layer of the skin; has no blood vessels.' },
-    { group: 'msk', term: 'Dermis', def: 'Skin layer under the epidermis containing blood vessels, nerves, glands and hair follicles.' },
-    { group: 'msk', term: 'Subcutaneous tissue', def: 'Layer of fat and connective tissue under the skin that insulates and cushions.' },
+    { group: 'skin', term: 'Epidermis', def: 'Outer layer of the skin; has no blood vessels.' },
+    { group: 'skin', term: 'Dermis', def: 'Skin layer under the epidermis containing blood vessels, nerves, glands and hair follicles.' },
+    { group: 'skin', term: 'Subcutaneous tissue', def: 'Layer of fat and connective tissue under the skin that insulates and cushions.' },
+    { group: 'skin', term: 'Sebaceous glands', def: 'Skin glands that secrete oil (sebum) into the hair follicles.' },
+    { group: 'skin', term: 'Arrector pili', def: 'Tiny muscle attached to a hair follicle that makes the hair stand up.' },
     { group: 'msk', term: 'Ligament', def: 'Connective tissue that connects bone to bone.' },
     { group: 'msk', term: 'Tendon', def: 'Connective tissue that connects muscle to bone.' },
     { group: 'msk', term: 'Cartilage', def: 'Smooth, tough connective tissue that cushions joint surfaces and shapes the nose, ears and airway rings.' },
     { group: 'msk', term: 'Axial skeleton', def: 'The skull, spine, ribs and sternum.' },
     { group: 'msk', term: 'Appendicular skeleton', def: 'The bones of the arms and legs plus the shoulder and pelvic girdles.' },
+    { group: 'msk', term: 'Epiphyseal plate', def: 'The growth plate near the end of a long bone where children\'s bones lengthen.' },
+    { group: 'msk', term: 'Synovial joint', def: 'A freely movable joint whose capsule contains lubricating synovial fluid.' },
+    { group: 'msk', term: 'Fibrous joint', def: 'A joint where bones are united by fibrous tissue, with little or no movement.' },
+    { group: 'msk', term: 'Cartilaginous joint', def: 'A joint where bones are united by hyaline cartilage or fibrocartilage, allowing slight movement.' },
+    { group: 'msk', term: 'Sarcomere', def: 'The contractile unit of skeletal muscle, with thick and thin myofilaments.' },
+    { group: 'msk', term: 'Prime mover', def: 'The muscle that does most of the work of a movement.' },
+    { group: 'msk', term: 'Synergist', def: 'A muscle that helps the prime mover.' },
+    { group: 'msk', term: 'Antagonist', def: 'A muscle that opposes the prime mover\'s movement.' },
+    { group: 'msk', term: 'Isometric contraction', def: 'Muscle tension without a change in length or movement.' },
+    { group: 'msk', term: 'Isotonic contraction', def: 'Muscle contraction that shortens the muscle and moves a load.' },
     { group: 'msk', term: 'Skeletal muscle', def: 'Voluntary, striated muscle that moves the bones.' },
     { group: 'msk', term: 'Smooth muscle', def: 'Involuntary muscle in the walls of blood vessels, airways and the GI tract.' },
     { group: 'msk', term: 'Cardiac muscle', def: 'Involuntary, striated muscle found only in the heart, with automaticity.' },
@@ -588,6 +717,16 @@
     { group: 'cv', term: 'Ventricles', def: 'The two lower chambers of the heart, which pump blood out.' },
     { group: 'cv', term: 'Tricuspid valve', def: 'Valve between the right atrium and right ventricle.' },
     { group: 'cv', term: 'Mitral (bicuspid) valve', def: 'Valve between the left atrium and left ventricle.' },
+    { group: 'cv', term: 'Pulmonary circulation', def: 'The circuit from the right ventricle through the lungs and back to the left atrium.' },
+    { group: 'cv', term: 'Systemic circulation', def: 'The circuit from the left ventricle through the body and back to the right atrium.' },
+    { group: 'cv', term: 'Pulmonary trunk', def: 'The large vessel leaving the right ventricle that splits into the right and left pulmonary arteries.' },
+    { group: 'cv', term: 'Pulmonary veins', def: 'The only veins that carry oxygenated blood: from the lungs to the left atrium.' },
+    { group: 'cv', term: 'Pulmonary arteries', def: 'The only arteries that carry deoxygenated blood: from the right ventricle to the lungs.' },
+    { group: 'cv', term: 'Aorta', def: 'The largest artery, carrying oxygenated blood from the left ventricle to the body.' },
+    { group: 'cv', term: 'Venae cavae', def: 'The superior and inferior vena cava, the large veins returning deoxygenated blood to the right atrium.' },
+    { group: 'cv', term: 'Coronary arteries', def: 'The first branches of the aorta, which carry blood to the heart muscle itself.' },
+    { group: 'cv', term: 'Septum', def: 'The muscular wall that separates the right and left sides of the heart.' },
+    { group: 'cv', term: 'Hepatic portal system', def: 'Veins that carry blood from the stomach and intestines through the liver before it returns to the heart.' },
     { group: 'cv', term: 'Stroke volume', def: 'The amount of blood ejected by the ventricle in one contraction (about 70 mL).' },
     { group: 'cv', term: 'Cardiac output', def: 'The amount of blood pumped per minute: heart rate × stroke volume.' },
     { group: 'cv', term: 'Preload', def: 'The volume and stretch in the ventricle at the end of filling, before it contracts.' },
@@ -607,12 +746,19 @@
     { group: 'blood', term: 'Hemoglobin', def: 'Iron-containing protein in red blood cells that binds and carries oxygen.' },
     { group: 'blood', term: 'Hematocrit', def: 'The percentage of blood volume made up of red blood cells.' },
     { group: 'blood', term: 'Fibrin', def: 'Protein strands formed at the end of the clotting cascade that bind the clot together.' },
+    { group: 'blood', term: 'Lymph nodes', def: 'Small organs along the lymph vessels that filter out microorganisms and foreign substances.' },
+    { group: 'blood', term: 'Lymphatic system', def: 'Vessels and organs that keep tissue fluid balance, absorb fat from the gut and help fight infection.' },
     { group: 'blood', term: 'Spleen', def: 'LUQ organ that filters blood, removes old red cells and stores blood and platelets.' },
     { group: 'blood', term: 'Antigen', def: 'A substance the immune system recognizes as foreign and responds to.' },
     { group: 'blood', term: 'Antibody', def: 'A protein made by B cells that binds a specific antigen.' },
     { group: 'blood', term: 'Histamine', def: 'Chemical released by mast cells that dilates blood vessels, makes them leaky and constricts the airways.' },
 
     // Respiratory
+    { group: 'resp', term: 'Nasopharynx', def: 'The part of the pharynx behind the nasal cavity.' },
+    { group: 'resp', term: 'Oropharynx', def: 'The part of the pharynx behind the mouth, extending down to the epiglottis.' },
+    { group: 'resp', term: 'Laryngopharynx', def: 'The lowest part of the pharynx, from the epiglottis to the glottic opening and esophagus.' },
+    { group: 'resp', term: 'Larynx', def: 'The voice box: the air passage between the pharynx and trachea that also keeps food and liquid out of the lungs.' },
+    { group: 'resp', term: 'Sinuses', def: 'Air-filled cavities in the skull bones that connect to the nasal cavities.' },
     { group: 'resp', term: 'Epiglottis', def: 'Leaf-shaped flap that covers the glottis during swallowing.' },
     { group: 'resp', term: 'Glottis', def: 'The opening between the vocal cords; the boundary of the upper and lower airway.' },
     { group: 'resp', term: 'Cricoid cartilage', def: 'The only complete ring of cartilage in the airway, just below the thyroid cartilage.' },
@@ -632,6 +778,8 @@
     { group: 'gi', term: 'Peritoneum', def: 'The membrane lining the abdominal cavity and covering most abdominal organs.' },
     { group: 'gi', term: 'Retroperitoneum', def: 'The space behind the peritoneum holding the kidneys, pancreas, aorta and vena cava.' },
     { group: 'gi', term: 'Peristalsis', def: 'Waves of smooth muscle contraction that push food through the GI tract.' },
+    { group: 'gi', term: 'Chyme', def: 'The semi-liquid mix of food and stomach secretions that passes into the duodenum.' },
+    { group: 'gi', term: 'Pyloric sphincter', def: 'The muscular valve between the stomach and the duodenum.' },
     { group: 'gi', term: 'Small intestine', def: 'The duodenum, jejunum and ileum, where most digestion and nutrient absorption happen.' },
     { group: 'gi', term: 'Large intestine', def: 'The colon, which absorbs water and forms stool.' },
     { group: 'gi', term: 'Liver', def: 'RUQ solid organ that makes bile and clotting factors, stores glycogen and clears toxins.' },
@@ -647,6 +795,8 @@
     { group: 'renal', term: 'Glomerulus', def: 'The ball of capillaries in the nephron where blood is filtered.' },
     { group: 'renal', term: 'Ureter', def: 'Tube carrying urine from a kidney to the bladder.' },
     { group: 'renal', term: 'Urethra', def: 'Tube carrying urine from the bladder out of the body.' },
+    { group: 'renal', term: 'Filtration, reabsorption, secretion', def: 'The three steps nephrons use to make urine.' },
+    { group: 'renal', term: 'Atrial natriuretic factor (ANF)', def: 'Hormone released by stretched atria that makes the kidneys excrete more sodium and water.' },
     { group: 'renal', term: 'Renin', def: 'Enzyme released by the kidneys when their perfusion drops; starts the RAAS.' },
     { group: 'renal', term: 'Angiotensin II', def: 'Strong vasoconstrictor formed in the RAAS that also triggers aldosterone release.' },
     { group: 'renal', term: 'Electrolyte', def: 'A substance that separates into charged ions in water (sodium, potassium, calcium, chloride).' },
@@ -666,8 +816,29 @@
     { group: 'repro', term: 'Amniotic sac', def: 'Fluid-filled membrane that surrounds and cushions the fetus.' },
     { group: 'repro', term: 'Ectopic pregnancy', def: 'A pregnancy implanted outside the uterus, most often in a fallopian tube.' },
     { group: 'repro', term: 'Supine hypotensive syndrome', def: 'Low blood pressure when a late-pregnancy patient lies flat and the uterus compresses the inferior vena cava.' },
+    { group: 'repro', term: 'Oocyte', def: 'The egg cell, held in a follicle in the ovary.' },
+    { group: 'repro', term: 'Mammary glands', def: 'The organs of milk production.' },
+    { group: 'repro', term: 'Epididymis', def: 'Coiled tube on the testis where sperm finish maturing.' },
+    { group: 'repro', term: 'Ductus deferens (vas deferens)', def: 'Tube that carries sperm from the epididymis toward the urethra.' },
+    { group: 'repro', term: 'Seminal vesicles', def: 'Glands that make about 60% of the seminal fluid.' },
     { group: 'repro', term: 'Testes', def: 'Male glands in the scrotum that produce sperm and testosterone.' },
-    { group: 'repro', term: 'Prostate', def: 'Male gland around the urethra below the bladder that adds fluid to semen.' }
+    { group: 'repro', term: 'Prostate', def: 'Male gland around the urethra below the bladder that adds fluid to semen.' },
+
+    // Special senses
+    { group: 'senses', term: 'Olfactory receptors', def: 'Smell receptors in the nasal cavity; very sensitive but tire easily.' },
+    { group: 'senses', term: 'Sclera', def: 'The tough white outer layer of the eye.' },
+    { group: 'senses', term: 'Cornea', def: 'The clear front part of the eye that covers the iris and pupil.' },
+    { group: 'senses', term: 'Pupil', def: 'The opening in the center of the iris that lets light into the eye.' },
+    { group: 'senses', term: 'Retina', def: 'The light-sensing layer at the back of the eye.' },
+    { group: 'senses', term: 'Aqueous humor', def: 'Watery fluid filling the anterior chamber of the eye.' },
+    { group: 'senses', term: 'Vitreous humor', def: 'Jelly-like fluid filling the posterior chamber of the eye.' },
+    { group: 'senses', term: 'Conjunctiva', def: 'The thin membrane lining the eyelids and covering the white of the eye.' },
+    { group: 'senses', term: 'Lacrimal glands', def: 'Glands that make tears.' },
+    { group: 'senses', term: 'Tympanic membrane', def: 'The eardrum, which vibrates when sound waves hit it.' },
+    { group: 'senses', term: 'Auditory ossicles', def: 'The malleus, incus and stapes: tiny middle-ear bones that pass vibrations to the oval window.' },
+    { group: 'senses', term: 'Eustachian tube', def: 'Tube that equalizes air pressure between the middle ear and the outside.' },
+    { group: 'senses', term: 'Cochlea', def: 'Inner ear structure that holds the organ of Corti, the sense organ for hearing.' },
+    { group: 'senses', term: 'Semicircular canals', def: 'Inner ear canals that, with the vestibule, sense balance.' }
   ];
 
   window.AP_FACTS = [
@@ -681,6 +852,13 @@
     { group: 'org', q: 'Which is an example of positive feedback?', a: 'Labor contractions driven by oxytocin', wrong: ['Shivering when cold', 'Insulin release after a meal', 'Heart rate rising when BP falls'] },
 
     // Cells & fluids
+    { group: 'cell', q: 'What are the three main parts of a cell?', a: 'Cytoplasmic membrane, cytoplasm, nucleus', wrong: ['Nucleus, ribosomes, mitochondria', 'Cell wall, cytoplasm, nucleus', 'Membrane, Golgi apparatus, lysosomes'] },
+    { group: 'cell', q: 'Which organelle is the "power plant" of the cell?', a: 'Mitochondria', wrong: ['Ribosomes', 'Golgi apparatus', 'Lysosomes'] },
+    { group: 'cell', q: 'Where are proteins made in the cell?', a: 'Ribosomes', wrong: ['Lysosomes', 'Mitochondria', 'Golgi apparatus'] },
+    { group: 'cell', q: 'Which organelle acts as the cell\'s digestive system?', a: 'Lysosomes', wrong: ['Ribosomes', 'Endoplasmic reticulum', 'Nucleus'] },
+    { group: 'cell', q: 'Which tissue type has no blood vessels and covers the body and lines its cavities?', a: 'Epithelial', wrong: ['Connective', 'Muscle', 'Nervous'] },
+    { group: 'cell', q: 'Which is the most abundant tissue in the body?', a: 'Connective tissue', wrong: ['Epithelial tissue', 'Muscle tissue', 'Nervous tissue'] },
+    { group: 'cell', q: 'What does myelin do?', a: 'Insulates the axon and speeds nerve impulses', wrong: ['Stores fat for energy', 'Carries oxygen to neurons', 'Produces neurotransmitters'] },
     { group: 'cell', q: 'What are the four basic tissue types?', a: 'Epithelial, connective, muscle, nervous', wrong: ['Epithelial, blood, bone, nervous', 'Skin, muscle, fat, nervous', 'Connective, cardiac, smooth, skeletal'] },
     { group: 'cell', q: 'What does anaerobic metabolism produce as a byproduct?', a: 'Lactic acid', wrong: ['Carbon dioxide and water only', 'Ketones', 'Urea'] },
     { group: 'cell', q: 'About how much of adult body weight is water?', a: 'About 60%', wrong: ['About 40%', 'About 75%', 'About 90%'] },
@@ -692,7 +870,13 @@
     { group: 'msk', q: 'How many bones are in the adult skeleton?', a: '206', wrong: ['186', '226', '270'] },
     { group: 'msk', q: 'How many cervical vertebrae are there?', a: '7', wrong: ['5', '8', '12'] },
     { group: 'msk', q: 'How many thoracic vertebrae are there?', a: '12', wrong: ['7', '5', '10'] },
-    { group: 'msk', q: 'Which skin layer has no blood vessels?', a: 'Epidermis', wrong: ['Dermis', 'Subcutaneous layer', 'Fascia'] },
+    { group: 'skin', q: 'Which skin layer has no blood vessels?', a: 'Epidermis', wrong: ['Dermis', 'Subcutaneous layer', 'Fascia'] },
+    { group: 'skin', q: 'What is the largest organ system in the body?', a: 'Integumentary system', wrong: ['Skeletal system', 'Muscular system', 'Circulatory system'] },
+    { group: 'skin', q: 'Which is NOT a job of the skin?', a: 'Making red blood cells', wrong: ['Regulating temperature', 'Keeping out microorganisms', 'Preventing dehydration'] },
+    { group: 'msk', q: 'Which type of joint contains synovial fluid and moves freely?', a: 'Synovial joint', wrong: ['Fibrous joint', 'Cartilaginous joint', 'Suture'] },
+    { group: 'msk', q: 'What is the contractile unit of skeletal muscle?', a: 'Sarcomere', wrong: ['Myelin', 'Tendon', 'Neuroglia'] },
+    { group: 'msk', q: 'Pushing against a wall without moving it is which kind of contraction?', a: 'Isometric', wrong: ['Isotonic', 'Synergistic', 'Antagonistic'] },
+    { group: 'msk', q: 'What are the three main jobs of the muscular system?', a: 'Movement, posture and heat production', wrong: ['Movement, blood cell production and protection', 'Posture, calcium storage and digestion', 'Heat production, filtration and support'] },
     { group: 'msk', q: 'Where are red blood cells made in adults?', a: 'Red bone marrow', wrong: ['Spleen', 'Liver', 'Lymph nodes'] },
     { group: 'msk', q: 'Which muscle type is involuntary and striated?', a: 'Cardiac muscle', wrong: ['Skeletal muscle', 'Smooth muscle', 'Both skeletal and smooth muscle'] },
     { group: 'msk', q: 'About how much blood can a closed femur fracture lose into the thigh?', a: '1 to 1.5 L', wrong: ['100 to 200 mL', '3 to 4 L', 'Almost none; bone does not bleed'] },
@@ -716,6 +900,13 @@
     { group: 'endo', q: 'What does parathyroid hormone do?', a: 'Raises blood calcium', wrong: ['Lowers blood glucose', 'Raises blood sodium', 'Lowers heart rate'] },
 
     // Heart & circulation
+    { group: 'cv', q: 'Which arteries carry deoxygenated blood?', a: 'Pulmonary arteries', wrong: ['Coronary arteries', 'Carotid arteries', 'The aorta'] },
+    { group: 'cv', q: 'Which valve does blood cross going from the right atrium to the right ventricle?', a: 'Tricuspid valve', wrong: ['Mitral valve', 'Pulmonic valve', 'Aortic valve'] },
+    { group: 'cv', q: 'Which valve does blood cross leaving the left ventricle?', a: 'Aortic valve', wrong: ['Pulmonic valve', 'Mitral valve', 'Tricuspid valve'] },
+    { group: 'cv', q: 'Which large veins return blood from the body to the right atrium?', a: 'Superior and inferior venae cavae', wrong: ['Pulmonary veins', 'Jugular and femoral veins only', 'Coronary veins'] },
+    { group: 'cv', q: 'In the peripheral circulation, blood flows from arterioles into:', a: 'Capillaries, then venules and veins', wrong: ['Veins, then capillaries', 'Arteries, then the heart', 'Lymph vessels, then veins'] },
+    { group: 'cv', q: 'Where does the blood from the stomach and intestines go before returning to the heart?', a: 'Through the liver (hepatic portal system)', wrong: ['Straight to the right atrium', 'Through the kidneys', 'Through the spleen'] },
+    { group: 'cv', q: 'Which vessels are the first branches off the aorta?', a: 'Coronary arteries', wrong: ['Carotid arteries', 'Pulmonary arteries', 'Renal arteries'] },
     { group: 'cv', q: 'Where does blood go when it leaves the right ventricle?', a: 'To the lungs through the pulmonary arteries', wrong: ['To the body through the aorta', 'To the left atrium through the pulmonary veins', 'Back to the right atrium'] },
     { group: 'cv', q: 'Which vessels carry oxygenated blood back to the heart?', a: 'Pulmonary veins', wrong: ['Pulmonary arteries', 'Superior vena cava', 'Coronary sinus'] },
     { group: 'cv', q: 'When do the coronary arteries fill?', a: 'Mostly during diastole', wrong: ['Mostly during systole', 'Only during atrial contraction', 'Evenly through the whole cycle'] },
@@ -729,11 +920,15 @@
     { group: 'blood', q: 'About how long does a red blood cell live?', a: 'About 120 days', wrong: ['About 7 days', 'About 30 days', 'About 1 year'] },
     { group: 'blood', q: 'What is the most common white blood cell?', a: 'Neutrophils', wrong: ['Lymphocytes', 'Eosinophils', 'Monocytes'] },
     { group: 'blood', q: 'About what share of blood is plasma?', a: 'About 55%', wrong: ['About 25%', 'About 80%', 'About 45%'] },
+    { group: 'blood', q: 'What are the three basic jobs of the lymphatic system?', a: 'Fluid balance in the tissues, absorbing fat from the gut, immunity', wrong: ['Pumping blood, making hormones, filtering urine', 'Gas exchange, temperature control, clotting', 'Making red cells, storing calcium, digesting protein'] },
+    { group: 'blood', q: 'Which formed element prevents blood loss by forming clots?', a: 'Platelets', wrong: ['Erythrocytes', 'Leukocytes', 'Plasma'] },
     { group: 'blood', q: 'What forms the mesh that holds a stable clot together?', a: 'Fibrin', wrong: ['Albumin', 'Hemoglobin', 'Histamine'] },
 
     // Respiratory
     { group: 'resp', q: 'An endotracheal tube pushed too deep usually goes into the:', a: 'Right mainstem bronchus', wrong: ['Left mainstem bronchus', 'Esophagus', 'Carina, blocking both lungs'] },
     { group: 'resp', q: 'In a healthy person, what is the main stimulus to breathe?', a: 'Rising CO₂ (falling pH)', wrong: ['Falling oxygen level', 'Rising blood pressure', 'Body temperature'] },
+    { group: 'resp', q: 'What are the three main jobs of the larynx?', a: 'Air passage, protective sphincter for the lungs, and speech', wrong: ['Gas exchange, speech and swallowing', 'Warming air, smelling and speech', 'Air passage, gas exchange and coughing'] },
+    { group: 'resp', q: 'The oropharynx extends down to the:', a: 'Epiglottis', wrong: ['Carina', 'Vocal cords', 'Cricoid cartilage'] },
     { group: 'resp', q: 'Where does gas exchange happen in the lungs?', a: 'Alveoli', wrong: ['Bronchioles', 'Trachea', 'Pleural space'] },
     { group: 'resp', q: 'What is the main muscle of breathing?', a: 'Diaphragm', wrong: ['Intercostal muscles', 'Sternocleidomastoid', 'Abdominal muscles'] },
     { group: 'resp', q: 'Which is the only complete ring of cartilage in the airway?', a: 'Cricoid cartilage', wrong: ['Thyroid cartilage', 'Epiglottis', 'The first tracheal ring'] },
@@ -743,6 +938,9 @@
     { group: 'gi', q: 'An injured hollow organ mainly causes:', a: 'Peritonitis from leaked contents', wrong: ['Heavy internal bleeding', 'Immediate hypoglycemia', 'No problems until days later'] },
     { group: 'gi', q: 'Which organ is retroperitoneal?', a: 'Kidney', wrong: ['Stomach', 'Spleen', 'Gallbladder'] },
     { group: 'gi', q: 'Where are most nutrients absorbed?', a: 'Small intestine', wrong: ['Stomach', 'Large intestine', 'Esophagus'] },
+    { group: 'gi', q: 'What is the largest internal organ?', a: 'Liver', wrong: ['Stomach', 'Small intestine', 'Spleen'] },
+    { group: 'gi', q: 'What is chyme?', a: 'Food mixed with stomach secretions', wrong: ['Bile stored in the gallbladder', 'Digestive juice from the pancreas', 'Formed stool in the colon'] },
+    { group: 'gi', q: 'What does pancreatic juice do in the small intestine?', a: 'Neutralizes stomach acid in the chyme and digests food', wrong: ['Stores bile', 'Absorbs water', 'Lowers blood glucose'] },
     { group: 'gi', q: 'Which organ makes most clotting factors?', a: 'Liver', wrong: ['Spleen', 'Pancreas', 'Kidney'] },
     { group: 'gi', q: 'Gallbladder pain is commonly referred to the:', a: 'Right shoulder', wrong: ['Left shoulder', 'Lower back on the left', 'Groin'] },
 
@@ -751,6 +949,8 @@
     { group: 'renal', q: 'What is the main extracellular cation?', a: 'Sodium', wrong: ['Potassium', 'Magnesium', 'Bicarbonate'] },
     { group: 'renal', q: 'Which acid-base control system is slowest but most powerful?', a: 'The kidneys (hours to days)', wrong: ['The bicarbonate buffer (seconds)', 'The lungs (minutes)', 'The liver (seconds)'] },
     { group: 'renal', q: 'What do the kidneys release when their blood flow drops?', a: 'Renin', wrong: ['Insulin', 'Glucagon', 'Histamine'] },
+    { group: 'renal', q: 'What are the three steps of urine production?', a: 'Filtration, reabsorption, secretion', wrong: ['Filtration, digestion, excretion', 'Absorption, storage, secretion', 'Secretion, filtration, concentration'] },
+    { group: 'renal', q: 'Which hormone makes the kidneys excrete more sodium and water when the atria are stretched?', a: 'Atrial natriuretic factor (ANF)', wrong: ['Aldosterone', 'ADH', 'Renin'] },
     { group: 'renal', q: 'Where in the nephron is blood filtered?', a: 'Glomerulus', wrong: ['Ureter', 'Loop of Henle', 'Renal pelvis'] },
 
     // Reproductive
@@ -758,7 +958,17 @@
     { group: 'repro', q: 'Where does fertilization normally happen?', a: 'Fallopian tube', wrong: ['Uterus', 'Ovary', 'Cervix'] },
     { group: 'repro', q: 'By how much does blood volume rise in pregnancy?', a: 'About 30 to 50%', wrong: ['About 5 to 10%', 'It does not change', 'It doubles or more'] },
     { group: 'repro', q: 'Which umbilical vessel carries oxygenated blood to the fetus?', a: 'The umbilical vein', wrong: ['The umbilical arteries', 'The uterine artery', 'The inferior vena cava'] },
-    { group: 'repro', q: 'Where is the prostate?', a: 'Around the urethra just below the bladder', wrong: ['Inside the scrotum beside the testes', 'Behind the kidneys', 'Above the bladder in the abdomen'] }
+    { group: 'repro', q: 'Where do sperm finish maturing?', a: 'Epididymis', wrong: ['Prostate', 'Seminal vesicle', 'Ductus deferens'] },
+    { group: 'repro', q: 'Which gland makes about 60% of the seminal fluid?', a: 'Seminal vesicles', wrong: ['Prostate', 'Bulbourethral glands', 'Testes'] },
+    { group: 'repro', q: 'Where is the prostate?', a: 'Around the urethra just below the bladder', wrong: ['Inside the scrotum beside the testes', 'Behind the kidneys', 'Above the bladder in the abdomen'] },
+
+    // Special senses
+    { group: 'senses', q: 'What are the three auditory ossicles?', a: 'Malleus, incus, stapes', wrong: ['Cochlea, vestibule, stapes', 'Malleus, cochlea, tympanum', 'Incus, hyoid, stapes'] },
+    { group: 'senses', q: 'Which inner ear structures handle balance?', a: 'Vestibule and semicircular canals', wrong: ['Cochlea and organ of Corti', 'Eustachian tube and eardrum', 'Ossicles and oval window'] },
+    { group: 'senses', q: 'Where is the organ of Corti, the sense organ for hearing?', a: 'In the cochlea', wrong: ['In the middle ear', 'On the eardrum', 'In the semicircular canals'] },
+    { group: 'senses', q: 'What fills the posterior chamber of the eye?', a: 'Vitreous humor', wrong: ['Aqueous humor', 'Tears', 'Cerebrospinal fluid'] },
+    { group: 'senses', q: 'What does the eustachian tube do?', a: 'Equalizes pressure between the middle ear and the outside air', wrong: ['Carries sound to the cochlea', 'Drains tears into the nose', 'Senses head position'] },
+    { group: 'senses', q: 'Which is NOT one of the five primary tastes?', a: 'Spicy', wrong: ['Sour', 'Bitter', 'Savory'] }
   ];
 
   window.AP_NORMALS = [
@@ -785,6 +995,40 @@
     { group: 'renal', name: 'Potassium (K⁺)', value: '3.5–5.0 mEq/L', wrong: ['135–145 mEq/L', '1.5–2.5 mEq/L', '6.0–7.5 mEq/L'] },
     { group: 'renal', name: 'Adult urine output', value: 'At least 0.5 mL/kg/hr (about 30 mL/hr)', wrong: ['At least 5 mL/kg/hr', 'About 5 mL/hr', 'At least 2 L/hr'] }
   ];
+
+  // Route of blood through the heart and body. "on" lists the parts of the
+  // diagram to light up for each step (ids in js/ap.js).
+  window.AP_FLOW = {
+    summary: 'Blood moves in one closed loop made of two circuits in a row. The right side of the heart pumps oxygen-poor blood through the lungs (pulmonary circulation). The left side pumps the oxygen-rich blood that comes back through the rest of the body (systemic circulation). Every drop goes through both circuits on each trip.',
+    steps: [
+      { name: 'Body capillaries', circuit: 'systemic', o2: 'rich → poor', on: ['body'], text: 'In the capillaries of the body, oxygen and nutrients move out to the cells and CO₂ and waste move in. The blood is now oxygen-poor.' },
+      { name: 'Venules, veins & venae cavae', circuit: 'systemic', o2: 'poor', on: ['vc'], text: 'Capillaries drain into venules, then veins, then the superior vena cava (from the head and arms) and inferior vena cava (from the trunk and legs). Veins have one-way valves and low pressure.' },
+      { name: 'Right atrium', circuit: 'heart', o2: 'poor', on: ['ra'], text: 'The venae cavae empty into the right atrium. The heart\'s own veins drain here too, through the coronary sinus.' },
+      { name: 'Tricuspid valve → right ventricle', circuit: 'heart', o2: 'poor', on: ['tri', 'rv'], text: 'Blood crosses the tricuspid valve into the right ventricle. The valve shuts when the ventricle contracts so blood cannot flow back.' },
+      { name: 'Pulmonic valve → pulmonary arteries', circuit: 'pulmonary', o2: 'poor', on: ['pvalve', 'pa'], text: 'The right ventricle pumps blood through the pulmonic valve into the pulmonary trunk, which splits into the right and left pulmonary arteries. These are the only arteries that carry oxygen-poor blood.' },
+      { name: 'Lung capillaries', circuit: 'pulmonary', o2: 'poor → rich', on: ['lungs'], text: 'In the capillaries around the alveoli, CO₂ diffuses out to be exhaled and oxygen diffuses in and binds to hemoglobin. The blood is now oxygen-rich.' },
+      { name: 'Pulmonary veins → left atrium', circuit: 'pulmonary', o2: 'rich', on: ['pvn', 'la'], text: 'The pulmonary veins, the only veins that carry oxygen-rich blood, return it to the left atrium.' },
+      { name: 'Mitral valve → left ventricle', circuit: 'heart', o2: 'rich', on: ['mit', 'lv'], text: 'Blood crosses the mitral (bicuspid) valve into the left ventricle, the thickest-walled chamber, because it pumps against the high pressure of the whole body.' },
+      { name: 'Aortic valve → aorta', circuit: 'systemic', o2: 'rich', on: ['avalve', 'ao'], text: 'The left ventricle pumps blood through the aortic valve into the aorta. The coronary arteries branch off first, feeding the heart muscle (they fill mostly during diastole).' },
+      { name: 'Arteries & arterioles', circuit: 'systemic', o2: 'rich', on: ['ao', 'body'], text: 'The aorta branches into arteries to the head, arms, organs and legs, then into arterioles, which control resistance and where the blood goes, and finally the capillaries. Then the loop starts again.' }
+    ],
+    compare: [
+      ['Pumped by', 'Right ventricle', 'Left ventricle'],
+      ['Leaves the heart through', 'Pulmonary trunk and arteries', 'Aorta'],
+      ['Its arteries carry', 'Oxygen-poor blood', 'Oxygen-rich blood'],
+      ['Its veins carry', 'Oxygen-rich blood (pulmonary veins)', 'Oxygen-poor blood (venae cavae)'],
+      ['Returns to', 'Left atrium', 'Right atrium'],
+      ['Pressure', 'Low', 'High, so the left ventricle wall is thicker'],
+      ['Job', 'Drop off CO₂ and pick up O₂ in the lungs', 'Deliver O₂ and nutrients to the tissues and pick up CO₂ and waste']
+    ],
+    vessels: [
+      ['Arteries', 'Carry blood away from the heart. Thick, elastic, muscular walls under high pressure.'],
+      ['Arterioles', 'Small arteries whose smooth muscle sets resistance and directs where blood goes.'],
+      ['Capillaries', 'One cell thick. Where oxygen, nutrients, CO₂ and waste are exchanged.'],
+      ['Venules', 'Collect blood from the capillaries.'],
+      ['Veins', 'Return blood to the heart. Thinner, less elastic walls with fewer smooth muscle cells, low pressure, one-way valves; hold most of the blood.']
+    ]
+  };
 
   window.AP_SCENARIOS = [
     // Body organization
@@ -821,7 +1065,7 @@
       why: 'Ligaments connect bone to bone, and a ligament injury is a sprain. A strain is a stretched muscle or tendon.'
     },
     {
-      id: 'sc-burn', group: 'msk',
+      id: 'sc-burn', group: 'skin',
       case: 'A burn on the forearm is red, wet, very painful and blistered. Which skin layers are involved?',
       a: 'The epidermis and part of the dermis (partial thickness)', wrong: ['Only the epidermis (superficial)', 'All of the dermis and into the fat (full thickness)', 'Only the subcutaneous layer'],
       why: 'Blisters and severe pain mean the burn has reached the dermis, where the nerves are, without destroying them. A full-thickness burn often does not hurt because the nerves are gone.'
@@ -859,6 +1103,12 @@
       why: 'Insulin is the key that lets glucose into most cells. Without it, the cells starve despite high blood glucose and burn fat, which produces ketone acids (ketoacidosis).'
     },
     // Heart & circulation
+    {
+      id: 'sc-pe', group: 'cv',
+      case: 'A clot breaks loose from a deep vein in the calf. Where does it lodge?',
+      a: 'In a pulmonary artery in the lungs', wrong: ['In a coronary artery', 'In an artery in the brain', 'In the kidneys'],
+      why: 'Venous blood returns through the vena cava to the right atrium and right ventricle, which pump it into the pulmonary arteries. They branch smaller and smaller, so the clot gets stuck there (pulmonary embolism).'
+    },
     {
       id: 'sc-svt', group: 'cv',
       case: 'A patient\'s heart rate is 200, and the blood pressure has dropped. Why can a very fast heart rate lower cardiac output?',
@@ -959,6 +1209,19 @@
       case: 'A 24-year-old has sudden lower abdominal pain, a missed period and signs of shock. What should you suspect?',
       a: 'A ruptured ectopic pregnancy', wrong: ['Normal ovulation pain', 'A urinary tract infection', 'Testicular torsion'],
       why: 'An ectopic pregnancy usually implants in a fallopian tube, which can rupture and bleed heavily into the abdomen. Treat for shock and transport.'
+    },
+    // Special senses
+    {
+      id: 'sc-vertigo', group: 'senses',
+      case: 'A patient with a bad ear infection says the room is spinning and keeps vomiting. Which structures are most likely involved?',
+      a: 'The vestibule and semicircular canals of the inner ear', wrong: ['The cochlea only', 'The tympanic membrane only', 'The olfactory receptors'],
+      why: 'The vestibule and semicircular canals sense head position and movement. When they are irritated, the brain gets false movement signals, causing vertigo and nausea.'
+    },
+    {
+      id: 'sc-flight', group: 'senses',
+      case: 'A patient with a head cold has severe ear pain while the medical helicopter descends. Why?',
+      a: 'A blocked eustachian tube cannot equalize middle-ear pressure', wrong: ['The cochlea is overloaded by rotor noise', 'The retina is starved of oxygen', 'The semicircular canals are inflamed'],
+      why: 'The eustachian tube connects the middle ear to the throat to equalize pressure. When congestion blocks it, the pressure difference pushes on the eardrum.'
     }
   ];
 })();

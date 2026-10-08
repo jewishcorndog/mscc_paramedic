@@ -10,10 +10,10 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
-- **A&P** (Body Box), anatomy and physiology from the standard paramedic curriculum (no class
-  slides for it yet). It covers 11 body systems: body organization, cells and fluids, skin,
-  bones and muscles, the nervous and endocrine systems, heart and circulation, blood and
-  immune, respiratory, abdomen and digestion, kidneys and electrolytes, and reproductive.
+- **A&P** (Body Box), built from Chapter 10 (*Review of Human Systems*) of *Sanders'
+  Paramedic Textbook* (6th ed.), the lecture slides. It opens on how blood moves through the
+  heart and body, then lays out all 13 body systems in one place. Topics beyond the slides
+  are marked *.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -48,9 +48,9 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 
 | Tab | What it does |
 | --- | --- |
-| **Learn** | Every body system with its key points and what it means in the field, a searchable glossary, a table of normal adult values (vital signs, labs, volumes), and applied cases with their answers. |
-| **Cards** | Flashcard decks: terms (term to meaning, meaning to term, or mixed), key facts, normal values, applied cases ("what is going on in this patient's body?"), and the key points of each topic. Pick which body systems to include. |
-| **Quiz** | Multiple-choice questions on terms, key facts, normal values and applied cases, with the reason after each case. |
+| **Learn** | The **Overview** steps through the route of blood (body → venae cavae → right heart → lungs → left heart → aorta → body) on a diagram that lights up each stop, compares the pulmonary and systemic circuits, lists the vessels in order, has a "put it in order" drill, and shows every body system on one page. Also each system's topics with "In the field" notes, a searchable glossary, normal adult values, and applied cases with their answers. |
+| **Cards** | Flashcard decks: blood flow ("where does it go next?"), terms (term to meaning, meaning to term, or mixed), key facts, normal values, applied cases ("what is going on in this patient's body?"), and the key points of each topic. Pick which body systems to include. |
+| **Quiz** | Multiple-choice questions on blood flow, terms, key facts, normal values and applied cases, with the reason after each one. |
 | **Stats** | Accuracy per body system for terms, facts and applied cases, with a button to study your weakest system. |
 
 A&P content lives in `js/ap-data.js`.

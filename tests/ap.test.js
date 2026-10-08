@@ -8,6 +8,7 @@ const TERMS = globalThis.AP_TERMS;
 const FACTS = globalThis.AP_FACTS;
 const NORMALS = globalThis.AP_NORMALS;
 const CASES = globalThis.AP_SCENARIOS;
+const FLOW = globalThis.AP_FLOW;
 let n = 0;
 function t(name, fn) { fn(); n++; }
 
@@ -55,6 +56,26 @@ t('facts, normals and cases have three distinct wrong answers', () => {
     assert.strictEqual(new Set([x.value].concat(x.wrong)).size, 4, x.name);
   });
   CASES.forEach(x => assert(x.case && x.why, x.id));
+});
+
+t('every system on the overview has a description and organs', () => {
+  globalThis.AP_GROUPS.forEach(g => assert(g.name && g.does && g.organs, g.id));
+});
+
+t('the blood-flow route is complete and lights up known diagram parts', () => {
+  const PARTS = ['body', 'vc', 'ra', 'tri', 'rv', 'pvalve', 'pa', 'lungs', 'pvn', 'la', 'mit', 'lv', 'avalve', 'ao'];
+  const names = FLOW.steps.map(s => s.name);
+  assert.strictEqual(new Set(names).size, names.length);
+  FLOW.steps.forEach(s => {
+    assert(s.text && s.on.length && ['systemic', 'pulmonary', 'heart'].indexOf(s.circuit) !== -1, s.name);
+    s.on.forEach(id => assert(PARTS.indexOf(id) !== -1, id));
+  });
+  PARTS.forEach(id => assert(FLOW.steps.some(s => s.on.indexOf(id) !== -1), 'never lit: ' + id));
+  // Right heart before the lungs, lungs before the left heart, left heart before the aorta.
+  const at = id => FLOW.steps.findIndex(s => s.on.indexOf(id) !== -1);
+  assert(at('vc') < at('ra') && at('ra') < at('rv') && at('rv') < at('pa') && at('pa') < at('lungs') &&
+    at('lungs') < at('la') && at('la') < at('lv') && at('lv') < at('ao'));
+  FLOW.compare.forEach(r => assert.strictEqual(r.length, 3));
 });
 
 console.log(n + ' A&P tests passed');

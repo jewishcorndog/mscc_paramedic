@@ -205,7 +205,7 @@
   var SUBJECTS = {
     pharm: ['Drug Box', 'Motlow State Paramedic · TN protocols', 'Paramedic Drug Box'],
     cardio: ['Rhythm Box', 'Motlow State Paramedic · Ch. 21 Cardiology', 'Paramedic Rhythm Box'],
-    ap: ['Body Box', 'Motlow State Paramedic · Anatomy & Physiology', 'Paramedic Body Box']
+    ap: ['Body Box', 'Motlow State Paramedic · Ch. 10 Human Systems', 'Paramedic Body Box']
   };
   var subject = 'pharm';
   try { subject = localStorage.getItem(SUBJ_KEY) || 'pharm'; } catch (e) { /* storage blocked */ }
