@@ -127,7 +127,8 @@
   }
 
   // ---------- Tabs ----------
-  var VIEWS = {};
+  // Learn and Math come from pharm-learn.js.
+  var VIEWS = Object.assign({}, window.PHARM_VIEWS);
   function showTab(tab) {
     S.tab = tab; save();
     $all('#subj-pharm .tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === tab)); });
