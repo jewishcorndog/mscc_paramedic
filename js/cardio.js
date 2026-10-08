@@ -464,7 +464,7 @@
     ['conditions', 'Conditions', 'ACS, heart failure, tamponade, dissection…'],
     ['treatments', 'Treatments & devices', 'CPR, defib, cardioversion, pacing, ICD, LVAD…'],
     ['basics', 'ECG basics', 'Waves, intervals, paper, leads, axis'],
-    ['pump', 'Na-K pump & cell', 'Pump, ions, action potential phases, refractory periods'],
+    ['pump', 'Na-K pump & cell', 'Pump, resting potential, depolarization, calcium, action potential phases'],
     ['conduct', 'Conduction pathway', 'SA node to Purkinje fibers, rates, blocks, ectopic beats']
   ];
 
@@ -853,7 +853,7 @@
         S.learn === 'conduct' ? '<div id="learn-list" class="pump-view cx-view">' + cxHtml() + '</div>' :
         '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
         '<div class="ref-list" id="learn-list"></div>');
-    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); } else if (S.learn === 'conduct') cxSet(cxStep); else learnFilter();
+    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); stpSet('story', STP.story.i); stpSet('ca', STP.ca.i); } else if (S.learn === 'conduct') cxSet(cxStep); else learnFilter();
   }
 
   function learnFilter() {
@@ -927,7 +927,7 @@
     var root = $('.pump-view');
     if (!root) return;
     var pos = PUMP_POS[pumpStep], st = PUMP.steps[pumpStep];
-    $all('.ion', root).forEach(function (g) {
+    $all('.ion[data-ion]', root).forEach(function (g) {
       var p = pos[Number(g.dataset.ion)];
       g.style.transform = 'translate(' + p[0] + 'px,' + p[1] + 'px)';
     });
@@ -950,6 +950,138 @@
       pumpSet(pumpStep + 1);
     }
     if (b) b.textContent = on ? 'Pause' : 'Play';
+  }
+
+  // ---------- Membrane story and calcium steppers ----------
+  // Each diagram element carries data-on="key ..." (shown when the step has any of the keys)
+  // or data-off="key ..." (hidden when it does).
+  var STP = { story: { i: 0, timer: null }, ca: { i: 0, timer: null } };
+  function stpSteps(k) { return k === 'story' ? PUMP.story : PUMP.calcium; }
+  function stpKeys(k, st) {
+    return k === 'story' ? st.open.map(function (c) { return 'ch-' + c; }).concat(st.flows, ['in-' + st.inside]) : st.show;
+  }
+  function dot(cls, label, x, y, r) {
+    return '<g class="ion ' + cls + '" style="transform:translate(' + x + 'px,' + y + 'px)"><circle r="' + (r || 7.5) + '"/><text y="3">' + label + '</text></g>';
+  }
+  // Ions streaming along x from y0 to y1, staggered.
+  function stream(key, cls, label, x, y0, y1, n) {
+    var s = '<g class="flow" data-on="' + key + '"><path d="M' + x + ' ' + y0 + 'V' + y1 + '" class="flow-arrow" marker-end="url(#arrowhead)"/>';
+    for (var i = 0; i < n; i++) {
+      s += '<g class="mover" style="--dy:' + (y1 - y0) + 'px;--f:' + ((i + 0.5) / n).toFixed(2) + ';animation-delay:' + (-i * 1.8 / n).toFixed(2) + 's">' + dot(cls, label, x, y0) + '</g>';
+    }
+    return s + '</g>';
+  }
+  function chan(key, x, label) {
+    return '<g class="chan" data-on="' + key + '"><rect x="' + (x - 13) + '" y="80" width="8" height="42" rx="3" class="ch-wall"/>' +
+      '<rect x="' + (x + 5) + '" y="80" width="8" height="42" rx="3" class="ch-wall"/><rect x="' + (x - 5) + '" y="96" width="10" height="10" class="ch-gate"/>' +
+      '<text x="' + x + '" y="12" class="ch-label">' + label + '</text></g>';
+  }
+  var GY = function (mv) { return 34 + (30 - mv) * 1.3; };
+  function storySvg() {
+    var bg = '';
+    [[24, 30], [78, 52], [130, 28], [190, 56], [250, 34]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4.5" class="bg-na"/>'; });
+    [[76, 24], [186, 30]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4.5" class="bg-ca"/>'; });
+    [[28, 176], [80, 196], [128, 164], [196, 190], [250, 170]].forEach(function (p) { bg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4.5" class="bg-k"/>'; });
+    var signs = '';
+    [78, 131, 186, 252].forEach(function (x) {
+      signs += '<text x="' + x + '" y="78" class="sign" data-on="in-neg">+</text><text x="' + x + '" y="78" class="sign" data-on="in-pos">−</text>' +
+        '<text x="' + x + '" y="136" class="sign neg" data-on="in-neg">−</text><text x="' + x + '" y="136" class="sign pos" data-on="in-pos">+</text>';
+    });
+    var gauge = '<rect x="276" y="22" width="58" height="190" rx="8" class="gauge-bg"/><text x="305" y="15" class="ch-label">Inside</text>';
+    [[20, '+20'], [0, '0'], [-40, '–40'], [-70, '–70'], [-90, '–90']].forEach(function (g) {
+      gauge += '<path d="M286 ' + GY(g[0]) + 'h10" class="gauge-tick"/><text x="300" y="' + (GY(g[0]) + 3) + '" class="gauge-num">' + g[1] + '</text>';
+    });
+    gauge += '<text x="305" y="207" class="gauge-num mid">mV</text>' +
+      '<g class="needle"><path d="M282 0h22" /><circle cx="282" cy="0" r="3.5"/></g>';
+    return '<svg class="story-svg" viewBox="0 0 340 220" role="img" aria-labelledby="story-cap-t">' +
+      '<defs><marker id="arrowhead" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="arrow-tip"/></marker></defs>' +
+      '<rect width="268" height="84" class="zone-out"/><rect y="118" width="268" height="102" class="zone-in"/>' +
+      '<rect y="84" width="268" height="34" class="membrane"/><path d="M0 88H268M0 114H268" class="membrane-line"/>' +
+      '<text x="9" y="44" class="zone-v" transform="rotate(-90 9 44)">OUTSIDE</text><text x="9" y="168" class="zone-v" transform="rotate(-90 9 168)">INSIDE</text>' +
+      bg + signs +
+      chan('ch-na', 50, 'Fast Na⁺') + chan('ch-ca', 104, 'Slow Ca²⁺') + chan('ch-k', 158, 'K⁺') +
+      '<g class="chan pump-mini" data-on="ch-pump"><rect x="208" y="76" width="30" height="50" rx="10" class="ch-pump"/><text x="223" y="104" class="ch-pump-t">3:2</text><text x="223" y="12" class="ch-label">Na-K pump</text></g>' +
+      stream('naIn', 'na', 'Na⁺', 50, 30, 168, 3) + stream('caIn', 'ca', 'Ca', 104, 34, 160, 2) +
+      stream('kOut', 'k', 'K⁺', 158, 176, 34, 3) + stream('kLeak', 'k', 'K⁺', 158, 160, 50, 1) +
+      stream('pump', 'na', 'Na⁺', 214, 160, 30, 3) + stream('pump', 'k', 'K⁺', 232, 34, 168, 2) +
+      '<g class="flow" data-on="nbr"><path d="M266 196H186" class="flow-arrow" marker-end="url(#arrowhead)"/>' +
+      '<g class="mover side" style="--dx:-70px;--f:0.5">' + dot('plus', '+', 252, 196) + '</g><text x="262" y="214" class="ch-label end">current from the next cell</text></g>' +
+      gauge + '</svg>';
+  }
+  function caSvg() {
+    var actin = function (x0, x1, y) { return '<path d="M' + x0 + ' ' + y + 'H' + x1 + '" class="actin"/>'; };
+    var trop = function (xs, y) { return xs.map(function (x) { return '<circle cx="' + x + '" cy="' + y + '" r="3.2" class="trop"/>'; }).join(''); };
+    var heads = '';
+    for (var x = 122; x <= 218; x += 16) { if (x < 160 || x > 180) heads += '<path d="M' + x + ' 178l' + (x < 170 ? -6 : 6) + ' -9M' + x + ' 178l' + (x < 170 ? -6 : 6) + ' 9" class="myo-head"/>'; }
+    var stored = '';
+    [[136, 82], [158, 90], [182, 80], [206, 90], [232, 82], [258, 90], [282, 80], [302, 90]].forEach(function (p) { stored += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" class="bg-ca"/>'; });
+    var cloud = '';
+    [[60, 126], [96, 138], [140, 124], [176, 136], [214, 126], [250, 138], [286, 126], [316, 136]].forEach(function (p) { cloud += dot('ca', 'Ca', p[0], p[1], 6.5); });
+    return '<svg class="story-svg" viewBox="0 0 340 220" role="img" aria-labelledby="ca-cap-t">' +
+      '<rect width="340" height="34" class="zone-out"/><rect y="50" width="340" height="170" class="zone-in"/>' +
+      '<rect y="34" width="340" height="16" class="membrane"/>' +
+      '<text x="56" y="10" class="ch-label">Slow Ca²⁺ channel</text><text x="288" y="10" class="ch-label">Na⁺/Ca²⁺ exchanger</text>' +
+      '<rect x="44" y="30" width="7" height="24" rx="3" class="ch-wall"/><rect x="61" y="30" width="7" height="24" rx="3" class="ch-wall"/>' +
+      '<rect x="274" y="28" width="28" height="28" rx="9" class="ch-pump"/>' +
+      '<rect x="120" y="68" width="200" height="32" rx="14" class="sr"/><text x="112" y="82" class="ch-label end">Sarcoplasmic reticulum</text><text x="112" y="93" class="ch-label end">(calcium store)</text>' +
+      '<g data-off="srOut">' + stored + '</g>' +
+      stream('caIn', 'ca', 'Ca', 56, 14, 70, 2) +
+      stream('srOut', 'ca', 'Ca', 160, 100, 132, 1) + stream('srOut', 'ca', 'Ca', 230, 100, 132, 1) + stream('srOut', 'ca', 'Ca', 296, 100, 132, 1) +
+      stream('srIn', 'ca', 'Ca', 176, 136, 102, 1) + stream('srIn', 'ca', 'Ca', 250, 136, 102, 1) +
+      '<g class="flow" data-on="srIn"><rect x="190" y="118" width="36" height="13" rx="6.5" class="atp-pill"/><text x="208" y="127.5" class="atp-t">ATP</text></g>' +
+      stream('ncx', 'ca', 'Ca', 280, 70, 12, 1) + stream('ncx', 'na', 'Na⁺', 296, 12, 70, 2) +
+      '<g class="flow" data-on="cloud">' + cloud + '</g>' +
+      '<g class="sarc">' +
+      '<g class="sarc-l">' + '<path d="M40 146V210" class="zline"/>' + actin(40, 158, 158) + actin(40, 158, 198) + trop([70, 104, 138], 158) + trop([70, 104, 138], 198) + '</g>' +
+      '<g class="sarc-r">' + '<path d="M300 146V210" class="zline"/>' + actin(182, 300, 158) + actin(182, 300, 198) + trop([202, 236, 270], 158) + trop([202, 236, 270], 198) + '</g>' +
+      '<path d="M114 178H226" class="myosin"/>' + heads + '</g>' +
+      '<g class="flow" data-on="bound">' + [70, 104, 138].map(function (x) { return '<circle cx="' + x + '" cy="158" r="3.2" class="trop-on sl"/><circle cx="' + x + '" cy="198" r="3.2" class="trop-on sl"/>'; }).join('') +
+      [202, 236, 270].map(function (x) { return '<circle cx="' + x + '" cy="158" r="3.2" class="trop-on sr2"/><circle cx="' + x + '" cy="198" r="3.2" class="trop-on sr2"/>'; }).join('') + '</g>' +
+      '<text x="170" y="216" class="ch-label">Actin (thin) · myosin (thick) · troponin (dots)</text>' +
+      '</svg>';
+  }
+  function stpSet(k, n) {
+    var steps = stpSteps(k), st;
+    STP[k].i = (n + steps.length) % steps.length;
+    st = steps[STP[k].i];
+    var root = $('[data-stp-root="' + k + '"]');
+    if (!root) return;
+    var keys = stpKeys(k, st);
+    var has = function (attr) { return attr.split(' ').some(function (x) { return keys.indexOf(x) !== -1; }); };
+    $all('[data-on]', root).forEach(function (g) { g.classList.toggle('on', has(g.getAttribute('data-on'))); });
+    $all('[data-off]', root).forEach(function (g) { g.classList.toggle('gone', has(g.getAttribute('data-off'))); });
+    if (k === 'story') {
+      $('.needle', root).style.transform = 'translateY(' + GY(st.mv) + 'px)';
+      $('#story-cap-t').textContent = (STP[k].i + 1) + '. ' + st.title;
+      $('#story-cap-p').innerHTML = '<span class="tag">' + esc(st.phase) + '</span> <span class="tag">' + (st.mv > 0 ? '+' : st.mv < 0 ? '–' : '') + Math.abs(st.mv) + ' mV</span> <span class="tag">ECG: ' + esc(st.ecg) + '</span>' +
+        '<br>' + esc(st.text) + (st.std ? STD : '');
+    } else {
+      root.querySelector('.sarc').classList.toggle('short', keys.indexOf('contract') !== -1);
+      $('#ca-cap-t').textContent = (STP[k].i + 1) + '. ' + st.title;
+      $('#ca-cap-p').innerHTML = esc(st.text) + (st.std ? STD : '');
+    }
+    $all('[data-stp="' + k + '"][data-si]', root).forEach(function (b) { b.setAttribute('aria-pressed', String(Number(b.dataset.si) === STP[k].i)); });
+  }
+  function stpPlay(k, on) {
+    clearInterval(STP[k].timer);
+    STP[k].timer = null;
+    var b = $('[data-act="stp-play"][data-stp="' + k + '"]');
+    if (on) {
+      STP[k].timer = setInterval(function () {
+        if (!$('[data-stp-root="' + k + '"]')) return stpPlay(k, false);
+        stpSet(k, STP[k].i + 1);
+      }, 4200);
+      stpSet(k, STP[k].i + 1);
+    }
+    if (b) b.textContent = on ? 'Pause' : 'Play';
+  }
+  function stpStopAll() { stpPlay('story', false); stpPlay('ca', false); }
+  function stpControls(k) {
+    return '<div class="row spread"><div class="seg">' + stpSteps(k).map(function (s, i) {
+      return '<button data-stp="' + k + '" data-si="' + i + '" aria-label="Step ' + (i + 1) + '">' + (i + 1) + '</button>';
+    }).join('') + '</div>' +
+      '<div class="row"><button class="btn" data-act="stp-prev" data-stp="' + k + '">Back</button><button class="btn" data-act="stp-play" data-stp="' + k + '">Play</button>' +
+      '<button class="btn primary" data-act="stp-next" data-stp="' + k + '">Next</button></div></div>';
   }
 
   // Action potential curves, in (ms, mV). Muscle: phases 4,0,1,2,3,4. Pacemaker: two beats.
@@ -1019,13 +1151,27 @@
   var PUMP_LINK = /kalemia|electrolyte|digitalis|digoxin|sodium|calcium channel/i;
   function pumpHtml() {
     var linked = RHYTHMS.filter(function (r) { return PUMP_LINK.test(r.causes.join(' ')); });
-    return '<div class="panel"><p class="eyebrow">Sodium-potassium exchange pump</p>' +
+    return '<div class="panel"><p class="eyebrow">Where the heart\'s electricity comes from</p><p class="pump-sum">' + esc(PUMP.spark) + '</p></div>' +
+      '<div class="panel" data-stp-root="story"><p class="eyebrow">One beat, from rest and back</p>' +
+      '<p class="small muted">A ventricular muscle cell. Watch which channels open, which way the ions move, and what that does to the charge inside.</p>' +
+      storySvg() + '<div class="pump-cap story-cap"><p class="v-title" id="story-cap-t"></p><p id="story-cap-p"></p></div>' + stpControls('story') +
+      '<div class="core-grid defs"><div><h4>Depolarization</h4><p>Positive ions (Na⁺, and Ca²⁺ in pacemaker cells) rush in and the inside loses its negative charge. Electrical, and it comes first.</p></div>' +
+      '<div><h4>Repolarization</h4><p>K⁺ flows out and the inside returns to negative. Then the pump puts the ions back where they started.</p></div>' +
+      '<div><h4>Contraction</h4><p>Mechanical. It follows depolarization only because calcium links the two. Electrical activity without an effective squeeze is PEA.' + STD + '</p></div></div></div>' +
+      '<div class="panel"><p class="eyebrow">Sodium-potassium exchange pump</p>' +
       '<p class="pump-sum"><strong>3 Na⁺ out, 2 K⁺ in</strong>, every cycle, paid for with ATP. Because more positive charge leaves than enters, the inside of the cell stays negative. That resets the cell after each beat so it can fire again.</p>' +
       pumpSvg() +
       '<div class="pump-cap"><p class="v-title" id="pump-cap-t"></p><p id="pump-cap-p"></p></div>' +
       '<div class="row spread"><div class="seg">' + [0, 1, 2, 3].map(function (i) { return '<button data-pstep="' + i + '" aria-label="Step ' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
       '<div class="row"><button class="btn" data-act="pump-prev">Back</button><button class="btn" data-act="pump-play">Play</button><button class="btn primary" data-act="pump-next">Next</button></div></div></div>' +
       '<div class="panel"><p class="eyebrow">Action potential</p><p class="small muted">Tap a phase on the curve or below. Shaded areas are the refractory periods.</p><div id="ap-box"></div></div>' +
+      '<div class="panel" data-stp-root="ca"><p class="eyebrow">Calcium: from signal to squeeze</p>' +
+      '<p class="pump-sum">Sodium and potassium make the electrical signal. <strong>Calcium turns it into a heartbeat.</strong> It has two jobs.</p>' +
+      '<div class="core-grid">' + PUMP.calciumJobs.map(function (c) { return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>'; }).join('') + '</div>' +
+      caSvg() + '<div class="pump-cap"><p class="v-title" id="ca-cap-t"></p><p id="ca-cap-p"></p></div>' + stpControls('ca') +
+      '<p class="eyebrow ca-bedside">Calcium at the bedside</p><div class="core-grid">' + PUMP.calciumClinical.map(function (c) {
+        return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>';
+      }).join('') + '</div></div>' +
       '<div class="panel"><p class="eyebrow">Refractory periods</p>' + PUMP.refractory.map(function (r) {
         return '<div><h4 class="ref-h">' + esc(r.name) + '</h4><p>' + esc(r.text) + '</p><p class="small muted">On the ECG: ' + esc(r.ecg) + STD + '</p></div>';
       }).join('') + '</div>' +
@@ -1038,7 +1184,7 @@
       '<p class="eyebrow">Rhythms in this deck with electrolyte, digoxin or channel causes</p><div class="chips">' + linked.map(function (r) {
         return '<button class="chip" data-goto-rhythm="' + r.id + '">' + esc(r.name) + '</button>';
       }).join('') + '</div></div>' +
-      '<div class="panel"><p class="eyebrow">Check yourself</p><p>' + PUMP.qa.length + ' questions on the pump, ions, phases and refractory periods.</p>' +
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>' + PUMP.qa.length + ' questions on the pump, resting potential, depolarization, calcium, phases and refractory periods.</p>' +
       '<div class="row"><button class="btn primary" data-act="pump-cards">Flashcards</button><button class="btn" data-act="pump-quiz">Quiz me</button></div></div>' +
       '<p class="std-note">* Standard physiology the slides use but don\'t spell out.</p>';
   }
@@ -1156,11 +1302,18 @@
   }
 
   learnEl.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-phase],[data-goto-rhythm]');
+    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-stp],[data-phase],[data-goto-rhythm]');
     if (!t) return;
     if (t.dataset.seg === 'apCell') { apCell = t.dataset.val; return apRender(); }
     if (t.dataset.seg) { pumpPlay(false); cxPlay(false); S.learn = t.dataset.val; save(); return learnRender(); }
     if (t.dataset.pstep) { pumpPlay(false); return pumpSet(Number(t.dataset.pstep)); }
+    if (t.dataset.stp) {
+      var k = t.dataset.stp;
+      if (t.dataset.act === 'stp-play') return stpPlay(k, !STP[k].timer);
+      stpPlay(k, false);
+      if (t.dataset.si) return stpSet(k, Number(t.dataset.si));
+      return stpSet(k, STP[k].i + (t.dataset.act === 'stp-next' ? 1 : -1));
+    }
     if (t.dataset.cstep) { cxPlay(false); return cxSet(Number(t.dataset.cstep)); }
     if (t.dataset.phase) { apPhase = Number(t.dataset.phase); return apRender(); }
     if (t.dataset.gotoRhythm) {
