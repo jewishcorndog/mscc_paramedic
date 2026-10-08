@@ -264,4 +264,52 @@ t('12-lead widths and intervals fit the criteria', () => {
   }
 });
 
+t('MI data points at real patterns', () => {
+  const M = globalThis.CARDIO_MI, pids = new Set(TW.patterns.map(p => p.id));
+  M.territories.concat(M.classes).forEach(x => x.pids.forEach(id => assert(pids.has(id), x.id + ' unknown pattern ' + id)));
+  assert.deepStrictEqual(M.stages.map(st => st.id), TWG.stages);
+  assert(M.qa.length >= 25);
+  M.qa.forEach(b => assert(b.q && b.a && b.wrong.length >= 3 && !b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, b.q));
+});
+
+t('MI patterns put the ST changes in the right leads', () => {
+  [['anterolateral', ['V4', 'V5', 'I', 'aVL'], ['III']], ['inferolateral', ['II', 'III', 'V6'], ['aVL']], ['inferoposterior', ['III', 'aVF'], ['V2']],
+    ['ischemia', [], ['V5', 'II']], ['sgarbossa', ['V6', 'aVL'], ['V2']]].forEach(([id, up, down]) => {
+    for (let seed = 1; seed < 5; seed++) {
+      up.forEach(L => assert(stShift(id, L, seed) > 0.08, id + ': no ST elevation in ' + L));
+      down.forEach(L => assert(stShift(id, L, seed) < -0.05, id + ': no ST depression in ' + L));
+    }
+  });
+  // Old MI: Q waves in the inferior leads, ST back at baseline.
+  for (let seed = 1; seed < 5; seed++) {
+    ['II', 'III', 'aVF'].forEach(L => assert(Math.abs(stShift('old-inferior', L, seed)) < 0.06, 'old MI ST not flat in ' + L));
+  }
+});
+
+t('STEMI stages change over time', () => {
+  // Voltage 22 ms before each QRS peak (where a pathologic Q sits), against the PR baseline.
+  function qDepth(g, L) {
+    const s = g.leads[L], e = s.map((_, i) => TWG.leads.reduce((m, k) => m + Math.abs(g.leads[k][i]), 0));
+    const top = Math.max(...e.slice(0, 2500)), pk = [];
+    for (let i = 100; i < e.length - 100; i++) if (e[i] > 0.5 * top && e[i] >= e[i - 1] && e[i] > e[i + 1] && (!pk.length || i - pk[pk.length - 1] > 150)) pk.push(i);
+    return pk.reduce((m, i) => m + s[i - 11] - s[i - 40], 0) / pk.length;
+  }
+  // T-wave peak voltage (T peak sits at qt - 145 ms after the QRS center), against the PR baseline.
+  function tWave(g, L) {
+    const s = g.leads[L], e = s.map((_, i) => TWG.leads.reduce((m, k) => m + Math.abs(g.leads[k][i]), 0));
+    const top = Math.max(...e.slice(0, 2500)), pk = [], off = Math.round((g.qt - 0.145) * 500);
+    for (let i = 100; i < e.length - off - 10; i++) if (e[i] > 0.5 * top && e[i] >= e[i - 1] && e[i] > e[i + 1] && (!pk.length || i - pk[pk.length - 1] > 150)) pk.push(i);
+    return pk.reduce((m, i) => m + s[i + off] - s[i - 40], 0) / pk.length;
+  }
+  for (let seed = 1; seed < 5; seed++) {
+    const acute = TWG.generate('anterior', seed, { stage: 'acute' }), old = TWG.generate('anterior', seed, { stage: 'old' });
+    assert(qDepth(old, 'V4') < qDepth(acute, 'V4') - 0.3, 'no Q wave in old anterior MI');
+    // Hyperacute: tall T, little ST; T inversion stage: T below baseline.
+    const hy = TWG.generate('anterior', seed, { stage: 'hyperacute' }), inv = TWG.generate('anterior', seed, { stage: 'inverted' });
+    assert(tWave(hy, 'V3') > 0.45, 'hyperacute T not tall');
+    assert(tWave(inv, 'V3') < -0.1, 'T not inverted in the inverted stage');
+    assert(tWave(acute, 'V3') > 0.2, 'acute T not upright');
+  }
+});
+
 console.log(n + ' cardiology test groups passed');

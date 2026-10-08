@@ -15,7 +15,11 @@
   // Question-and-answer sets: ECG basics, the sodium-potassium pump, the conduction pathway and the 12-lead.
   var QA = { basics: { list: BASICS, pre: 'b', title: 'ECG basics' }, pump: { list: PUMP.qa, pre: 'p', title: 'Na-K pump & cell' },
     conduct: { list: CONDUCT.qa, pre: 'c', title: 'Conduction pathway' }, twelve: { list: TW.qa, pre: 'w', title: '12-lead' } };
-  var TWP_BY = {}, WALL_BY = {}, LEAD_BY = {};
+  var MI = window.CARDIO_MI;
+  QA.mi = { list: MI.qa, pre: 'm', title: '12-lead MI' };
+  var TWP_BY = {}, WALL_BY = {}, LEAD_BY = {}, TERR_BY = {}, STAGE_BY = {}, TERR_OF = {};
+  MI.territories.forEach(function (t) { TERR_BY[t.id] = t; t.pids.forEach(function (id) { TERR_OF[id] = t; }); });
+  MI.stages.forEach(function (st) { STAGE_BY[st.id] = st; });
   TW.patterns.forEach(function (p) { TWP_BY[p.id] = p; });
   TW.walls.forEach(function (w) { WALL_BY[w.id] = w; });
   TW.leads.forEach(function (l) { LEAD_BY[l.id] = l; });
@@ -103,10 +107,10 @@
     stripMode: 'mc',
     stripLen: 20,
     stripSrc: 'mix',
-    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false, twelve: false },
+    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false, twelve: false, mi: false },
     cardDir: 'forward',
     quizLen: 20,
-    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, twelve: true },
+    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, twelve: true, mi: true },
     learn: 'rhythms',
     stats: {}
   }, loadSaved());
@@ -119,6 +123,10 @@
   // ...and the 12-lead.
   if (S.cardDecks.twelve === undefined) S.cardDecks.twelve = false;
   if (S.quizTopics.twelve === undefined) S.quizTopics.twelve = true;
+  // ...and the MI deck.
+  if (S.cardDecks.mi === undefined) S.cardDecks.mi = false;
+  if (S.quizTopics.mi === undefined) S.quizTopics.mi = true;
+  if (S.twPage !== 'mi') S.twPage = 'read';
   S.stripSel = S.stripSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
 
   function save() {
@@ -476,7 +484,16 @@
   function twHtml(t, show) {
     var pat = TWP_BY[t.pid];
     var hl = show ? (t.pid === 'axis' ? { I: 'face', II: 'face', aVF: 'face' } : twHl(pat)) : {};
-    return TWG.render(TWG.generate(t.pid, t.seed, { axis: t.axis }), { extra: t.extra, hl: hl });
+    return TWG.render(TWG.generate(t.pid, t.seed, { axis: t.axis, stage: t.stage }), { extra: t.extra, hl: hl });
+  }
+  // A random STEMI territory, stage or class question for the MI quiz and cards.
+  var MI_STAGE_PIDS = ['anterior', 'inferior', 'anterolateral', 'lateral'];
+  function terrHtml(t) {
+    return '<dl class="cx-facts"><dt>Leads</dt><dd>' + esc(t.leads) + '</dd><dt>Mirror image</dt><dd>' + esc(t.recip) + '</dd>' +
+      '<dt>Usual artery</dt><dd>' + esc(t.artery) + (t.std ? ' <span class="std-mark" title="Standard ECG teaching">*</span>' : '') + '</dd><dt>Watch for</dt><dd>' + esc(t.watch) + '</dd></dl>';
+  }
+  function stageHtml(st) {
+    return '<p><strong>' + esc(st.name) + '</strong> <span class="muted small">' + esc(st.when) + '</span></p><p>' + esc(st.ecg) + '</p>';
   }
   // Axis practice: a random angle well inside one category.
   var AXIS_DRAW = { normal: [15, 80], 'phys-left': [-25, -8], 'path-left': [-80, -42], right: [105, 165], extreme: [-165, -105] };
@@ -511,7 +528,8 @@
     ['basics', 'ECG basics', 'Waves, intervals, paper, leads, axis'],
     ['pump', 'Na-K pump & cell', 'Pump, ions, action potential phases, refractory periods'],
     ['conduct', 'Conduction pathway', 'SA node to Purkinje fibers, rates, blocks, ectopic beats'],
-    ['twelve', '12-lead', 'Drawn 12-leads to name, plus walls, axis, bundle branch blocks, can\'t-miss ECGs']
+    ['twelve', '12-lead', 'Drawn 12-leads to name, plus walls, axis, bundle branch blocks, can\'t-miss ECGs'],
+    ['mi', '12-lead MI', 'Find the MI on drawn 12-leads, its stage and artery, STEMI criteria, equivalents and mimics']
   ];
 
   function dirFor() { return S.cardDir === 'mixed' ? (Math.random() < 0.5 ? 'forward' : 'reverse') : S.cardDir; }
@@ -527,10 +545,14 @@
       if (t.kind === 'condition' ? !d.conditions : !d.treatments) return;
       TFIELDS.forEach(function (f) { if ((t[f[0]] || []).length) list.push({ kind: 'topic', id: t.id, field: f[0], dir: dirFor() }); });
     });
-    ['basics', 'pump', 'conduct', 'twelve'].forEach(function (set) {
+    ['basics', 'pump', 'conduct', 'twelve', 'mi'].forEach(function (set) {
       if (d[set]) QA[set].list.forEach(function (b, i) { list.push({ kind: 'basic', set: set, id: QA[set].pre + i, idx: i, field: set }); });
     });
     if (d.twelve) TW.patterns.forEach(function (p) { list.push({ kind: 'tw', id: 'tw-' + p.id, pid: p.id, field: 'twelve' }); });
+    if (d.mi) {
+      MI.territories.forEach(function (t) { list.push({ kind: 'mi', id: 'mi-where-' + t.id, terr: t.id, field: 'mi' }); });
+      MI.stages.forEach(function (st) { list.push({ kind: 'mi', id: 'mi-stage-' + st.id, stage: st.id, field: 'mi' }); });
+    }
     return shuffle(list);
   }
 
@@ -554,6 +576,18 @@
       if (!card.seed) card.seed = newSeed();
       return band(flipped ? r.name : '', 'Name the rhythm', !flipped) + '<div class="card-body">' + stripHtml(card.id, card.seed) +
         (flipped ? '<hr class="divider"><p>' + esc(r.look) + '</p>' : '<p class="hint">Tap to flip</p>') + '</div>';
+    }
+    if (card.kind === 'mi') {
+      if (!card.seed) card.seed = newSeed();
+      if (card.terr) {
+        var tr = TERR_BY[card.terr], tp = TWP_BY[tr.pids[0]];
+        return band(flipped ? tr.name + ' MI' : '', 'Where is this MI?', !flipped) + '<div class="card-body">' +
+          twHtml({ pid: tp.id, seed: card.seed, extra: tp.extra }, flipped) + (flipped ? '<hr class="divider">' + terrHtml(tr) : '<p class="hint">Tap to flip</p>') + '</div>';
+      }
+      if (!card.pid) card.pid = pick(MI_STAGE_PIDS);
+      var sg = STAGE_BY[card.stage];
+      return band(flipped ? sg.name : '', 'What stage is this STEMI?', !flipped) + '<div class="card-body">' +
+        twHtml({ pid: card.pid, seed: card.seed, stage: card.stage }, flipped) + (flipped ? '<hr class="divider">' + stageHtml(sg) : '<p class="hint">Tap to flip</p>') + '</div>';
     }
     if (card.kind === 'tw') {
       var pat = TWP_BY[card.pid];
@@ -622,6 +656,7 @@
     if (card.kind === 'care') return 'care';
     if (card.kind === 'topic') return 'topic';
     if (card.kind === 'tw') return 'twelve';
+    if (card.kind === 'mi') return 'mi';
     return card.set || 'basics';
   }
 
@@ -633,7 +668,7 @@
       if (!C.again.has(key)) C.firstTry++;
       C.again.delete(key);
     } else {
-      if (!C.again.has(key)) C.missedCards.push(Object.assign({}, card, { seed: null }));
+      if (!C.again.has(key)) C.missedCards.push(Object.assign({}, card, { seed: null, pid: card.kind === 'mi' ? null : card.pid }));
       C.again.add(key);
       card.seed = null;
       C.queue.splice(Math.min(C.queue.length, 4 + Math.floor(Math.random() * 3)), 0, card);
@@ -669,7 +704,7 @@
   var quizEl = $('#cview-quiz');
   var Q = null;
   var QTOPICS = [['strips', 'Rhythm strips'], ['rules', 'Rhythm rules'], ['care', 'Rhythm causes & care'],
-    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway'], ['twelve', '12-lead']];
+    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway'], ['twelve', '12-lead'], ['mi', '12-lead MI']];
 
   function notIn(list, item) {
     return !list.some(function (x) { return x === item || G.sameItem(x, item); });
@@ -730,6 +765,29 @@
     pump: function () { return qaQ('pump'); },
     conduct: function () { return qaQ('conduct'); },
     // 12-lead: name a drawn 12-lead, read the axis, or a question from the set.
+    // MI: where is it, what stage, how would you sort it, or a question from the set.
+    mi: function () {
+      var r = Math.random(), mc;
+      if (r < 0.35) {
+        var tr = pick(MI.territories), tp = TWP_BY[tr.pids[0]];
+        mc = mcFrom(tr.name, shuffle(MI.territories.filter(function (x) { return x.id !== tr.id; }).map(function (x) { return x.name; })));
+        return { id: 'mi-where-' + tr.id, stat: 'mi', tw: { pid: tp.id, seed: newSeed(), extra: tp.extra, stage: Math.random() < 0.3 ? 'evolving' : null }, terr: tr.id,
+          prompt: 'Where is this MI?' + (tp.extra ? ' <span class="muted small">(bottom row: V4R, V7–V9)</span>' : ''), options: mc.options, answer: mc.answer, explain: 'mi-where' };
+      }
+      if (r < 0.5) {
+        var sg = pick(MI.stages);
+        mc = mcFrom(sg.name, shuffle(MI.stages.filter(function (x) { return x.id !== sg.id; }).map(function (x) { return x.name; })));
+        return { id: 'mi-stage-' + sg.id, stat: 'mi', tw: { pid: pick(MI_STAGE_PIDS), seed: newSeed(), stage: sg.id }, stage: sg.id,
+          prompt: 'What stage is this STEMI?', options: mc.options, answer: mc.answer, explain: 'mi-stage' };
+      }
+      if (r < 0.65) {
+        var cl = pick(MI.classes), pid = pick(cl.pids), p = TWP_BY[pid];
+        mc = mcFrom(cl.name, shuffle(MI.classes.filter(function (x) { return x.id !== cl.id; }).map(function (x) { return x.name; })));
+        return { id: 'mi-class-' + cl.id, stat: 'mi', tw: { pid: pid, seed: newSeed(), extra: p.extra }, cls: cl.id,
+          prompt: 'How would you classify this 12-lead?', options: mc.options, answer: mc.answer, explain: 'mi-class' };
+      }
+      return qaQ('mi');
+    },
     twelve: function () {
       var r = Math.random();
       if (r < 0.45) {
@@ -794,7 +852,7 @@
 
   function quizSetup(error) {
     quizEl.innerHTML =
-      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump, the conduction pathway and the 12-lead.</p></div>' +
+      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump, the conduction pathway, the 12-lead and MI.</p></div>' +
       '<div class="panel"><div class="field-row"><p class="eyebrow">Questions</p>' + seg('quizLen', S.quizLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Topics</p><div class="row">' + QTOPICS.map(function (k) {
         return '<label class="check"><input type="checkbox" data-qtopic="' + k[0] + '"' + (S.quizTopics[k[0]] ? ' checked' : '') + '> ' + esc(k[1]) + '</label>';
@@ -824,6 +882,9 @@
       return '<p><strong>' + esc(pat.name) + '</strong> <span class="muted small">Tinted: where to look' + (pat.recip.length ? '; blue: mirror-image (reciprocal) leads' : '') + '.</span></p>' + twFindHtml(pat);
     }
     if (q.explain === 'axis') return axisExplain(q.axisId);
+    if (q.explain === 'mi-where') return '<p><strong>' + esc(TERR_BY[q.terr].name) + ' MI</strong>' + (q.tw.stage ? ' <span class="muted small">(Q waves forming)</span>' : '') + '</p>' + terrHtml(TERR_BY[q.terr]);
+    if (q.explain === 'mi-stage') return stageHtml(STAGE_BY[q.stage]) + '<p class="muted small">Drawn as: ' + esc(TWP_BY[q.tw.pid].name) + '.</p>';
+    if (q.explain === 'mi-class') { var cp = TWP_BY[q.tw.pid]; return '<p><strong>' + esc(cp.name) + '</strong></p>' + twFindHtml(cp); }
     return '<p>' + esc(QA[q.set || 'basics'].list[q.idx].a) + '</p>';
   }
 
@@ -928,10 +989,10 @@
       seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump'], ['conduct', 'Conduction'], ['twelve', '12-lead']]) +
       (S.learn === 'pump' ? '<div id="learn-list" class="pump-view">' + pumpHtml() + '</div>' :
         S.learn === 'conduct' ? '<div id="learn-list" class="pump-view cx-view">' + cxHtml() + '</div>' :
-        S.learn === 'twelve' ? '<div id="learn-list" class="pump-view tw-view">' + twPageHtml() + '</div>' :
+        S.learn === 'twelve' ? '<div id="learn-list" class="pump-view tw-view">' + seg('twPage', S.twPage, [['read', 'Reading the 12-lead'], ['mi', 'MI']]) + (S.twPage === 'mi' ? miPageHtml() : twPageHtml()) + '</div>' :
         '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
         '<div class="ref-list" id="learn-list"></div>');
-    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); } else if (S.learn === 'conduct') cxSet(cxStep); else if (S.learn === 'twelve') twDraw(); else learnFilter();
+    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); } else if (S.learn === 'conduct') cxSet(cxStep); else if (S.learn === 'twelve') { if (S.twPage === 'mi') miDraw(); else twDraw(); } else learnFilter();
   }
 
   function learnFilter() {
@@ -1325,8 +1386,79 @@
     return dir === 'up' ? '<span class="tw-up" title="mostly upright">▲ up</span>' : dir === 'down' ? '<span class="tw-down" title="mostly negative">▼ down</span>' : '<span class="muted">either</span>';
   }
 
+  // ---------- MI view ----------
+  var MV = { pid: 'inferior', stage: 'acute', seed: newSeed(), show: true };
+  var MI_PIDS = TW.patterns.filter(function (p) { return p.group === 'stemi' || p.group === 'acs'; }).map(function (p) { return p.id; });
+  // Stages apply to STEMIs whose elevation is on the standard 12 leads.
+  function miStaged() { return TWP_BY[MV.pid].group === 'stemi' && MV.pid !== 'posterior'; }
+  function miDraw() {
+    var slot = $('#mi-slot');
+    if (!slot) return;
+    var pat = TWP_BY[MV.pid], staged = miStaged(), stage = staged ? MV.stage : null;
+    slot.innerHTML = twHtml({ pid: MV.pid, seed: MV.seed, extra: pat.extra, stage: stage }, MV.show);
+    var tr = TERR_OF[MV.pid];
+    $('#mi-info').innerHTML = '<p class="v-title">' + esc(pat.name) + (staged && stage !== 'acute' ? ' · ' + esc(STAGE_BY[stage].name) : '') + '</p>' +
+      (staged && stage !== 'acute' ? stageHtml(STAGE_BY[stage]) : '') +
+      (tr ? terrHtml(tr) : '') + twFindHtml(pat);
+    var sg = $('.mi-stages');
+    if (sg) {
+      sg.hidden = !staged;
+      $all('[data-seg="miStage"]', sg).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.val === MV.stage)); });
+    }
+  }
+  function miPageHtml() {
+    var STDM = ' <span class="std-mark" title="Standard ECG teaching; not spelled out on the slides">*</span>';
+    function group(g) {
+      return '<optgroup label="' + esc(g.name) + '">' + TW.patterns.filter(function (p) { return p.group === g.id; }).map(function (p) {
+        return '<option value="' + p.id + '"' + (p.id === MV.pid ? ' selected' : '') + '>' + esc(p.name) + '</option>';
+      }).join('') + '</optgroup>';
+    }
+    return '<div class="panel"><p class="eyebrow">Find the MI</p>' +
+      '<p class="pump-sum">Pick an MI to draw it, then step it through time. Tinted leads face the infarct; blue leads show the mirror image (reciprocal depression).</p>' +
+      '<div class="row tw-controls"><select id="mi-pick" aria-label="MI to draw">' + TW.groups.filter(function (g) { return g.id === 'stemi' || g.id === 'acs'; }).map(group).join('') + '</select>' +
+      '<button class="btn" data-act="mi-new">New example</button></div>' +
+      '<div class="mi-stages">' + seg('miStage', MV.stage, MI.stages.map(function (st) { return [st.id, st.name]; })) + '</div>' +
+      '<div class="row"><label class="check"><input type="checkbox" id="mi-show"' + (MV.show ? ' checked' : '') + '> Tint where to look</label></div>' +
+      '<div id="mi-slot"></div><div class="pump-cap tw-cap" id="mi-info"></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">Ischemia, injury, infarction</p><div class="core-grid">' +
+      MI.zones.map(function (z) { return '<div><h4>' + esc(z.name) + '</h4><p><strong>' + esc(z.ecg) + '</strong>' + (z.std ? STDM : '') + '</p><p class="small">' + esc(z.meaning) + '</p></div>'; }).join('') + '</div></div>' +
+
+      '<div class="panel"><p class="eyebrow">How a STEMI changes over time</p><div class="table-wrap"><table class="grid basics"><tbody>' +
+      MI.stages.map(function (st) {
+        return '<tr><td><button class="chip" data-mi-draw="anterior" data-mi-stage="' + st.id + '">' + esc(st.name) + '</button><br><span class="muted small">' + esc(st.when) + '</span></td><td>' + esc(st.ecg) + (st.std ? STDM : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div><p class="small">Tap a stage to draw it as an anterior STEMI.</p></div>' +
+
+      '<div class="panel"><p class="eyebrow">Calling a STEMI</p><dl class="cx-facts">' +
+      MI.criteria.map(function (c) { return '<dt>' + esc(c.name) + '</dt><dd>' + esc(c.text) + (c.std ? STDM : '') + '</dd>'; }).join('') + '</dl>' +
+      '<p class="small">Five steps (slide 147): rate and rhythm, area of infarct, other conditions, clinical presentation, then recognize and treat.</p></div>' +
+
+      '<div class="panel"><p class="eyebrow">Where is it, and what will it do?</p><div class="table-wrap"><table class="grid basics"><thead><tr><th>MI</th><th>Leads</th><th>Artery</th><th>Watch for</th></tr></thead><tbody>' +
+      MI.territories.map(function (t) {
+        return '<tr><td><button class="chip" data-mi-draw="' + t.pids[0] + '">' + esc(t.name) + '</button></td><td>' + esc(t.leads) + '<br><span class="muted small">Mirror: ' + esc(t.recip) + '</span></td><td>' + esc(t.artery) + (t.std ? STDM : '') + '</td><td>' + esc(t.watch) + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">Not a STEMI, but still ACS</p><p>NSTE-ACS (unstable angina and NSTEMI) shows ischemic ST depression or T-wave changes, or nothing at all. Treat it as an evolving AMI.</p><div class="chips">' +
+      ['ischemia', 'wellens', 'old-inferior'].map(function (id) { return '<button class="chip" data-mi-draw="' + id + '">' + esc(TWP_BY[id].name) + '</button>'; }).join('') + '</div></div>' +
+
+      '<div class="panel"><p class="eyebrow">STEMI equivalents</p><div class="core-grid">' +
+      MI.equivalents.map(function (c) { return '<div><h4>' + esc(c.name) + '</h4><p>' + esc(c.text) + '</p></div>'; }).join('') + '</div>' +
+      '<div class="chips"><button class="chip" data-mi-draw="posterior">Draw posterior STEMI</button><button class="chip" data-mi-draw="sgarbossa">Draw LBBB with Sgarbossa</button><button class="chip" data-mi-draw="inferior-rv">Draw RV infarct</button></div>' +
+      '<p class="eyebrow">STEMI mimics</p><div class="core-grid">' +
+      MI.mimics.map(function (c) { return '<div><h4>' + esc(c.name) + '</h4><p>' + esc(c.text) + (c.std ? STDM : '') + '</p></div>'; }).join('') + '</div></div>' +
+
+      '<div class="panel"><p class="eyebrow">In the field</p>' + listHtml(MI.care) +
+      '<div class="chips"><button class="chip" data-goto-topic="ami">Acute MI: signs and management</button><button class="chip" data-goto-topic="acs">Acute coronary syndrome</button></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>Find the MI on drawn 12-leads, name its stage, sort STEMI from NSTE-ACS and mimics, and ' + MI.qa.length + ' questions.</p>' +
+      '<div class="row"><button class="btn primary" data-act="mi-quiz">Quiz me</button><button class="btn" data-act="mi-cards">Flashcards</button></div></div>' +
+      '<p class="std-note">From your Chapter 21 slides and outline (ST changes, five-step infarct analysis, right-sided and posterior ECGs, ACS and MI). * Standard ECG teaching the slides use but don\'t spell out, including the STEMI millimeter thresholds, Q-wave size, stage timing and Sgarbossa numbers.</p>';
+  }
+
   learnEl.addEventListener('change', function (e) {
     if (e.target.id === 'tw-pick' && e.target.value) { TV.pid = e.target.value; TV.axis = null; TV.wall = null; TV.lead = null; TV.seed = newSeed(); TV.extra = !!TWP_BY[TV.pid].extra; return learnRender(); }
+    if (e.target.id === 'mi-pick' && e.target.value) { MV.pid = e.target.value; MV.seed = newSeed(); if (!miStaged()) MV.stage = 'acute'; return learnRender(); }
+    if (e.target.id === 'mi-show') { MV.show = e.target.checked; return miDraw(); }
     if (e.target.id === 'tw-show') { TV.show = e.target.checked; TV.wall = null; return twDraw(); }
     if (e.target.id === 'tw-extra') { TV.extra = e.target.checked; if (!TV.extra && TV.wall && /^(posterior|rv)$/.test(TV.wall)) TV.wall = null; return twDraw(); }
   });
@@ -1334,7 +1466,7 @@
   learnEl.addEventListener('click', function (e) {
     var cell = e.target.closest('.tw-cell');
     if (cell) { TV.lead = TV.lead === cell.dataset.lead ? null : cell.dataset.lead; return twDraw(); }
-    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-phase],[data-goto-rhythm],[data-goto-topic],[data-tw-wall],[data-tw-axis]');
+    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-phase],[data-goto-rhythm],[data-goto-topic],[data-tw-wall],[data-tw-axis],[data-mi-draw]');
     if (!t) return;
     if (t.dataset.twWall) { TV.wall = TV.wall === t.dataset.twWall ? null : t.dataset.twWall; twDraw(); $('#tw-slot').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
     if (t.dataset.twAxis) { TV.pid = 'axis'; TV.axis = axisAngle(t.dataset.twAxis); TV.wall = null; TV.seed = newSeed(); learnRender(); $('#tw-slot').scrollIntoView({ block: 'nearest' }); return; }
@@ -1355,6 +1487,18 @@
       save(); showTab('quiz'); return quizStart(buildQuiz());
     }
     if (t.dataset.seg === 'apCell') { apCell = t.dataset.val; return apRender(); }
+    if (t.dataset.seg === 'twPage') { S.twPage = t.dataset.val; save(); return learnRender(); }
+    if (t.dataset.seg === 'miStage') { MV.stage = t.dataset.val; MV.seed = newSeed(); return miDraw(); }
+    if (t.dataset.miDraw) { MV.pid = t.dataset.miDraw; MV.stage = t.dataset.miStage || 'acute'; MV.seed = newSeed(); learnRender(); $('#mi-slot').scrollIntoView({ block: 'nearest' }); return; }
+    if (t.dataset.act === 'mi-new') { MV.seed = newSeed(); return miDraw(); }
+    if (t.dataset.act === 'mi-quiz' || t.dataset.act === 'mi-cards') {
+      if (t.dataset.act === 'mi-cards') {
+        Object.keys(S.cardDecks).forEach(function (k) { S.cardDecks[k] = k === 'mi'; });
+        save(); showTab('cards'); return cardsStart(buildCards());
+      }
+      Object.keys(S.quizTopics).forEach(function (k) { S.quizTopics[k] = k === 'mi'; });
+      save(); showTab('quiz'); return quizStart(buildQuiz());
+    }
     if (t.dataset.seg) { pumpPlay(false); cxPlay(false); S.learn = t.dataset.val; save(); return learnRender(); }
     if (t.dataset.pstep) { pumpPlay(false); return pumpSet(Number(t.dataset.pstep)); }
     if (t.dataset.cstep) { cxPlay(false); return cxSet(Number(t.dataset.cstep)); }
@@ -1448,6 +1592,13 @@
     var twRows = TW.patterns.filter(function (p) { return S.stats['tw-' + p.id]; })
       .sort(function (a, b) { return (acc('tw-' + a.id, 'twelve') || 0) - (acc('tw-' + b.id, 'twelve') || 0); })
       .map(function (p) { return '<tr><td>' + esc(p.name) + '</td>' + cell('tw-' + p.id, 'twelve') + '</tr>'; }).join('');
+    var miRows = MI.territories.map(function (t) { return ['mi-where-' + t.id, 'Where: ' + t.name]; })
+      .concat(MI.stages.map(function (st) { return ['mi-stage-' + st.id, 'Stage: ' + st.name]; }))
+      .concat(MI.classes.map(function (c) { return ['mi-class-' + c.id, 'Classify: ' + c.name]; }))
+      .filter(function (r) { return S.stats[r[0]]; })
+      .sort(function (a, b) { return (acc(a[0], 'mi') || 0) - (acc(b[0], 'mi') || 0); })
+      .map(function (r) { return '<tr><td>' + esc(r[1]) + '</td>' + cell(r[0], 'mi') + '</tr>'; }).join('');
+    var miQa = qaTotals('mi');
     var axisRows = TW.axis.filter(function (a) { return S.stats['tw-axis-' + a.id]; })
       .map(function (a) { return '<tr><td>Axis: ' + esc(a.name) + '</td>' + cell('tw-axis-' + a.id, 'twelve') + '</tr>'; }).join('');
     statsEl.innerHTML =
@@ -1460,9 +1611,11 @@
       rhythmRows + '</tbody></table></div>' +
       (topicRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Condition or treatment</th><th style="text-align:center">Score</th></tr></thead><tbody>' + topicRows + '</tbody></table></div>' : '') +
       (twRows || axisRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead finding</th><th style="text-align:center">Named</th></tr></thead><tbody>' + twRows + axisRows + '</tbody></table></div>' : '') +
+      (miRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead MI</th><th style="text-align:center">Score</th></tr></thead><tbody>' + miRows + '</tbody></table></div>' : '') +
       (basics.n ? '<p class="muted">ECG basics: ' + Math.round(basics.c / basics.n * 100) + '% of ' + basics.n + ' answers right.</p>' : '') +
       (pump.n ? '<p class="muted">Na-K pump &amp; cell: ' + Math.round(pump.c / pump.n * 100) + '% of ' + pump.n + ' answers right.</p>' : '') +
       (conduct.n ? '<p class="muted">Conduction pathway: ' + Math.round(conduct.c / conduct.n * 100) + '% of ' + conduct.n + ' answers right.</p>' : '') +
+      (miQa.n ? '<p class="muted">MI questions: ' + Math.round(miQa.c / miQa.n * 100) + '% of ' + miQa.n + ' answers right.</p>' : '') +
       (twelve.n ? '<p class="muted">12-lead questions: ' + Math.round(twelve.c / twelve.n * 100) + '% of ' + twelve.n + ' answers right.</p>' : '') +
       '<div class="row">' + (confirmReset
         ? '<span class="muted">Erase all cardiology progress?</span><button class="btn bad" data-act="reset-yes">Erase</button><button class="btn" data-act="reset-no">Keep it</button>'

@@ -71,7 +71,26 @@
     'long-qt': { axis: [30, 75], qtExtra: [0.14, 0.2], rate: [56, 72] },
     hocm: { axis: [0, 50], qrs: 'lvh', qAdd: { I: 0.6, aVL: 0.65, V5: 0.7, V6: 0.65, II: 0.4, III: 0.45, aVF: 0.45 } },
     arvd: { axis: [40, 85], tAdd: { V1: -0.3, V2: -0.42, V3: -0.32 }, epsilon: { V1: 0.12, V2: 0.1 } },
-    axis: { axis: [20, 80] }
+    axis: { axis: [20, 80] },
+    // MI page: combined walls, NSTE-ACS, old MI and LBBB with Sgarbossa changes.
+    anterolateral: { axis: [15, 65], st: { V2: 0.15, V3: 0.28, V4: 0.3, V5: 0.22, V6: 0.15, I: 0.12, aVL: 0.15, III: -0.15, aVF: -0.1 }, hyper: 1 },
+    inferolateral: { axis: [40, 80], st: merge(INFERIOR_ST, { V5: 0.18, V6: 0.2, I: 0.02, aVL: -0.15 }), hyper: 1 },
+    inferoposterior: { axis: [40, 80], st: merge(INFERIOR_ST, { V1: -0.15, V2: -0.22, V3: -0.18, V7: 0.14, V8: 0.18, V9: 0.16 }), hyper: 1,
+      tAdd: { V1: 0.2, V2: 0.24, V3: 0.14 }, rAdd: { V1: 0.5, V2: 0.65, V3: 0.25 } },
+    ischemia: { axis: [30, 75], st: { I: -0.08, II: -0.13, aVF: -0.1, III: -0.04, aVR: 0.1, V4: -0.15, V5: -0.19, V6: -0.15, V3: -0.07 }, tAdd: { V5: -0.12, V6: -0.1, II: -0.08 } },
+    wellens: { axis: [30, 75], st: { V2: 0.04, V3: 0.04 }, tAdd: { V2: -0.5, V3: -0.6, V4: -0.5, V5: -0.25 } },
+    'old-inferior': { axis: [10, 50], qPath: { II: 1, III: 1, aVF: 1 }, tAdd: { III: -0.12, aVF: -0.06 } },
+    sgarbossa: { axis: [-20, 40], qrs: 'lbbb', st: { V1: -0.42, V2: -0.48, V3: -0.38, I: 0.3, aVL: 0.3, V5: 0.24, V6: 0.28 }, tAdd: { V1: -0.25, V2: -0.3, V3: -0.2 } }
+  };
+
+  // How a STEMI looks over time. st: share of the ST shift left; hyper: T height (mV) added in
+  // elevated leads; q: pathologic Q waves in elevated leads; tInv: T inversion (mV) there.
+  var STAGES = {
+    hyperacute: { st: 0.3, hyper: 0.38, q: false, tInv: 0 },
+    acute: { st: 1, hyper: null, q: false, tInv: 0 },
+    evolving: { st: 0.8, hyper: null, q: true, tInv: 0 },
+    inverted: { st: 0.2, hyper: 0, q: true, tInv: -0.45 },
+    old: { st: 0, hyper: 0, q: true, tInv: -0.08 }
   };
 
   // ---------- One beat ----------
@@ -137,6 +156,7 @@
     var axis = opts.axis != null ? opts.axis : Math.round(U(rng, P.axis[0], P.axis[1]));
     var pr = P.qrs === 'wpw' ? U(rng, 0.09, 0.11) : U(rng, 0.13, 0.18);
     var qtExtra = P.qtExtra ? U(rng, P.qtExtra[0], P.qtExtra[1]) : 0;
+    var stage = opts.stage ? STAGES[opts.stage] : null;
 
     var q = QRS[P.qrs || 'normal']();
     if (P.qrs === 'rbbb' && id === 'bifasc') q.t = [0.7, 0.3, -0.5];
@@ -163,7 +183,13 @@
       var st = (P.st && P.st[L]) || 0, tAdd = (P.tAdd && P.tAdd[L]) || 0, rAdd = (P.rAdd && P.rAdd[L]) || 0;
       var qAdd = (P.qAdd && P.qAdd[L]) || 0, prd = (P.pr && P.pr[L]) || 0;
       var bru = (P.brugada && P.brugada[L]) || 0, eps = (P.epsilon && P.epsilon[L]) || 0;
-      var hyper = st > 0 ? st * (P.hyper || 0) : 0;
+      var hyper = st > 0 ? st * (P.hyper || 0) : 0, qp = (P.qPath && P.qPath[L]) || 0;
+      if (stage && stage !== STAGES.acute) {
+        var facing = st >= 0.12;
+        if (facing && stage.q) qp = 1;
+        if (facing) { hyper = stage.hyper == null ? hyper : stage.hyper; tAdd += stage.tInv; }
+        st *= stage.st;
+      }
       var w = { a: U(rng, 0.01, 0.03), f: U(rng, 0.12, 0.3), p: U(rng, 0, 6.28) };
       var out = new Array(n + 1), pj = proj[L];
       var bi = 0;
@@ -189,6 +215,8 @@
           if (tAdd) v += gauss(x, tGap, tWidth, tAdd);
           if (rAdd) v += gauss(x, 0.004, 0.016, rAdd);
           if (qAdd) v += gauss(x, -0.034, 0.0075, -qAdd);
+          // Pathologic Q: wide (40 ms) and deep, with the R wave cut down after it.
+          if (qp) v += gauss(x, -0.022, 0.012, -0.45 * qp) + gauss(x, -0.002, 0.01, -0.45 * qp);
           if (prd) { var xp = t - tpb; v += prd * sig((xp - 0.03) / 0.006) * (1 - sig((x + 0.045) / 0.004)); }
           // Brugada: coved ST rising from the J point and sloping down into an inverted T.
           if (bru) v += bru * sig((x - j + 0.01) / 0.004) * Math.exp(-Math.max(0, x - j) / 0.1) + gauss(x, tGap, 0.055, -0.8 * bru);
@@ -269,6 +297,7 @@
 
   root.TWELVE = {
     ids: Object.keys(PATTERNS),
+    stages: Object.keys(STAGES),
     leads: STANDARD,
     extra: EXTRA,
     generate: generate,
