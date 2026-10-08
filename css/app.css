@@ -313,18 +313,18 @@ input[type="text"]:focus, textarea:focus, input[type="search"]:focus, input[type
 .ph-fulcrum { fill: #e07a5f; }
 .ph-pick { display: grid; gap: 4px; }
 .ph-pick select { font-size: 1rem; }
-.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
-.flow li { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
-.flow li + li::before { content: '↓'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); color: var(--muted); line-height: 16px; }
-.flow.dim { opacity: 0.6; }
+.ph-flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.ph-flow li { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.ph-flow li + li::before { content: '↓'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); color: var(--muted); line-height: 16px; }
+.ph-flow.dim { opacity: 0.6; }
 /* Learn sub-pages sit three to a row, with 1px gaps as dividers. */
 .learn-seg .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); width: 100%; }
 .learn-seg .seg button { background: var(--surface); padding: 8px 4px; min-width: 0; }
 .learn-seg .seg button + button { border-left: 0; }
 .learn-seg .seg button[aria-pressed="true"] { background: var(--accent-soft); }
-.flow.cause li { background: #fbefe2; border-color: #e3c39a; color: #222; }
-.flow.comp li { background: #e6f0f8; border-color: #a9c6de; color: #222; }
-.flow-turn { margin: 0; text-align: center; color: var(--muted); font-size: 1.2rem; line-height: 1; }
+.ph-flow.cause li { background: #fbefe2; border-color: #e3c39a; color: #222; }
+.ph-flow.comp li { background: #e6f0f8; border-color: #a9c6de; color: #222; }
+.ph-flow-turn { margin: 0; text-align: center; color: var(--muted); font-size: 1.2rem; line-height: 1; }
 .kind-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
 .kind-card { gap: 8px; }
 .kind-name { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; text-transform: uppercase; border-left: 4px solid; padding-left: 8px; }

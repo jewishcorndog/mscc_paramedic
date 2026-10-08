@@ -182,7 +182,7 @@
   var KIND_ORDER = ['resp-acidosis', 'metab-acidosis', 'resp-alkalosis', 'metab-alkalosis', 'mixed-acidosis'];
 
   function flow(list, cls) {
-    return '<ol class="flow' + (cls ? ' ' + cls : '') + '">' + list.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
+    return '<ol class="ph-flow' + (cls ? ' ' + cls : '') + '">' + list.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
   }
   // Needle angle from vertical: 6.9 is -80 degrees, 7.4 is 0, 8.0 is +80.
   function phAngle(ph) {
@@ -235,7 +235,7 @@
         var K = KINDS[k];
         return '<div class="panel kind-card ' + K.side + '"><p class="kind-name">' + esc(K.name) + '</p>' +
           '<p class="eyebrow">Cause of ' + (K.side === 'acid' ? 'acidosis' : 'alkalosis') + '</p>' + flow(K.cause, 'cause') +
-          '<p class="flow-turn" aria-hidden="true">↓</p>' +
+          '<p class="ph-flow-turn" aria-hidden="true">↓</p>' +
           '<p class="eyebrow">' + (k === 'mixed-acidosis' ? 'Compensation' : 'Compensation to return pH to normal') + '</p>' + flow(K.comp, 'comp') + '</div>';
       }).join('') + '</div>' +
       '<div class="row"><button class="btn primary" data-act="ph-quiz">Quiz me on pH</button><button class="btn" data-seg="learn" data-val="ph">Try it on the pH balance</button></div>';
