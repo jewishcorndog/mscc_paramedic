@@ -592,8 +592,8 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .sign.on { opacity: 1; }
 .sign.neg.on { fill: var(--k); }
 .sign.pos.on { fill: var(--na); }
-.flow { opacity: 0; transition: opacity 0.4s; }
-.flow.on { opacity: 1; }
+.ion-flow { opacity: 0; transition: opacity 0.4s; }
+.ion-flow.on { opacity: 1; }
 .flow-arrow { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; fill: none; }
 .arrow-tip { fill: var(--muted); }
 .ion.ca circle { fill: var(--ca); }
@@ -623,16 +623,16 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .trop { fill: var(--surface); stroke: var(--accent); stroke-width: 1.2; }
 .trop-on { fill: var(--ca); transition: transform 0.9s ease; }
 .sarc-l, .sarc-r { transition: transform 0.9s ease; }
-.sarc.short .sarc-l, .sarc.short ~ .flow .trop-on.sl { transform: translateX(20px); }
-.sarc.short .sarc-r, .sarc.short ~ .flow .trop-on.sr2 { transform: translateX(-20px); }
+.sarc.short .sarc-l, .sarc.short ~ .ion-flow .trop-on.sl { transform: translateX(20px); }
+.sarc.short .sarc-r, .sarc.short ~ .ion-flow .trop-on.sr2 { transform: translateX(-20px); }
 @media (prefers-reduced-motion: no-preference) {
-  .flow.on .mover { animation: flow-y 1.8s linear infinite; }
-  .flow.on .mover.side { animation-name: flow-x; }
+  .ion-flow.on .mover { animation: flow-y 1.8s linear infinite; }
+  .ion-flow.on .mover.side { animation-name: flow-x; }
 }
 @keyframes flow-y { from { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translateY(var(--dy)); opacity: 0; } }
 @keyframes flow-x { from { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translateX(var(--dx)); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .ch-gate, .sign, .flow, .needle, .sarc-l, .sarc-r, .trop-on, .gone { transition: none; }
+  .ch-gate, .sign, .ion-flow, .needle, .sarc-l, .sarc-r, .trop-on, .gone { transition: none; }
 }
 .cx-svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
 .cx-ecg { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }

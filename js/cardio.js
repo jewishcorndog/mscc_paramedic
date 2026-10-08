@@ -965,7 +965,7 @@
   }
   // Ions streaming along x from y0 to y1, staggered.
   function stream(key, cls, label, x, y0, y1, n) {
-    var s = '<g class="flow" data-on="' + key + '"><path d="M' + x + ' ' + y0 + 'V' + y1 + '" class="flow-arrow" marker-end="url(#arrowhead)"/>';
+    var s = '<g class="ion-flow" data-on="' + key + '"><path d="M' + x + ' ' + y0 + 'V' + y1 + '" class="flow-arrow" marker-end="url(#arrowhead)"/>';
     for (var i = 0; i < n; i++) {
       s += '<g class="mover" style="--dy:' + (y1 - y0) + 'px;--f:' + ((i + 0.5) / n).toFixed(2) + ';animation-delay:' + (-i * 1.8 / n).toFixed(2) + 's">' + dot(cls, label, x, y0) + '</g>';
     }
@@ -1004,7 +1004,7 @@
       stream('naIn', 'na', 'Na⁺', 50, 30, 168, 3) + stream('caIn', 'ca', 'Ca', 104, 34, 160, 2) +
       stream('kOut', 'k', 'K⁺', 158, 176, 34, 3) + stream('kLeak', 'k', 'K⁺', 158, 160, 50, 1) +
       stream('pump', 'na', 'Na⁺', 214, 160, 30, 3) + stream('pump', 'k', 'K⁺', 232, 34, 168, 2) +
-      '<g class="flow" data-on="nbr"><path d="M266 196H186" class="flow-arrow" marker-end="url(#arrowhead)"/>' +
+      '<g class="ion-flow" data-on="nbr"><path d="M266 196H186" class="flow-arrow" marker-end="url(#arrowhead)"/>' +
       '<g class="mover side" style="--dx:-70px;--f:0.5">' + dot('plus', '+', 252, 196) + '</g><text x="262" y="214" class="ch-label end">current from the next cell</text></g>' +
       gauge + '</svg>';
   }
@@ -1028,14 +1028,14 @@
       stream('caIn', 'ca', 'Ca', 56, 14, 70, 2) +
       stream('srOut', 'ca', 'Ca', 160, 100, 132, 1) + stream('srOut', 'ca', 'Ca', 230, 100, 132, 1) + stream('srOut', 'ca', 'Ca', 296, 100, 132, 1) +
       stream('srIn', 'ca', 'Ca', 176, 136, 102, 1) + stream('srIn', 'ca', 'Ca', 250, 136, 102, 1) +
-      '<g class="flow" data-on="srIn"><rect x="190" y="118" width="36" height="13" rx="6.5" class="atp-pill"/><text x="208" y="127.5" class="atp-t">ATP</text></g>' +
+      '<g class="ion-flow" data-on="srIn"><rect x="190" y="118" width="36" height="13" rx="6.5" class="atp-pill"/><text x="208" y="127.5" class="atp-t">ATP</text></g>' +
       stream('ncx', 'ca', 'Ca', 280, 70, 12, 1) + stream('ncx', 'na', 'Na⁺', 296, 12, 70, 2) +
-      '<g class="flow" data-on="cloud">' + cloud + '</g>' +
+      '<g class="ion-flow" data-on="cloud">' + cloud + '</g>' +
       '<g class="sarc">' +
       '<g class="sarc-l">' + '<path d="M40 146V210" class="zline"/>' + actin(40, 158, 158) + actin(40, 158, 198) + trop([70, 104, 138], 158) + trop([70, 104, 138], 198) + '</g>' +
       '<g class="sarc-r">' + '<path d="M300 146V210" class="zline"/>' + actin(182, 300, 158) + actin(182, 300, 198) + trop([202, 236, 270], 158) + trop([202, 236, 270], 198) + '</g>' +
       '<path d="M114 178H226" class="myosin"/>' + heads + '</g>' +
-      '<g class="flow" data-on="bound">' + [70, 104, 138].map(function (x) { return '<circle cx="' + x + '" cy="158" r="3.2" class="trop-on sl"/><circle cx="' + x + '" cy="198" r="3.2" class="trop-on sl"/>'; }).join('') +
+      '<g class="ion-flow" data-on="bound">' + [70, 104, 138].map(function (x) { return '<circle cx="' + x + '" cy="158" r="3.2" class="trop-on sl"/><circle cx="' + x + '" cy="198" r="3.2" class="trop-on sl"/>'; }).join('') +
       [202, 236, 270].map(function (x) { return '<circle cx="' + x + '" cy="158" r="3.2" class="trop-on sr2"/><circle cx="' + x + '" cy="198" r="3.2" class="trop-on sr2"/>'; }).join('') + '</g>' +
       '<text x="170" y="216" class="ch-label">Actin (thin) · myosin (thick) · troponin (dots)</text>' +
       '</svg>';
