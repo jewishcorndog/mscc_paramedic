@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has two
+Study app for the Motlow State Community College paramedic program. It has three
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -10,6 +10,10 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
+- **A&P** (Body Box), anatomy and physiology from the standard paramedic curriculum (no class
+  slides for it yet). It covers 11 body systems: body organization, cells and fluids, skin,
+  bones and muscles, the nervous and endocrine systems, heart and circulation, blood and
+  immune, respiratory, abdomen and digestion, kidneys and electrolytes, and reproductive.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -39,6 +43,17 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | **Quiz** | Multiple-choice questions mixed from the same topics. |
 | **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. |
 | **Stats** | Accuracy per rhythm (strips, rules, care) and per condition, with a button to drill your weakest strips. |
+
+## A&P modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | Every body system with its key points and what it means in the field, a searchable glossary, a table of normal adult values (vital signs, labs, volumes), and applied cases with their answers. |
+| **Cards** | Flashcard decks: terms (term to meaning, meaning to term, or mixed), key facts, normal values, applied cases ("what is going on in this patient's body?"), and the key points of each topic. Pick which body systems to include. |
+| **Quiz** | Multiple-choice questions on terms, key facts, normal values and applied cases, with the reason after each case. |
+| **Stats** | Accuracy per body system for terms, facts and applied cases, with a button to study your weakest system. |
+
+A&P content lives in `js/ap-data.js`.
 
 The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is generated
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
@@ -82,7 +97,8 @@ It's a static site with no build step:
   abbreviations (2nd/3rd degree HB, VF/VT, ALOC, CCB OD…).
 - **Doses** count only when every number in the deck's dose is in your answer.
 
-Run the tests with `node tests/grading.test.js` and `node tests/cardio.test.js`.
+Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js` and
+`node tests/ap.test.js`.
 
 ## Updating the drug list
 
