@@ -3,6 +3,7 @@ const assert = require('assert');
 globalThis.window = globalThis;
 require('../js/grading.js');
 require('../js/ecg.js');
+require('../js/twelve.js');
 require('../js/cardio-data.js');
 require('../js/real-strips.js');
 const G = globalThis.Grading;
@@ -174,6 +175,93 @@ t('conduction pathway runs in order and links real rhythms', () => {
     assert(b.q && b.a && b.wrong.length >= 3, b.q);
     assert(!b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, 'bad choices: ' + b.q);
   });
+});
+
+// ---------- 12-lead ----------
+const TW = globalThis.CARDIO_TWELVE, TWG = globalThis.TWELVE;
+// Net QRS (mV·s) in a lead around each beat: positive = mostly upright.
+function netQrs(g, L) {
+  const s = g.leads[L], b = s.slice(0, 2500), med = [...b].sort((x, y) => x - y)[1250];
+  let best = 0, bi = 0;
+  for (let i = 50; i < 2400; i++) { const d = Math.abs(s[i] - med); if (d > best) { best = d; bi = i; } }
+  let sum = 0;
+  for (let i = bi - 40; i < bi + 40; i++) sum += s[i] - med;
+  return sum / 500;
+}
+// ST shift at J + 40 ms relative to the PR baseline, averaged over beats, using the generator's own timing.
+function stShift(id, L, seed) {
+  const g = TWG.generate(id, seed), s = g.leads[L];
+  // Find QRS peaks in the sum of absolute leads.
+  const e = s.map((_, i) => TWG.leads.reduce((m, k) => m + Math.abs(g.leads[k][i]), 0));
+  const pk = [];
+  for (let i = 100; i < e.length - 400; i++) if (e[i] > 0.5 * Math.max(...e.slice(0, 2500)) && e[i] >= e[i - 1] && e[i] > e[i + 1] && (!pk.length || i - pk[pk.length - 1] > 0.3 * 500)) pk.push(i);
+  let sum = 0;
+  pk.forEach(i => { const base = s[i - 40]; sum += s[i + Math.round((g.qrs - 0.045 + 0.04) * 500)] - base; });
+  return sum / pk.length;
+}
+
+t('12-lead data matches the generator', () => {
+  const ids = TW.patterns.map(p => p.id);
+  assert.strictEqual(new Set(ids).size, ids.length);
+  ids.forEach(id => assert(TWG.ids.includes(id), 'no generator for ' + id));
+  const leads = new Set(TW.leads.map(l => l.id)), topics = new Set(globalThis.CARDIO_TOPICS.map(x => x.id)), groups = new Set(TW.groups.map(g => g.id));
+  TW.patterns.forEach(p => {
+    assert(p.name && p.find.length && groups.has(p.group), p.id);
+    p.leads.concat(p.recip).forEach(L => assert(leads.has(L), p.id + ' unknown lead ' + L));
+    if (p.topic) assert(topics.has(p.topic), p.id + ' unknown topic ' + p.topic);
+    if (p.rhythm) assert(globalThis.CARDIO_RHYTHMS.some(r => r.id === p.rhythm), p.id + ' unknown rhythm ' + p.rhythm);
+  });
+  TW.walls.forEach(w => w.leads.concat(w.recip).forEach(L => assert(leads.has(L), w.id + ' ' + L)));
+  assert(TW.qa.length >= 30);
+  TW.qa.forEach(b => assert(b.q && b.a && b.wrong.length >= 3 && !b.wrong.includes(b.a), b.q));
+});
+
+t('every 12-lead pattern generates and renders', () => {
+  TWG.ids.forEach(id => {
+    for (let seed = 1; seed < 8; seed++) {
+      const g = TWG.generate(id, seed);
+      Object.keys(g.leads).forEach(L => { assert.strictEqual(g.leads[L].length, 10 * 500 + 1); assert(g.leads[L].every(Number.isFinite), id + ' ' + L); });
+      const html = TWG.render(g, { extra: seed % 2 === 0, hl: { II: 'face' } });
+      assert(!/NaN|undefined/.test(html), 'bad render ' + id);
+    }
+  });
+});
+
+t('12-lead axis follows leads I, aVF and II', () => {
+  const cases = [[50, '+', '+', '+'], [-15, '+', '-', '+'], [-60, '+', '-', '-'], [130, '-', '+', null], [-135, '-', '-', null]];
+  cases.forEach(([ax, i, f, ii]) => {
+    for (let seed = 1; seed < 6; seed++) {
+      const g = TWG.generate('axis', seed, { axis: ax });
+      const sgn = L => netQrs(g, L) > 0 ? '+' : '-';
+      assert.strictEqual(sgn('I'), i, 'lead I at ' + ax);
+      assert.strictEqual(sgn('aVF'), f, 'aVF at ' + ax);
+      if (ii) assert.strictEqual(sgn('II'), ii, 'lead II at ' + ax);
+    }
+  });
+  ['lah', 'bifasc'].forEach(id => { const g = TWG.generate(id, 3); assert(netQrs(g, 'I') > 0 && netQrs(g, 'aVF') < 0 && netQrs(g, 'II') < 0, id + ' should be pathologic left'); });
+  const lph = TWG.generate('lph', 3);
+  assert(netQrs(lph, 'I') < 0 && netQrs(lph, 'aVF') > 0, 'lph should be right axis');
+});
+
+t('12-lead ST changes show in the named leads', () => {
+  [['inferior', ['II', 'III', 'aVF'], ['aVL']], ['anterior', ['V3', 'V4'], []], ['septal', ['V1', 'V2'], []],
+    ['lateral', ['I', 'aVL', 'V5', 'V6'], ['III']], ['inferior-rv', ['III', 'V4R'], ['aVL']], ['posterior', ['V8', 'V9'], ['V1', 'V2', 'V3']]].forEach(([id, up, down]) => {
+    for (let seed = 1; seed < 5; seed++) {
+      up.forEach(L => assert(stShift(id, L, seed) > 0.1, id + ': no ST elevation in ' + L));
+      down.forEach(L => assert(stShift(id, L, seed) < -0.05, id + ': no ST depression in ' + L));
+      ['V6', 'aVR'].filter(L => !up.includes(L) && !down.includes(L) && id !== 'lateral').forEach(L => assert(Math.abs(stShift('normal', L, seed)) < 0.06, 'normal ST off in ' + L));
+    }
+  });
+});
+
+t('12-lead widths and intervals fit the criteria', () => {
+  for (let seed = 1; seed < 10; seed++) {
+    assert(TWG.generate('normal', seed).qrs < 0.12);
+    ['rbbb', 'lbbb', 'bifasc'].forEach(id => assert(TWG.generate(id, seed).qrs >= 0.12, id + ' QRS too narrow'));
+    assert(TWG.generate('wpw', seed).pr < 0.12, 'WPW PR not short');
+    assert(TWG.generate('long-qt', seed).qtc > 0.47, 'long QT not long');
+    assert(TWG.generate('normal', seed).qtc < 0.46, 'normal QTc too long');
+  }
 });
 
 console.log(n + ' cardiology test groups passed');

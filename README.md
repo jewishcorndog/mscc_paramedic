@@ -9,7 +9,7 @@ subjects, switched at the top of the page:
   pediatric doses.
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
-  rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
+  rhythms and dysrhythmias, the 12-lead ECG, cardiac conditions, and treatments and devices.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -35,15 +35,25 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | Tab | What it does |
 | --- | --- |
 | **Strips** | Name the rhythm on a 6-second lead II strip. Pick which rhythms to drill (by group or one at a time, or your weakest 6) and answer by multiple choice, from the full list, or by typing the name. Choose drawn strips, real recorded strips, or a mix. After each strip you see the rules for interpretation and what the rhythm you picked would have looked like. |
-| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, and the conduction pathway. |
-| **Quiz** | Multiple-choice questions mixed from the same topics. |
-| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. |
-| **Stats** | Accuracy per rhythm (strips, rules, care) and per condition, with a button to drill your weakest strips. |
+| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, the conduction pathway, and the 12-lead (drawn 12-leads to name, plus walls, axis and blocks). |
+| **Quiz** | Multiple-choice questions mixed from the same topics, including "What does this 12-lead show?" and "What is the axis?" on drawn 12-leads. |
+| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. The **12-lead** page draws a full 12-lead for any of 18 findings (normal, STEMI by wall including RV and posterior, pericarditis, RBBB, LBBB, hemiblocks, bifascicular block, and the five can't-miss ECGs), tints the leads to look at and the reciprocal leads, can add V4R and V7–V9, and covers which leads see which wall, axis by leads I, aVF and II, the five-step infarct analysis and chest lead placement. |
+| **Stats** | Accuracy per rhythm (strips, rules, care), per 12-lead finding and per condition, with a button to drill your weakest strips. |
 
 The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is generated
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
 with a random rate, PR interval and beat placement inside the rhythm's textbook range,
 so no two are the same.
+
+The 12-leads are drawn by `js/twelve.js`. The P, QRS and T waves come from a few electrical
+vectors (septum, apex, lateral wall, base), and each lead records the part of each vector
+pointing toward it, so all 12 leads agree with each other and turning the vectors changes
+the axis in every lead at once. ST elevation and depression, the extra R or Q waves and the
+Brugada and ARVD shapes are added per lead from each finding's textbook leads. Wide screens
+get the standard 3 × 4 printout with a 10-second lead II strip; phones get the same leads in
+two columns (limb leads, chest leads) so nothing needs side scrolling. 12-lead content lives
+in `CARDIO_TWELVE` in `js/cardio-data.js`, from slides 30–31 and 131–161; wall and artery maps,
+lead placement and a few criteria are standard ECG teaching and are marked that way.
 
 Real strips come from the [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/)
 (Moody GB, Mark RG. The impact of the MIT-BIH Arrhythmia Database. IEEE Eng in Med and Biol
