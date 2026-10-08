@@ -34,6 +34,8 @@
     quizTopics: GROUPS.reduce(function (m, g) { m[g.id] = true; return m; }, { ph: true, facts: true, abg: true }),
     stats: {}
   }, loadSaved());
+  // Saves from before the pH pages open on pH balance once.
+  if (!S.v) { S.learn = 'ph'; S.v = 2; }
   // Saves from before the pH scenario deck.
   if (S.cardDecks.ph === undefined) S.cardDecks.ph = true;
   if (S.quizTopics.ph === undefined) S.quizTopics.ph = true;
@@ -217,17 +219,26 @@
       }).join('') + '</optgroup>';
     }).join('');
     return '<p class="lede"><strong>pH balance.</strong> The body keeps blood pH between 7.35 and 7.45 by balancing carbonic acid (controlled by the lungs) against bicarbonate (controlled by the kidneys). Pick a patient to see what tips the balance and how the body pushes back.</p>' +
+      '<div><button class="btn" data-seg="learn" data-val="flow">See the pH flowcharts</button></div>' +
       '<div class="panel ph-panel">' + phSvg() + '<div id="ph-readout"></div>' +
       '<label class="ph-pick"><span class="eyebrow">Patient</span><select id="ph-scen"><option value="">Normal (balanced)</option>' + opts + '</select></label>' +
       '<div class="row"><button class="btn" data-act="ph-random">Random patient</button><span id="ph-stage"></span></div>' +
       '<div id="ph-chain"></div></div>' +
-      '<p class="eyebrow ref-group">The chapter\'s flowcharts</p><div class="kind-grid">' + KIND_ORDER.map(function (k) {
-        var K = KINDS[k];
-        return '<div class="panel kind-card ' + K.side + '"><p class="kind-name">' + esc(K.name) + '</p><p class="eyebrow">Cause</p>' + flow(K.cause) +
-          '<p class="eyebrow">' + (k === 'mixed-acidosis' ? 'Compensation' : 'Compensation to return pH to normal') + '</p>' + flow(K.comp) + '</div>';
-      }).join('') + '</div>' +
       '<p class="eyebrow ref-group">Read more</p>' + ['ph', 'buffers', 'resp-acidosis', 'metab-acidosis', 'resp-alkalosis', 'metab-alkalosis', 'mixed', 'compensation'].map(function (id) { return topicRef(T_BY[id]); }).join('') +
       '<div class="row"><button class="btn primary" data-act="ph-quiz">Quiz me on pH</button><button class="btn" data-act="ph-cards">pH flashcards</button></div>';
+  }
+
+  // The chapter's acidosis and alkalosis flowcharts: cause, then compensation.
+  function flowHtml() {
+    return '<p class="lede"><strong>pH flowcharts.</strong> From the Chapter 11 slides. Read each one top to bottom: what goes wrong, what it does to the pH, then how the other system pushes the pH back toward normal.</p>' +
+      '<div class="kind-grid">' + KIND_ORDER.map(function (k) {
+        var K = KINDS[k];
+        return '<div class="panel kind-card ' + K.side + '"><p class="kind-name">' + esc(K.name) + '</p>' +
+          '<p class="eyebrow">Cause of ' + (K.side === 'acid' ? 'acidosis' : 'alkalosis') + '</p>' + flow(K.cause, 'cause') +
+          '<p class="flow-turn" aria-hidden="true">↓</p>' +
+          '<p class="eyebrow">' + (k === 'mixed-acidosis' ? 'Compensation' : 'Compensation to return pH to normal') + '</p>' + flow(K.comp, 'comp') + '</div>';
+      }).join('') + '</div>' +
+      '<div class="row"><button class="btn primary" data-act="ph-quiz">Quiz me on pH</button><button class="btn" data-seg="learn" data-val="ph">Try it on the pH balance</button></div>';
   }
 
   function phSet(id, stage) {
@@ -264,7 +275,7 @@
     var mode = S.learn;
     learnEl.innerHTML =
       '<div><h2 class="title">Learn</h2><p class="lede">Chapter 11, General Principles of Pathophysiology, with pH balance first.</p></div>' +
-      seg('learn', mode, [['ph', 'pH'], ['topics', 'Topics'], ['shock', 'Shock'], ['abg', 'ABG'], ['facts', 'Facts']]) +
+      '<div class="learn-seg">' + seg('learn', mode, [['ph', 'pH balance'], ['flow', 'pH flowcharts'], ['topics', 'Topics'], ['shock', 'Shock'], ['abg', 'ABG'], ['facts', 'Facts']]) + '</div>' +
       (mode === 'topics' || mode === 'facts' ? '<input type="search" id="plearn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' : '') +
       '<div class="ref-list" id="plearn-list"></div>' +
       '<p class="std-note">From the Chapter 11 slides. * Standard paramedic material the slides don\'t spell out.</p>';
@@ -283,7 +294,8 @@
         });
         return list.length ? '<p class="eyebrow ref-group">' + esc(g.name) + '</p>' + list.map(topicRef).join('') : '';
       }).join('') || '<p class="none">Nothing matches that search.</p>';
-    } else if (S.learn === 'ph') { el.innerHTML = phHtml(); return phSet(phState.id, phState.stage); } else if (S.learn === 'shock') html = shockHtml();
+    } else if (S.learn === 'flow') html = flowHtml();
+    else if (S.learn === 'ph') { el.innerHTML = phHtml(); return phSet(phState.id, phState.stage); } else if (S.learn === 'shock') html = shockHtml();
     else if (S.learn === 'abg') html = abgHtml();
     else html = factsHtml();
     el.innerHTML = html;
@@ -300,7 +312,7 @@
     var t = e.target.closest('[data-act],[data-seg]');
     if (!t) return;
     if (t.dataset.seg === 'phstage') return phSet(phState.id, Number(t.dataset.val));
-    if (t.dataset.seg) { S.learn = t.dataset.val; save(); return learnRender(); }
+    if (t.dataset.seg) { S.learn = t.dataset.val; save(); learnRender(); return window.scrollTo(0, 0); }
     if (t.dataset.act === 'ph-random') {
       var pool = SCEN.filter(function (x) { return x.id !== phState.id; });
       return phSet(pick(pool).id, 0);
