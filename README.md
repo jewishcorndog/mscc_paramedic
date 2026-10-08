@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has two
+Study app for the Motlow State Community College paramedic program. It has three
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -10,6 +10,11 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
+
+- **Midterm** (Midterm Box): review for the midterm, built around the instructor's topic
+  list: negligence, electrolytes and the Na-K pump, patient assessment, acid-base balance,
+  blood flow through the heart, the conduction system and intrinsic rates, intubation
+  DOPE, med math and drip rates, rhythm/ECG/12-lead analysis, and COPD and asthma.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -64,6 +69,18 @@ interpretation" blank for most rhythms after the atrial ones (they are tables in
 book), so those rules use standard ECG criteria and the app labels them that way. The
 same goes for a few ECG basics (box times, rate methods, 12-lead wall/lead groups).
 
+## Midterm modes
+
+| Tab | What it does |
+| --- | --- |
+| **Review** | A review sheet for each of the 10 midterm topics, with a button to drill that topic and, where the app has a deeper section (Cardiology's Na-K pump page, for example), a link to it. |
+| **Exam** | A mixed practice exam (20, 40, 60 or 100 questions) spread evenly over the topics you pick. Med math (D/H × V, weight-based doses, drip rates, dopamine and lidocaine drips) and ABG questions are generated fresh each time; the ECG topic includes the handout strips. Answers can show after each question or only at the end (test mode). Results break down by topic, with the missed questions explained. |
+| **Strips** | The 36 strips from the class handout *Send home rhythms*, checked against its answer key, by multiple choice or "say it, then reveal". |
+| **Stats** | Accuracy per topic and per handout strip. |
+
+Midterm content lives in `js/midterm-data.js`. The handout strips are in `img/midterm/`
+(strips 1 to 30 were generated with 12LeadTrainer.com).
+
 ## Running it
 
 It's a static site with no build step:
@@ -82,7 +99,7 @@ It's a static site with no build step:
   abbreviations (2nd/3rd degree HB, VF/VT, ALOC, CCB OD…).
 - **Doses** count only when every number in the deck's dose is in your answer.
 
-Run the tests with `node tests/grading.test.js` and `node tests/cardio.test.js`.
+Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js` and `node tests/midterm.test.js`.
 
 ## Updating the drug list
 

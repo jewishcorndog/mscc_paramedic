@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paramedic Drug Box</title>
-<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols) and cardiology.">
+<meta name="description" content="Flashcards, quizzes, write-out drills and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols), cardiology and midterm review.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -17,6 +17,7 @@
   <div class="seg subject" role="group" aria-label="Subject">
     <button data-subject="pharm" aria-pressed="true">Pharmacology</button>
     <button data-subject="cardio" aria-pressed="false">Cardiology</button>
+    <button data-subject="midterm" aria-pressed="false">Midterm</button>
   </div>
 </header>
 
@@ -60,6 +61,24 @@
 </main>
 </div>
 
+<div id="subj-midterm" hidden>
+<nav class="tabs" aria-label="Midterm study modes">
+  <div class="tabs-inner" role="tablist">
+    <button class="tab" role="tab" id="mtab-review" data-mtab="review" aria-selected="true">Review</button>
+    <button class="tab" role="tab" id="mtab-exam" data-mtab="exam" aria-selected="false">Exam</button>
+    <button class="tab" role="tab" id="mtab-strips" data-mtab="strips" aria-selected="false">Strips</button>
+    <button class="tab" role="tab" id="mtab-stats" data-mtab="stats" aria-selected="false">Stats</button>
+  </div>
+</nav>
+
+<main>
+  <section class="view" id="mview-review" role="tabpanel" aria-labelledby="mtab-review"></section>
+  <section class="view" id="mview-exam" role="tabpanel" aria-labelledby="mtab-exam" hidden></section>
+  <section class="view" id="mview-strips" role="tabpanel" aria-labelledby="mtab-strips" hidden></section>
+  <section class="view" id="mview-stats" role="tabpanel" aria-labelledby="mtab-stats" hidden></section>
+</main>
+</div>
+
 <div class="overlay" id="setup" hidden></div>
 
 <script src="js/drugs.js"></script>
@@ -68,6 +87,8 @@
 <script src="js/ecg.js"></script>
 <script src="js/cardio-data.js"></script>
 <script src="js/real-strips.js"></script>
+<script src="js/midterm-data.js"></script>
+<script src="js/midterm.js"></script>
 <script src="js/cardio.js"></script>
 </body>
 </html>
