@@ -195,6 +195,7 @@ window.MIDTERM_TOPICS = [
       'AV node / AV junction: delays the impulse (about 0.12 s total PR) so the atria can empty into the ventricles. Junctional intrinsic rate 40 to 60/min.',
       'Ventricles (bundle branches and Purkinje fibers): intrinsic rate 20 to 40/min.',
       'The fastest pacemaker controls the heart; if it fails, the next one down takes over (escape rhythm): sinus 60 to 100, junctional 40 to 60, ventricular 20 to 40.',
+      'Emergency discharge rate (irritable pacemaker, as in a tachycardia): 150 to 250/min.',
       'Left bundle branch splits into anterior and posterior fascicles.',
       'Cardiac cell properties: automaticity (fires on its own), excitability, conductivity, contractility.',
       'ECG: P wave = atrial depolarization; PR interval = SA to ventricles (0.12 to 0.20 s); QRS = ventricular depolarization (< 0.12 s); T wave = ventricular repolarization. Atrial repolarization is hidden in the QRS.',
