@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has three
+Study app for the Motlow State Community College paramedic program. It has six
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -9,7 +9,7 @@ subjects, switched at the top of the page:
   pediatric doses.
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
-  rhythms and dysrhythmias, cardiac conditions, and treatments and devices.
+  rhythms and dysrhythmias, the 12-lead ECG, cardiac conditions, and treatments and devices.
 - **A&P** (Body Box), built from Chapter 10 (*Review of Human Systems*) of *Sanders'
   Paramedic Textbook* (6th ed.), the lecture slides. It opens on how blood moves through the
   heart and body, then lays out all 13 body systems in one place. Topics beyond the slides
@@ -18,6 +18,16 @@ subjects, switched at the top of the page:
   (6th ed.), *General Principles of Pathophysiology*: the lecture slides, including the
   tables and flowcharts that are pictures on the slides. It covers the whole chapter, with
   pH and acid-base balance in the most depth.
+- **Legal** (Law Box), built from Chapter 6 (*Medical and Legal Issues*) of *Sanders'
+  Paramedic Textbook* (6th ed.), the lecture slides, with a focus on negligence: the four
+  elements, breach types, damages, ordinary vs gross negligence, and the defenses. It also
+  covers the legal system, scope of practice, consent and refusal, confidentiality,
+  transport, resuscitation and advance directives, crime scenes and documentation.
+  Anything beyond the slides is marked * and Tennessee specifics are tagged **TN**.
+- **Midterm** (Midterm Box): review for the midterm, built around the instructor's topic
+  list: negligence, electrolytes and the Na-K pump, patient assessment, acid-base balance,
+  blood flow through the heart, the conduction system and intrinsic rates, intubation
+  DOPE, med math and drip rates, rhythm/ECG/12-lead analysis, and COPD and asthma.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -31,6 +41,8 @@ study aid, not a clinical reference.
 | **Write** | Practice for the written test. Pick exactly which drugs to write out (tap them, add a whole group, or take your weakest 5), then for each drug you type out indications, contraindications, adult dose and pediatric dose. The app checks each item from the deck and marks it ✓ or ✗. Tap a line to flip it if the checker got it wrong. There is also a warm-up: list every drug on the list from memory. |
 | **Drugs** | Searchable reference with everything from the deck, including the secondary info (trade names, class, mechanism, adverse reactions, TN/NASEMSO protocols, memory tricks). |
 | **Stats** | Accuracy per drug and topic, weakest first, with a button to study your weakest 8. |
+| **Learn** | Chapters 13 and 14 of *Sanders' Paramedic Textbook*: routes and their rates of absorption (Table 13-2), pharmacokinetics and pharmacodynamics (with a drug-level curve), receptors and the autonomic nervous system (and what each Drug Box drug does at its receptor), drug classes, and how to give meds (six rights, injection angles, IV complications, med errors). Read it, or drill it with its own flashcards and quiz. Items marked * go beyond the slides. |
+| **Math** | Med math practice with fresh numbers every time: desire over have (D/H × Q), weight-based doses, IV flow rates, drug drips, concentrations, lb ↔ kg, metric, temperature and ET doses. Type the answer and see every step worked out. A **Formulas** page has D/H × Q, ratio and proportion, dimensional analysis, the drip formulas and the equivalents. |
 
 **Change** (on the Cards and Quiz tabs) picks which drugs to study (all of them, a
 group such as Cardiac or RSI, your weakest, or hand-picked) and which topics to include.
@@ -43,10 +55,10 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | Tab | What it does |
 | --- | --- |
 | **Strips** | Name the rhythm on a 6-second lead II strip. Pick which rhythms to drill (by group or one at a time, or your weakest 6) and answer by multiple choice, from the full list, or by typing the name. Choose drawn strips, real recorded strips, or a mix. After each strip you see the rules for interpretation and what the rhythm you picked would have looked like. |
-| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, and the conduction pathway. |
-| **Quiz** | Multiple-choice questions mixed from the same topics. |
-| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page starts with where the heart's electricity comes from and walks one beat through a membrane diagram (channels opening, ions moving, inside voltage on a meter: rest, threshold, depolarization, plateau, repolarization, reset), then steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows calcium's electrical and contractile jobs (trigger calcium, release from the sarcoplasmic reticulum, troponin, relaxation) with calcium channel blockers, calcium for hyperkalemia, digoxin and calcium levels at the bedside, shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. |
-| **Stats** | Accuracy per rhythm (strips, rules, care) and per condition, with a button to drill your weakest strips. |
+| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, the conduction pathway, the 12-lead (drawn 12-leads to name, plus walls, axis and blocks), and 12-lead MI (find the MI, its stage, STEMI vs NSTE-ACS). |
+| **Quiz** | Multiple-choice questions mixed from the same topics, including "What does this 12-lead show?", "What is the axis?", "Where is this MI?" and "What stage is this STEMI?" on drawn 12-leads. |
+| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page starts with where the heart's electricity comes from and walks one beat through a membrane diagram (channels opening, ions moving, inside voltage on a meter: rest, threshold, depolarization, plateau, repolarization, reset), then steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows calcium's electrical and contractile jobs (trigger calcium, release from the sarcoplasmic reticulum, troponin, relaxation) with calcium channel blockers, calcium for hyperkalemia, digoxin and calcium levels at the bedside, shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. The **12-lead** page draws a full 12-lead for any of 18 findings (normal, STEMI by wall including RV and posterior, pericarditis, RBBB, LBBB, hemiblocks, bifascicular block, and the five can't-miss ECGs), tints the leads to look at and the reciprocal leads, can add V4R and V7–V9, and covers which leads see which wall, axis by leads I, aVF and II, the five-step infarct analysis and chest lead placement. Its **MI** tab draws any STEMI (including anterolateral, inferolateral and inferoposterior) and steps it through hyperacute T waves, ST elevation, Q waves, T inversion and old MI, and covers ischemia vs injury vs infarction, STEMI criteria, wall-artery-complication table, NSTE-ACS (ischemic ST depression, Wellens), old MI, STEMI equivalents (posterior, Sgarbossa, RV infarct), mimics and field care. |
+| **Stats** | Accuracy per rhythm (strips, rules, care), per 12-lead finding, per MI question type and per condition, with a button to drill your weakest strips. |
 
 ## A&P modes
 
@@ -63,6 +75,17 @@ The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is g
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
 with a random rate, PR interval and beat placement inside the rhythm's textbook range,
 so no two are the same.
+
+The 12-leads are drawn by `js/twelve.js`. The P, QRS and T waves come from a few electrical
+vectors (septum, apex, lateral wall, base), and each lead records the part of each vector
+pointing toward it, so all 12 leads agree with each other and turning the vectors changes
+the axis in every lead at once. ST elevation and depression, the extra R or Q waves and the
+Brugada and ARVD shapes are added per lead from each finding's textbook leads. Wide screens
+get the standard 3 × 4 printout with a 10-second lead II strip; phones get the same leads in
+two columns (limb leads, chest leads) so nothing needs side scrolling. A STEMI can also be drawn at any stage (hyperacute, acute, evolving with Q waves,
+T inversion, old). 12-lead content lives in `CARDIO_TWELVE` and MI content in `CARDIO_MI` in
+`js/cardio-data.js`, from slides 30–31, 131–161 and 170–177 and the chapter outline; wall and artery maps,
+lead placement and a few criteria are standard ECG teaching and are marked that way.
 
 Real strips come from the [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/)
 (Moody GB, Mark RG. The impact of the MIT-BIH Arrhythmia Database. IEEE Eng in Med and Biol
@@ -99,6 +122,29 @@ arterial range of 22–26. `js/abg.js` interprets blood gases and makes practice
 pH is computed from the PaCO₂ and HCO₃⁻ (Henderson-Hasselbalch), so every gas is
 internally consistent.
 
+## Legal modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | The **Negligence** page: the four elements (each with an example and what happens if it is missing), ordinary vs gross negligence side by side, malfeasance/misfeasance/nonfeasance, damages, defenses, and a "which element is missing?" drill. Also every topic, a searchable glossary, and every scenario with its answer. |
+| **Cards** | Flashcard decks: terms (term to meaning, meaning to term, or mixed), key facts, scenarios ("what do you do?"), and the key points of each topic. Pick which areas to include. |
+| **Quiz** | Multiple-choice questions on terms, key facts, scenarios and missing negligence elements, with the reason after each scenario. |
+| **Stats** | Accuracy per area for terms, facts and scenarios, with a button to study your weakest area. |
+
+Legal content lives in `js/legal-data.js`.
+
+## Midterm modes
+
+| Tab | What it does |
+| --- | --- |
+| **Review** | A review sheet for each of the 10 midterm topics, with a button to drill that topic and, where the app has a deeper section (Cardiology's Na-K pump page, for example), a link to it. |
+| **Exam** | A mixed practice exam (20, 40, 60 or 100 questions) spread evenly over the topics you pick. Med math (D/H × V, weight-based doses, drip rates, dopamine and lidocaine drips) and ABG questions are generated fresh each time; the ECG topic includes the handout strips. Answers can show after each question or only at the end (test mode). Results break down by topic, with the missed questions explained. |
+| **Strips** | The 36 strips from the class handout *Send home rhythms*, checked against its answer key, by multiple choice or "say it, then reveal". |
+| **Stats** | Accuracy per topic and per handout strip. |
+
+Midterm content lives in `js/midterm-data.js`. The handout strips are in `img/midterm/`
+(strips 1 to 30 were generated with 12LeadTrainer.com).
+
 ## Running it
 
 It's a static site with no build step:
@@ -118,7 +164,8 @@ It's a static site with no build step:
 - **Doses** count only when every number in the deck's dose is in your answer.
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
-`node tests/ap.test.js` and `node tests/patho.test.js`.
+`node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js` and
+`node tests/midterm.test.js`.
 
 ## Updating the drug list
 
