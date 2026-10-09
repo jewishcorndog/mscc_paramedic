@@ -10,6 +10,10 @@ subjects, switched at the top of the page:
 - **Cardiology** (Rhythm Box), built from Chapter 21 of *Sanders' Paramedic Textbook*
   (6th ed.): the lecture slides and the chapter outline. It covers ECG basics, 25
   rhythms and dysrhythmias, the 12-lead ECG, cardiac conditions, and treatments and devices.
+- **A&P** (Body Box), built from Chapter 10 (*Review of Human Systems*) of *Sanders'
+  Paramedic Textbook* (6th ed.), the lecture slides. It opens on how blood moves through the
+  heart and body, then lays out all 13 body systems in one place. Topics beyond the slides
+  are marked *.
 - **Pathophysiology** (Patho Box), built from Chapter 11 of *Sanders' Paramedic Textbook*
   (6th ed.), *General Principles of Pathophysiology*: the lecture slides, including the
   tables and flowcharts that are pictures on the slides. It covers the whole chapter, with
@@ -51,6 +55,17 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | **Quiz** | Multiple-choice questions mixed from the same topics, including "What does this 12-lead show?", "What is the axis?", "Where is this MI?" and "What stage is this STEMI?" on drawn 12-leads. |
 | **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page starts with where the heart's electricity comes from and walks one beat through a membrane diagram (channels opening, ions moving, inside voltage on a meter: rest, threshold, depolarization, plateau, repolarization, reset), then steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows calcium's electrical and contractile jobs (trigger calcium, release from the sarcoplasmic reticulum, troponin, relaxation) with calcium channel blockers, calcium for hyperkalemia, digoxin and calcium levels at the bedside, shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. The **12-lead** page draws a full 12-lead for any of 18 findings (normal, STEMI by wall including RV and posterior, pericarditis, RBBB, LBBB, hemiblocks, bifascicular block, and the five can't-miss ECGs), tints the leads to look at and the reciprocal leads, can add V4R and V7–V9, and covers which leads see which wall, axis by leads I, aVF and II, the five-step infarct analysis and chest lead placement. Its **MI** tab draws any STEMI (including anterolateral, inferolateral and inferoposterior) and steps it through hyperacute T waves, ST elevation, Q waves, T inversion and old MI, and covers ischemia vs injury vs infarction, STEMI criteria, wall-artery-complication table, NSTE-ACS (ischemic ST depression, Wellens), old MI, STEMI equivalents (posterior, Sgarbossa, RV infarct), mimics and field care. |
 | **Stats** | Accuracy per rhythm (strips, rules, care), per 12-lead finding, per MI question type and per condition, with a button to drill your weakest strips. |
+
+## A&P modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | The **Overview** steps through the route of blood (body → venae cavae → right heart → lungs → left heart → aorta → body) on a diagram that lights up each stop, compares the pulmonary and systemic circuits, lists the vessels in order, has a "put it in order" drill, and shows every body system on one page. Also each system's topics with "In the field" notes, a searchable glossary, normal adult values, and applied cases with their answers. |
+| **Cards** | Flashcard decks: blood flow ("where does it go next?"), terms (term to meaning, meaning to term, or mixed), key facts, normal values, applied cases ("what is going on in this patient's body?"), and the key points of each topic. Pick which body systems to include. |
+| **Quiz** | Multiple-choice questions on blood flow, terms, key facts, normal values and applied cases, with the reason after each one. |
+| **Stats** | Accuracy per body system for terms, facts and applied cases, with a button to study your weakest system. |
+
+A&P content lives in `js/ap-data.js`.
 
 The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is generated
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
@@ -133,7 +148,7 @@ It's a static site with no build step:
 - **Doses** count only when every number in the deck's dose is in your answer.
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
-`node tests/patho.test.js` and `node tests/legal.test.js`.
+`node tests/ap.test.js`, `node tests/patho.test.js` and `node tests/legal.test.js`.
 
 ## Updating the drug list
 

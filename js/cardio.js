@@ -1,5 +1,5 @@
 /* Cardiology: rhythm strips, flashcards, quiz, reference and stats over
-   window.CARDIO_* data, plus the Pharmacology / Cardiology / Patho / Legal subject switch. */
+   window.CARDIO_* data, plus the subject switch (Pharmacology, Cardiology, A&P, Patho, Legal). */
 (function () {
   'use strict';
 
@@ -227,6 +227,7 @@
   var SUBJECTS = {
     pharm: ['Drug Box', 'Motlow State Paramedic · TN protocols', 'Paramedic Drug Box'],
     cardio: ['Rhythm Box', 'Motlow State Paramedic · Ch. 21 Cardiology', 'Paramedic Rhythm Box'],
+    ap: ['Body Box', 'Motlow State Paramedic · Ch. 10 Human Systems', 'Paramedic Body Box'],
     patho: ['Patho Box', 'Motlow State Paramedic · Pathophysiology', 'Paramedic Patho Box'],
     legal: ['Law Box', 'Motlow State Paramedic · Ch. 6 Medical & Legal', 'Paramedic Law Box']
   };
@@ -243,6 +244,7 @@
     $('#brand-sub').textContent = SUBJECTS[subject][1];
     document.title = SUBJECTS[subject][2];
     if (subject === 'cardio') showTab(VIEWS[S.tab] ? S.tab : 'strips');
+    if (subject === 'ap') window.APBox.show();
     if (subject === 'patho') window.Patho.show();
     if (subject === 'legal') window.LegalBox.show();
   }
