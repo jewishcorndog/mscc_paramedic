@@ -1438,7 +1438,8 @@
       CX_RATES.map(function (r) {
         return '<tr><td><strong>' + esc(r.site) + '</strong><br>' +
           (R_BY[r.id] ? '<button class="chip" data-goto-rhythm="' + r.id + '">' + esc(r.note) + '</button>' : esc(r.note)) + '</td><td>' + esc(r.rate) + '</td></tr>';
-      }).join('') + '</tbody></table></div></div>' +
+      }).join('') + '</tbody></table></div>' +
+      '<p class="muted">Emergency discharge rates: 150–250/min (an irritable pacemaker site driving a tachycardia).</p></div>' +
       '<div class="panel"><p class="eyebrow">Where the blocks happen</p><div class="table-wrap"><table class="grid basics"><tbody>' +
       CONDUCT.blocks.map(function (b) {
         return '<tr><td>' + (b.id && R_BY[b.id] ? '<button class="chip" data-goto-rhythm="' + b.id + '">' + esc(b.name) + '</button>' : '<strong>' + esc(b.name) + '</strong>') +
