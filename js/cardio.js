@@ -228,8 +228,8 @@
     pharm: ['Drug Box', 'Motlow State Paramedic · TN protocols', 'Paramedic Drug Box'],
     cardio: ['Rhythm Box', 'Motlow State Paramedic · Ch. 21 Cardiology', 'Paramedic Rhythm Box'],
     patho: ['Patho Box', 'Motlow State Paramedic · Pathophysiology', 'Paramedic Patho Box'],
-    ap: ['Body Box', 'Motlow State Paramedic · Ch. 10 Human Systems', 'Paramedic Body Box'],
     legal: ['Law Box', 'Motlow State Paramedic · Ch. 6 Medical & Legal', 'Paramedic Law Box'],
+    ap: ['Body Box', 'Motlow State Paramedic · Ch. 10 Human Systems', 'Paramedic Body Box'],
     midterm: ['Midterm Box', 'Motlow State Paramedic · Midterm review', 'Paramedic Midterm Review']
   };
   var subject = 'pharm';
