@@ -991,7 +991,7 @@
 
   // ---------- Keyboard shortcuts ----------
   document.addEventListener('keydown', function (e) {
-    if (!setupEl.hidden || document.body.dataset.subject === 'cardio') return;
+    if (!setupEl.hidden || (document.body.dataset.subject || 'pharm') !== 'pharm') return;
     var tag = (e.target.tagName || '').toLowerCase();
     var typing = tag === 'input' || tag === 'textarea' || tag === 'select';
     if (S.tab === 'cards' && C && C.queue.length && !typing) {
