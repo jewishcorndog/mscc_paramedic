@@ -137,6 +137,20 @@ t('sodium-potassium pump content is complete', () => {
     assert(!b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, 'bad choices: ' + b.q);
   });
   assert(/3 Na⁺ out and 2 K⁺ in/.test(P.qa[0].a));
+  // The beat story starts and ends at rest, and every channel or flow it names is drawn.
+  assert(P.spark && P.story.length >= 5);
+  assert.strictEqual(P.story[0].mv, P.story[P.story.length - 1].mv);
+  P.story.forEach(st => {
+    assert(st.title && st.text && st.ecg && st.phase && Number.isFinite(st.mv), st.title);
+    assert(st.mv >= -90 && st.mv <= 30 && ['neg', 'pos'].includes(st.inside), st.title);
+    st.open.forEach(c => assert(['na', 'ca', 'k', 'pump'].includes(c), st.title + ' ' + c));
+    st.flows.forEach(f => assert(['naIn', 'caIn', 'kOut', 'kLeak', 'pump', 'nbr'].includes(f), st.title + ' ' + f));
+    assert(st.inside === (st.mv > -10 ? 'pos' : 'neg'), 'inside charge does not match mV: ' + st.title);
+  });
+  assert(P.story.some(st => st.open.includes('ca') && st.flows.includes('caIn')), 'calcium never enters');
+  assert.strictEqual(P.calcium.length, 4);
+  P.calcium.forEach(st => st.show.forEach(k => assert(['caIn', 'srOut', 'srIn', 'cloud', 'bound', 'contract', 'ncx'].includes(k), st.title + ' ' + k)));
+  assert(P.calciumJobs.length === 2 && P.calciumClinical.length >= 4);
 });
 
 t('block strips show their criteria inside the strip', () => {
