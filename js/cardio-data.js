@@ -973,3 +973,288 @@ window.CARDIO_CONDUCTION = {
     { q: 'WPW conducts around the AV node through…', a: 'An accessory pathway (bypass tract)', wrong: ['The bundle of His', 'Bachmann\'s bundle', 'The left posterior fascicle'] }
   ]
 };
+
+// 12-lead ECG (slides 30–31, 131–161, 170–177, 231; outline on 12-lead monitoring).
+// Pattern ids match js/twelve.js. std: true marks standard ECG criteria the slides use but
+// don't spell out (wall and artery maps, most voltage and morphology numbers).
+window.CARDIO_TWELVE = {
+  groups: [
+    { id: 'normal', name: 'Normal' },
+    { id: 'stemi', name: 'STEMI by wall' },
+    { id: 'acs', name: 'NSTE-ACS, old MI & STEMI equivalent' },
+    { id: 'mimic', name: 'STEMI mimic' },
+    { id: 'conduction', name: 'Bundle branch blocks & hemiblocks' },
+    { id: 'cantmiss', name: 'Five can\'t miss' }
+  ],
+  // What each lead looks at. type: how it is recorded.
+  leads: [
+    { id: 'I', type: 'Standard limb (bipolar)', view: 'Lateral', wall: 'lateral' },
+    { id: 'II', type: 'Standard limb (bipolar)', view: 'Inferior', wall: 'inferior' },
+    { id: 'III', type: 'Standard limb (bipolar)', view: 'Inferior', wall: 'inferior' },
+    { id: 'aVR', type: 'Augmented limb (unipolar)', view: 'Right upper side, looks into the cavity; not assigned to a wall', wall: null },
+    { id: 'aVL', type: 'Augmented limb (unipolar)', view: 'High lateral', wall: 'lateral' },
+    { id: 'aVF', type: 'Augmented limb (unipolar)', view: 'Inferior', wall: 'inferior' },
+    { id: 'V1', type: 'Precordial (unipolar)', view: 'Septum; the only standard lead facing the right ventricle', wall: 'septal' },
+    { id: 'V2', type: 'Precordial (unipolar)', view: 'Septum', wall: 'septal' },
+    { id: 'V3', type: 'Precordial (unipolar)', view: 'Anterior', wall: 'anterior' },
+    { id: 'V4', type: 'Precordial (unipolar)', view: 'Anterior', wall: 'anterior' },
+    { id: 'V5', type: 'Precordial (unipolar)', view: 'Low lateral', wall: 'lateral' },
+    { id: 'V6', type: 'Precordial (unipolar)', view: 'Low lateral', wall: 'lateral' },
+    { id: 'V4R', type: 'Right-sided chest lead', view: 'Right ventricle', wall: 'rv' },
+    { id: 'V7', type: 'Posterior chest lead', view: 'Posterior wall', wall: 'posterior' },
+    { id: 'V8', type: 'Posterior chest lead', view: 'Posterior wall', wall: 'posterior' },
+    { id: 'V9', type: 'Posterior chest lead', view: 'Posterior wall', wall: 'posterior' }
+  ],
+  // Which leads face each wall, the usual culprit artery, and where the mirror image shows.
+  walls: [
+    { id: 'inferior', name: 'Inferior', leads: ['II', 'III', 'aVF'], recip: ['I', 'aVL'], artery: 'Right coronary artery (most often)', std: true },
+    { id: 'septal', name: 'Septal', leads: ['V1', 'V2'], recip: [], artery: 'Left anterior descending (septal branches)', std: true },
+    { id: 'anterior', name: 'Anterior', leads: ['V3', 'V4'], recip: ['II', 'III', 'aVF'], artery: 'Left anterior descending', std: true },
+    { id: 'lateral', name: 'Lateral', leads: ['I', 'aVL', 'V5', 'V6'], recip: ['II', 'III', 'aVF'], artery: 'Circumflex (or a diagonal branch of the LAD)', std: true },
+    { id: 'posterior', name: 'Posterior', leads: ['V7', 'V8', 'V9'], recip: ['V1', 'V2', 'V3'], artery: 'Circumflex or right coronary artery', std: true },
+    { id: 'rv', name: 'Right ventricle', leads: ['V4R', 'V1'], recip: [], artery: 'Right coronary artery (proximal)', std: true }
+  ],
+  // Patterns you can draw. leads: where the finding is (highlighted after you answer); recip: mirror-image leads.
+  patterns: [
+    { id: 'normal', name: 'Normal 12-lead', group: 'normal', leads: [], recip: [],
+      find: ['Sinus rhythm, PR 0.12–0.20 s, QRS under 0.12 s', 'Axis 0° to +90°: QRS upright in I and aVF', 'R waves grow from V1 to V6 (small r in V1, tall R in V5 and V6)', 'No ST elevation or depression; T waves upright except aVR (and sometimes V1, III)'],
+      std: true },
+    { id: 'inferior', name: 'Inferior STEMI', group: 'stemi', wall: 'inferior', leads: ['II', 'III', 'aVF'], recip: ['I', 'aVL'], topic: 'ami',
+      find: ['ST elevation in II, III and aVF', 'Reciprocal ST depression in aVL (and I)', 'Usually the right coronary artery', 'Get right-sided leads (V4R) to check the right ventricle'] },
+    { id: 'inferior-rv', name: 'Inferior STEMI with RV involvement', group: 'stemi', wall: 'rv', leads: ['II', 'III', 'aVF', 'V1', 'V4R'], recip: ['I', 'aVL'], extra: true, topic: 'ami',
+      find: ['ST elevation in II, III and aVF, greatest in III', 'ST elevation in V1, the only standard lead facing the right ventricle', 'ST elevation in V4R on the right-sided ECG', 'Preload-dependent: be careful with nitrates; fluids may be needed for hypotension'],
+      std: true },
+    { id: 'anterior', name: 'Anterior STEMI', group: 'stemi', wall: 'anterior', leads: ['V3', 'V4'], recip: ['III', 'aVF'], topic: 'ami',
+      find: ['ST elevation in V3 and V4 (often spreading to V2 and V5)', 'Tall, broad (hyperacute) T waves', 'Left anterior descending artery', 'Large infarct: watch for pump failure, new BBB and AV block'],
+      std: true },
+    { id: 'septal', name: 'Septal STEMI', group: 'stemi', wall: 'septal', leads: ['V1', 'V2'], recip: [], topic: 'ami',
+      find: ['ST elevation in V1 and V2', 'Septal branches of the LAD', 'The septum carries the bundle branches: watch for new BBB and type II or third-degree block'],
+      std: true },
+    { id: 'lateral', name: 'Lateral STEMI', group: 'stemi', wall: 'lateral', leads: ['I', 'aVL', 'V5', 'V6'], recip: ['III', 'aVF'], topic: 'ami',
+      find: ['ST elevation in I, aVL, V5 and V6', 'Reciprocal ST depression in III and aVF', 'Circumflex artery (or a diagonal of the LAD)'],
+      std: true },
+    { id: 'posterior', name: 'Posterior STEMI', group: 'stemi', wall: 'posterior', leads: ['V1', 'V2', 'V3', 'V7', 'V8', 'V9'], recip: [], extra: true, topic: 'ami',
+      find: ['Horizontal ST depression in V1–V3', 'Tall, upright T waves in V1–V3', 'Tall, wide R wave; R:S ratio greater than 1 in V1–V2', 'ST elevation in posterior leads V7–V9 (move V4–V6 to the back)', 'Often with an inferior or lateral MI'] },
+    { id: 'anterolateral', name: 'Anterolateral STEMI', group: 'stemi', wall: 'anterolateral', leads: ['V3', 'V4', 'V5', 'V6', 'I', 'aVL'], recip: ['III', 'aVF'], topic: 'ami',
+      find: ['ST elevation in V3–V6 plus I and aVL', 'Reciprocal ST depression in III and aVF', 'Proximal left anterior descending artery: a big territory', 'High risk of pump failure and cardiogenic shock'],
+      std: true },
+    { id: 'inferolateral', name: 'Inferolateral STEMI', group: 'stemi', wall: 'inferolateral', leads: ['II', 'III', 'aVF', 'V5', 'V6'], recip: ['aVL'], topic: 'ami',
+      find: ['ST elevation in II, III and aVF plus V5 and V6', 'Reciprocal ST depression in aVL', 'Right coronary artery or circumflex', 'Get V4R and V7–V9: the RV and posterior wall are often involved'],
+      std: true },
+    { id: 'inferoposterior', name: 'Inferoposterior STEMI', group: 'stemi', wall: 'inferoposterior', leads: ['II', 'III', 'aVF', 'V1', 'V2', 'V3', 'V7', 'V8', 'V9'], recip: ['aVL'], extra: true, topic: 'ami',
+      find: ['ST elevation in II, III and aVF', 'ST depression with tall R and upright T in V1–V3: the posterior wall seen backward', 'ST elevation in V7–V9 confirms the posterior wall', 'Right coronary artery or circumflex'] },
+    { id: 'ischemia', name: 'Ischemic ST depression (NSTE-ACS)', group: 'acs', leads: ['II', 'aVF', 'V4', 'V5', 'V6', 'I'], recip: ['aVR'], topic: 'acs',
+      find: ['Horizontal or downsloping ST depression in several leads', 'No ST elevation except possibly aVR', 'Unstable angina or NSTEMI: still ACS, treat as an evolving AMI', 'Depression that is greatest in V1–V3 may be a posterior STEMI: get V7–V9'] },
+    { id: 'wellens', name: 'Deep T-wave inversion V2–V3 (Wellens pattern)', group: 'acs', leads: ['V2', 'V3', 'V4'], recip: [], topic: 'acs',
+      find: ['Deep, symmetric T-wave inversion in V2–V3 (often V4)', 'Little or no ST elevation, no Q waves, R waves kept', 'Often seen when the pain has eased', 'Warns of a critical narrowing of the LAD: high risk of a large anterior MI'],
+      std: true },
+    { id: 'old-inferior', name: 'Old inferior MI (Q waves)', group: 'acs', leads: ['II', 'III', 'aVF'], recip: [], topic: 'ami',
+      find: ['Pathologic Q waves in II, III and aVF: 0.04 s wide or a third of the R height', 'ST segments back at baseline', 'The infarct has scarred (about 8 weeks); compare with an old ECG', 'Q waves alone do not mean an acute MI'],
+      std: true },
+    { id: 'sgarbossa', name: 'LBBB meeting Sgarbossa criteria', group: 'acs', leads: ['I', 'aVL', 'V5', 'V6', 'V1', 'V2', 'V3'], recip: [], topic: 'bbb',
+      find: ['LBBB: wide QRS, QS in V1, broad R in I, aVL, V6', 'Concordant ST elevation ≥ 1 mm where the QRS is upright (I, aVL, V5, V6)', 'Concordant ST depression ≥ 1 mm in V1–V3', 'Meets Sgarbossa: treated as a STEMI equivalent in many systems'],
+      std: true },
+    { id: 'pericarditis', name: 'Pericarditis', group: 'mimic', leads: ['I', 'II', 'aVF', 'V2', 'V3', 'V4', 'V5', 'V6'], recip: ['aVR'], topic: 'pericarditis',
+      find: ['Diffuse ST elevation across many walls, not one territory', 'PR-segment depression', 'aVR shows the opposite: ST depression and PR elevation', 'No reciprocal ST depression in the other leads', 'Sharp pain, worse lying flat, better sitting up and leaning forward'] },
+    { id: 'rbbb', name: 'Right bundle branch block', group: 'conduction', leads: ['V1', 'V2', 'I', 'V6'], recip: [], topic: 'bbb',
+      find: ['QRS 0.12 s or wider from a supraventricular rhythm', 'RSR\' ("rabbit ears") in V1 and V2', 'Wide, slurred S wave in I and V6', 'T waves opposite the R\' in V1–V3', 'Turn signal: QRS in V1 points up = right'] },
+    { id: 'lbbb', name: 'Left bundle branch block', group: 'conduction', leads: ['V1', 'V2', 'I', 'aVL', 'V6'], recip: [], topic: 'bbb',
+      find: ['QRS 0.12 s or wider from a supraventricular rhythm', 'Deep, wide QS (or rS) in V1', 'Broad, notched or slurred R in I, aVL and V6, with no septal q', 'ST and T go opposite the QRS (discordant)', 'Turn signal: QRS in V1 points down = left', 'New LBBB with chest pain may be ACS; Sgarbossa criteria = STEMI equivalent in many systems'] },
+    { id: 'lah', name: 'Left anterior hemiblock', group: 'conduction', leads: ['I', 'II', 'aVF'], recip: [], topic: 'bbb',
+      find: ['Left axis deviation (pathologic, beyond –30°) with a supraventricular rhythm', 'QRS up in I, down in II, III and aVF', 'QRS is not wide', 'More common than posterior hemiblock: the anterior fascicle is long and thin, supplied by the LAD'] },
+    { id: 'lph', name: 'Left posterior hemiblock', group: 'conduction', leads: ['I', 'aVF'], recip: [], topic: 'bbb',
+      find: ['Right axis deviation (+90° to ±180°): QRS down in I, up in aVF', 'QRS is not wide', 'Rare: the posterior fascicle is thick with a double blood supply', 'Call it only after ruling out other causes of right axis (RV strain, lateral MI)'],
+      std: true },
+    { id: 'bifasc', name: 'Bifascicular block (RBBB + anterior hemiblock)', group: 'conduction', leads: ['V1', 'I', 'II', 'aVF'], recip: [], topic: 'bbb',
+      find: ['RBBB pattern: wide QRS, RSR\' in V1', 'Plus left axis deviation (anterior hemiblock)', 'Two of the three fascicles blocked: only the posterior fascicle is left', 'Higher risk of complete heart block; have pacing ready'] },
+    { id: 'wpw', name: 'Wolff-Parkinson-White (WPW)', group: 'cantmiss', leads: ['I', 'II', 'aVL', 'V4', 'V5', 'V6'], recip: [], rhythm: 'wpw',
+      find: ['Short PR interval (under 0.12 s)', 'Delta wave: slurred upstroke at the start of the QRS', 'Slightly wide QRS', 'Avoid AV nodal blockers (adenosine, beta blockers, calcium channel blockers) in WPW tachycardia; treat wide-complex tachycardia as VT'] },
+    { id: 'brugada', name: 'Brugada syndrome', group: 'cantmiss', leads: ['V1', 'V2'], recip: [], topic: 'brugada',
+      find: ['Coved ST elevation over 2 mm in V1 and V2', 'ST slopes down into an inverted T wave', 'Sodium channel defect; may only show with fever, drugs or ischemia', 'Risk of VT/VF and sudden death; treated with an ICD'] },
+    { id: 'long-qt', name: 'Long QT syndrome', group: 'cantmiss', leads: ['II', 'V2', 'V3', 'V5'], recip: [], topic: 'long-qt',
+      find: ['QTc over 450 ms (males) or 460 ms (females)', 'T wave ends far from the QRS: more than half the R-R interval is a quick warning sign', 'Risk of torsades de pointes and sudden death', 'Look for causes: drugs, low potassium or magnesium'] },
+    { id: 'hocm', name: 'Hypertrophic obstructive cardiomyopathy (HOCM)', group: 'cantmiss', leads: ['I', 'aVL', 'V5', 'V6', 'II', 'III', 'aVF', 'V2'], recip: [], topic: 'hocm',
+      find: ['Very tall QRS voltage (left ventricular hypertrophy)', 'Deep, narrow "dagger" Q waves in the lateral (I, aVL, V5, V6) and inferior leads', 'Lateral T-wave inversion (strain)', 'Think of it in a young patient with syncope during exertion'],
+      std: true },
+    { id: 'arvd', name: 'Arrhythmogenic RV dysplasia (ARVD)', group: 'cantmiss', leads: ['V1', 'V2', 'V3'], recip: [], topic: 'arvd',
+      find: ['T-wave inversion in V1–V3', 'Epsilon wave: a small notch just after the QRS in V1–V2', 'Fatty tissue replaces the RV wall; risk of VT from the right ventricle'],
+      std: true }
+  ],
+  // Axis by leads I and aVF, with II to split physiologic from pathologic left axis (slides 138–141).
+  axis: [
+    { id: 'normal', name: 'Normal', range: '0° to +90°', I: 'up', aVF: 'up', II: 'up', range2: [0, 90] },
+    { id: 'phys-left', name: 'Physiologic left', range: '0° to –30°', I: 'up', aVF: 'down', II: 'up', note: 'May be normal in some patients', range2: [-30, 0] },
+    { id: 'path-left', name: 'Pathologic left', range: '–30° to –90°', I: 'up', aVF: 'down', II: 'down', note: 'Anterior hemiblock is the classic cause', range2: [-90, -30] },
+    { id: 'right', name: 'Right', range: '+90° to ±180°', I: 'down', aVF: 'up', II: 'either', note: 'Posterior hemiblock, RV strain, lateral MI', range2: [90, 180] },
+    { id: 'extreme', name: 'Indeterminate ("no man\'s land")', range: '–90° to ±180°', I: 'down', aVF: 'down', II: 'down', note: 'Think ventricular rhythm or lead reversal', range2: [-180, -90] }
+  ],
+  // Five-step analysis for infarct recognition (slide 147).
+  steps: [
+    { name: 'Identify rate and rhythm', text: 'Is the rhythm stable? Treat dangerous dysrhythmias first.' },
+    { name: 'Identify area of infarct', text: 'Look for ST elevation in two or more leads that face the same wall, and reciprocal depression across from it.' },
+    { name: 'Consider other conditions', text: 'Bundle branch blocks, pericarditis, ventricular hypertrophy, WPW, paced rhythms and early repolarization can mimic or hide an infarct.' },
+    { name: 'Assess the clinical presentation', text: 'Chest pain, diaphoresis, shortness of breath, nausea; silent MI in older, diabetic and female patients.' },
+    { name: 'Recognize infarction and initiate care', text: 'Transmit the 12-lead, alert a PCI-capable hospital, and treat per protocol.' }
+  ],
+  // ECG classes of ACS (slide 146).
+  classes: [
+    { name: 'STEMI', text: 'ST elevation in two or more contiguous leads (standard threshold: 1 mm in most leads, more in V2–V3), or new LBBB meeting Sgarbossa criteria' },
+    { name: 'NSTE-ACS', text: 'Unstable angina and NSTEMI: ischemic ST depression or T-wave inversion' },
+    { name: 'Stable angina', text: 'Pain with exertion that goes away with rest; ECG may be normal between episodes' },
+    { name: 'Nondiagnostic or normal', text: 'A normal 12-lead does not rule out ACS: repeat it, especially if symptoms change' }
+  ],
+  // Getting a good 12-lead (slides 31–32, 150; standard placement).
+  placement: [
+    { lead: 'V1', where: '4th intercostal space, right sternal border', std: true },
+    { lead: 'V2', where: '4th intercostal space, left sternal border', std: true },
+    { lead: 'V3', where: 'Halfway between V2 and V4', std: true },
+    { lead: 'V4', where: '5th intercostal space, left midclavicular line', std: true },
+    { lead: 'V5', where: 'Anterior axillary line, level with V4', std: true },
+    { lead: 'V6', where: 'Midaxillary line, level with V4', std: true },
+    { lead: 'V3R–V6R', where: 'Mirror image of V3–V6 on the right chest' },
+    { lead: 'V7–V9', where: 'Move V4–V6 to the back: posterior axillary line (V7), below the scapula tip (V8), beside the spine (V9)' }
+  ],
+  qa: [
+    { q: 'How is the 12-lead printed?', a: 'In four columns: I–III, aVR–aVF, V1–V3, V4–V6, plus a rhythm strip', wrong: ['One lead per page', 'Two columns of six leads', 'Three columns of four chest leads'] },
+    { q: 'Why do paramedics acquire 12-leads?', a: 'It changes transport decisions, treatment and predicts who will become unstable', wrong: ['To replace the cardiac monitor', 'Only to measure the heart rate', 'Only for patients in cardiac arrest'] },
+    { q: 'The 12-lead is the standard in most ALS systems for…', a: 'Chest pain of suspected cardiac origin', wrong: ['Every patient transported', 'Trauma patients only', 'Patients in VF'] },
+    { q: 'The precordial leads record the heart in which plane?', a: 'The horizontal plane', wrong: ['The frontal plane', 'The sagittal plane', 'No plane: they are bipolar'] },
+    { q: 'Which leads are bipolar?', a: 'The three standard limb leads (I, II, III)', wrong: ['aVR, aVL and aVF', 'V1 to V6', 'All 12 leads'] },
+    { q: 'ST elevation in II, III and aVF points to which wall?', a: 'Inferior', wrong: ['Lateral', 'Anterior', 'Septal'] },
+    { q: 'ST elevation in I, aVL, V5 and V6 points to which wall?', a: 'Lateral', wrong: ['Inferior', 'Septal', 'Posterior'] },
+    { q: 'ST elevation in V3 and V4 points to which wall?', a: 'Anterior', wrong: ['Inferior', 'Lateral', 'Right ventricle'] },
+    { q: 'ST elevation in V1 and V2 points to which wall?', a: 'Septal', wrong: ['Lateral', 'Inferior', 'High lateral'] },
+    { q: 'Inferior STEMI: where do you look for reciprocal depression?', a: 'aVL (and I)', wrong: ['V1 and V2', 'V5 and V6', 'aVR only'], std: true },
+    { q: 'Inferior MI is usually caused by a blockage in the…', a: 'Right coronary artery', wrong: ['Left anterior descending', 'Circumflex', 'Left main'], std: true },
+    { q: 'Anterior and septal MIs come from the…', a: 'Left anterior descending artery', wrong: ['Right coronary artery', 'Circumflex', 'Posterior descending artery'], std: true },
+    { q: 'RV infarct: ST elevation in the inferior leads is greatest in…', a: 'Lead III', wrong: ['Lead II', 'aVF', 'aVL'] },
+    { q: 'The only standard 12-lead lead that faces the right ventricle?', a: 'V1', wrong: ['V6', 'aVL', 'Lead I'] },
+    { q: 'Posterior MI on a standard 12-lead shows in V1–V3 as…', a: 'Horizontal ST depression, tall upright T, tall wide R', wrong: ['ST elevation and Q waves', 'RSR\' with inverted T', 'Delta waves'] },
+    { q: 'Right-sided leads V3R–V6R are placed…', a: 'Mirror image of the standard precordial leads on the right chest', wrong: ['On the back below the scapula', 'On both arms', 'One space above the standard leads'] },
+    { q: 'Four ECG classes of chest pain patients?', a: 'STEMI, NSTE-ACS, stable angina, nondiagnostic or normal', wrong: ['Inferior, anterior, lateral, posterior', 'RBBB, LBBB, LAH, LPH', 'Sinus, atrial, junctional, ventricular'] },
+    { q: 'NSTE-ACS includes…', a: 'Unstable angina and NSTEMI', wrong: ['STEMI and stable angina', 'Pericarditis and myocarditis', 'Only STEMI'] },
+    { q: 'Injured heart muscle stays depolarized and produces…', a: 'ST-segment elevation', wrong: ['A short PR interval', 'A delta wave', 'U waves'] },
+    { q: 'ST elevation in nearly every lead with PR depression suggests…', a: 'Pericarditis', wrong: ['Inferior STEMI', 'Left bundle branch block', 'Long QT'] },
+    { q: 'Bundle branch blocks happen…', a: 'Below the bifurcation of the bundle of His', wrong: ['In the SA node', 'In the AV node', 'In the internodal pathways'] },
+    { q: 'Why does detecting a bundle branch block matter?', a: 'Higher risk of severe bradycardia and third-degree block', wrong: ['It always needs cardioversion', 'It rules out an MI', 'It means the patient is in VT'] },
+    { q: 'Common causes of bundle branch block?', a: 'Cardiomyopathy, hypertrophy, anterior MI, aortic stenosis, hyperkalemia, digoxin', wrong: ['Hypoglycemia and stroke', 'Asthma and COPD', 'Dehydration only'] },
+    { q: 'Treatment for a long-standing bundle branch block?', a: 'None specific', wrong: ['Amiodarone', 'Synchronized cardioversion', 'Transcutaneous pacing'] },
+    { q: 'New LBBB with chest pain meeting Sgarbossa criteria is treated as…', a: 'A STEMI equivalent', wrong: ['Stable angina', 'Normal', 'Pericarditis'] },
+    { q: 'Bifascicular block usually means…', a: 'RBBB plus an anterior or posterior hemiblock', wrong: ['LBBB plus first-degree block', 'Two separate MIs', 'Both atria blocked'] },
+    { q: 'Which hemiblock is more common, and why?', a: 'Anterior: its fascicle is long and thin with one blood supply (LAD)', wrong: ['Posterior: it is thinner', 'Posterior: it has no blood supply', 'They are equally common'] },
+    { q: 'QRS up in I and down in aVF: axis is…', a: 'Left (0° to –90°)', wrong: ['Normal', 'Right', 'Indeterminate'] },
+    { q: 'QRS down in I and up in aVF: axis is…', a: 'Right (+90° to ±180°)', wrong: ['Normal', 'Left', 'Indeterminate'] },
+    { q: 'QRS down in both I and aVF: axis is…', a: 'Indeterminate ("no man\'s land")', wrong: ['Normal', 'Left', 'Right'] },
+    { q: 'Left axis with QRS still upright in II is…', a: 'Physiologic left axis (0° to –30°)', wrong: ['Pathologic left axis', 'Right axis', 'Indeterminate axis'] },
+    { q: 'Why use leads I and aVF for axis?', a: 'They are perpendicular to each other', wrong: ['They are the tallest leads', 'They face the septum', 'They are both bipolar'] },
+    { q: 'Stable wide-complex tachycardia: what helps sort VT from other rhythms?', a: 'A 12-lead ECG', wrong: ['A single lead II strip', 'Blood pressure alone', 'Pulse oximetry'] },
+    { q: '"Five can\'t miss" ECG findings in palpitations or syncope?', a: 'WPW, Brugada, long QT, HOCM, ARVD', wrong: ['RBBB, LBBB, LAH, LPH, bifascicular', 'Inferior, anterior, lateral, posterior, septal', 'AF, flutter, SVT, VT, VF'] },
+    { q: 'Coved ST elevation over 2 mm in V1–V2 is…', a: 'Brugada syndrome', wrong: ['Septal STEMI only', 'RBBB', 'WPW'] },
+    { q: 'Short PR with a delta wave is…', a: 'WPW', wrong: ['First-degree AV block', 'Long QT', 'Brugada syndrome'] },
+    { q: 'Deep, narrow "dagger" Q waves in the lateral leads of a young athlete suggest…', a: 'HOCM', wrong: ['Old inferior MI', 'Pericarditis', 'Long QT'], std: true },
+    { q: 'T inversion in V1–V3 with an epsilon wave suggests…', a: 'ARVD', wrong: ['WPW', 'Anterior STEMI', 'Hyperkalemia'], std: true },
+    { q: 'After ROSC, the 12-lead should be done…', a: 'As soon as possible, to look for STEMI and need for PCI', wrong: ['Only at the hospital', 'Only if the patient wakes up', 'After 24 hours'] }
+  ]
+};
+
+// MI on the 12-lead (slides 146–151, 170–177; outline XIX–XXI and the MI section).
+// std: true marks standard ECG teaching the slides use but don't spell out.
+window.CARDIO_MI = {
+  // Where the MI is: answers for "Where is this MI?". pids: drawn patterns that show it.
+  territories: [
+    { id: 'inferior', name: 'Inferior', pids: ['inferior'], leads: 'II, III, aVF', recip: 'aVL, I', artery: 'Right coronary artery (most often)', watch: 'Bradycardia and AV blocks; check V4R for RV involvement', std: true },
+    { id: 'rv', name: 'Inferior with right ventricle', pids: ['inferior-rv'], leads: 'II, III, aVF (greatest in III), V1, V4R', recip: 'aVL, I', artery: 'Proximal right coronary artery', watch: 'Hypotension with clear lung fields; RBBB and second- or third-degree AV block; preload-dependent' },
+    { id: 'septal', name: 'Septal', pids: ['septal'], leads: 'V1, V2', recip: '–', artery: 'Left anterior descending (septal branches)', watch: 'New bundle branch block, type II and third-degree block', std: true },
+    { id: 'anterior', name: 'Anterior', pids: ['anterior'], leads: 'V3, V4', recip: 'II, III, aVF', artery: 'Left anterior descending', watch: 'Pump failure, heart failure, cardiogenic shock', std: true },
+    { id: 'lateral', name: 'Lateral', pids: ['lateral'], leads: 'I, aVL, V5, V6', recip: 'II, III, aVF', artery: 'Circumflex (or a diagonal of the LAD)', watch: 'Often part of a larger anterior or inferior MI', std: true },
+    { id: 'anterolateral', name: 'Anterolateral', pids: ['anterolateral'], leads: 'V3–V6, I, aVL', recip: 'III, aVF', artery: 'Proximal LAD', watch: 'Large infarct: shock, VF, heart failure', std: true },
+    { id: 'inferolateral', name: 'Inferolateral', pids: ['inferolateral'], leads: 'II, III, aVF, V5, V6', recip: 'aVL', artery: 'Right coronary or circumflex', watch: 'Check V4R and V7–V9', std: true },
+    { id: 'posterior', name: 'Posterior', pids: ['posterior'], leads: 'V7–V9 (ST depression, tall R, upright T in V1–V3)', recip: 'V1–V3', artery: 'Circumflex or right coronary', watch: 'Easy to miss: ST depression in V1–V3 is the clue' },
+    { id: 'inferoposterior', name: 'Inferoposterior', pids: ['inferoposterior'], leads: 'II, III, aVF, V7–V9', recip: 'aVL, V1–V3', artery: 'Right coronary or circumflex', watch: 'Larger infarct than inferior alone', std: true }
+  ],
+  // How a STEMI changes over time. id matches the generator's stage.
+  stages: [
+    { id: 'hyperacute', name: 'Hyperacute T waves', when: 'First minutes', ecg: 'Tall, broad T waves in the leads facing the blocked artery; the ST is just starting to lift', std: true },
+    { id: 'acute', name: 'ST elevation', when: 'Minutes to hours', ecg: 'ST elevation in the facing leads, reciprocal depression across from them. Injured muscle stays depolarized (slide 146). Still salvageable: time is muscle' },
+    { id: 'evolving', name: 'Q waves form', when: 'Hours', ecg: 'Pathologic Q waves appear and R waves shrink as muscle dies; ST still elevated', std: true },
+    { id: 'inverted', name: 'T waves invert', when: 'Hours to days', ecg: 'ST returns toward baseline, T waves turn over; Q waves stay', std: true },
+    { id: 'old', name: 'Old (healed) MI', when: 'Weeks on', ecg: 'Q waves remain as the scar\'s signature; ST and T back near normal. Scar replaces the infarct in about 8 weeks (slides)' }
+  ],
+  // Ischemia, injury, infarction.
+  zones: [
+    { name: 'Ischemia', ecg: 'ST depression or T-wave inversion', meaning: 'Not enough oxygen; cells switch to anaerobic metabolism (lactic acid, CO2): the cause of angina. Reversible.', std: true },
+    { name: 'Injury', ecg: 'ST elevation', meaning: 'Cells swell and stay depolarized. Can still be saved if flow is restored quickly.' },
+    { name: 'Infarction', ecg: 'Pathologic Q waves', meaning: 'Muscle has died; scar replaces it. Surviving tissue at the edge can start dysrhythmias.', std: true }
+  ],
+  // STEMI criteria (standard; the slides say "ST elevation" without numbers).
+  criteria: [
+    { name: 'Where', text: 'ST elevation in two or more contiguous leads (leads that look at the same wall)', std: true },
+    { name: 'How much', text: '1 mm or more in most leads; in V2–V3 at least 2 mm in men 40 and over, 2.5 mm in men under 40, 1.5 mm in women', std: true },
+    { name: 'Measured', text: 'At the J point, against the baseline (the TP or PR segment)', std: true },
+    { name: 'Reciprocal changes', text: 'ST depression in leads facing the opposite wall makes a true STEMI more likely; diffuse elevation with no reciprocal change points to a mimic like pericarditis', std: true }
+  ],
+  // Sort the tracing. Answers for "How would you classify this 12-lead?".
+  classes: [
+    { id: 'stemi', name: 'STEMI', pids: ['inferior', 'anterior', 'lateral', 'septal', 'anterolateral', 'inferolateral'] },
+    { id: 'equiv', name: 'STEMI equivalent', pids: ['sgarbossa', 'posterior'] },
+    { id: 'nste', name: 'NSTE-ACS (ischemia)', pids: ['ischemia', 'wellens'] },
+    { id: 'old', name: 'Old MI', pids: ['old-inferior'] },
+    { id: 'normal', name: 'Normal or nondiagnostic', pids: ['normal'] },
+    { id: 'mimic', name: 'STEMI mimic', pids: ['pericarditis'] }
+  ],
+  // STEMI equivalents and mimics.
+  equivalents: [
+    { name: 'Posterior STEMI', text: 'ST depression, tall R and upright T in V1–V3; confirm with ST elevation in V7–V9' },
+    { name: 'LBBB with Sgarbossa criteria', text: 'LBBB alone is no longer called a STEMI equivalent because in the field you can\'t tell new from old. It is treated as one when it meets Sgarbossa: concordant ST elevation ≥ 1 mm, concordant ST depression ≥ 1 mm in V1–V3, or discordant ST elevation ≥ 5 mm (criteria std)' },
+    { name: 'Right ventricular infarct', text: 'Inferior STEMI with ST elevation in V1 and V4R; outline adds RBBB, second- or third-degree block, and hypotension with clear lungs' }
+  ],
+  mimics: [
+    { name: 'Pericarditis', text: 'Diffuse ST elevation, PR depression, no reciprocal depression (aVR aside)' },
+    { name: 'LBBB and paced rhythms', text: 'ST is normally opposite the QRS; use Sgarbossa', std: true },
+    { name: 'Left ventricular hypertrophy', text: 'Tall voltage with ST changes opposite the QRS (strain)', std: true },
+    { name: 'Early repolarization', text: 'Young, healthy patients: mild concave ST elevation with a notched J point, stable over time', std: true },
+    { name: 'Brugada', text: 'Coved ST elevation only in V1–V2' },
+    { name: 'WPW', text: 'Delta waves can mimic Q waves and ST changes' }
+  ],
+  // Field care from the slides and outline.
+  care: [
+    'Assume anginal chest pain is an AMI until proven otherwise',
+    'Get a 12-lead early, transmit it, and interpret it; repeat it if symptoms change',
+    'Recognize STEMI promptly and triage to the right (PCI-capable) hospital',
+    'Goals: limit how much muscle dies, preserve LV function, prevent heart failure and major cardiac events, treat life-threatening complications',
+    'Death in the first week or two: lethal dysrhythmias, pump failure, or rupture of the ventricle, septum or papillary muscle',
+    'Fibrinolytics in the field only with checklists, 12-lead transmission, medical direction and quality review',
+    'Inferior MI: get V4R; RV infarct with hypotension and clear lungs is preload-dependent (careful with nitrates)'
+  ],
+  qa: [
+    { q: 'ST elevation means the heart muscle is…', a: 'Injured but still salvageable', wrong: ['Dead and scarred', 'Normal', 'Only ischemic, never infarcting'] },
+    { q: 'ST depression or T-wave inversion usually means…', a: 'Ischemia', wrong: ['Infarction', 'Injury', 'A normal variant'], std: true },
+    { q: 'Pathologic Q waves mean…', a: 'Infarction: dead muscle', wrong: ['Ischemia only', 'Early injury', 'Hyperkalemia'], std: true },
+    { q: 'A pathologic Q wave is at least…', a: '0.04 s wide or a third of the R wave\'s height', wrong: ['0.02 s wide', '0.12 s wide', '1 mm deep in any lead'], std: true },
+    { q: 'Earliest ECG sign of a STEMI?', a: 'Hyperacute (tall, broad) T waves', wrong: ['Q waves', 'T-wave inversion', 'Short PR'], std: true },
+    { q: 'Order of changes in an evolving STEMI?', a: 'Hyperacute T, ST elevation, Q waves, T inversion, Q wave remains', wrong: ['Q waves, ST elevation, hyperacute T, T inversion', 'T inversion, ST elevation, Q waves, hyperacute T', 'ST depression, Q waves, ST elevation, normal'], std: true },
+    { q: 'About how long does scar take to replace an infarct?', a: '8 weeks', wrong: ['8 hours', '8 days', '8 months'] },
+    { q: 'STEMI: ST elevation must be in at least…', a: 'Two contiguous leads', wrong: ['One lead', 'All 12 leads', 'Three limb leads'], std: true },
+    { q: 'Contiguous leads are leads that…', a: 'Look at the same wall of the heart', wrong: ['Sit next to each other on the printout', 'Are all bipolar', 'Are recorded at the same time'], std: true },
+    { q: 'Usual STEMI threshold in most leads?', a: '1 mm of ST elevation', wrong: ['0.5 mm', '3 mm', '5 mm'], std: true },
+    { q: 'Where is the ST elevation measured?', a: 'At the J point', wrong: ['At the peak of the T wave', 'At the top of the R wave', 'At the end of the P wave'], std: true },
+    { q: 'Reciprocal ST depression makes a STEMI…', a: 'More likely', wrong: ['Less likely', 'Impossible', 'A pericarditis'], std: true },
+    { q: 'Inferior STEMI: which complication do you watch for most?', a: 'Bradycardia and AV block', wrong: ['WPW', 'Long QT', 'Atrial flutter'], std: true },
+    { q: 'Hypotension with clear lungs in an inferior STEMI suggests…', a: 'Right ventricular infarct', wrong: ['Left heart failure', 'Pericarditis', 'Posterior MI'] },
+    { q: 'Other findings with an RV infarct (outline)?', a: 'RBBB, second- or third-degree AV block, hypotension with clear lungs', wrong: ['Delta waves and short PR', 'Diffuse ST elevation and PR depression', 'Prolonged QT and torsades'] },
+    { q: 'Anterior and anterolateral STEMI put the patient at high risk of…', a: 'Pump failure and cardiogenic shock', wrong: ['Hypertensive crisis', 'Hypokalemia', 'Pericarditis'], std: true },
+    { q: 'ST elevation in V3–V6, I and aVL is…', a: 'Anterolateral STEMI', wrong: ['Inferior STEMI', 'Septal STEMI only', 'Posterior STEMI'], std: true },
+    { q: 'ST elevation in II, III, aVF plus V5 and V6 is…', a: 'Inferolateral STEMI', wrong: ['Anterior STEMI', 'Septal STEMI', 'High lateral STEMI'], std: true },
+    { q: 'Inferior STEMI with ST depression in V1–V3 suggests the MI also involves the…', a: 'Posterior wall', wrong: ['Septum', 'Anterior wall', 'Right atrium'] },
+    { q: 'NSTE-ACS includes…', a: 'Unstable angina and NSTEMI', wrong: ['STEMI and pericarditis', 'Stable angina and STEMI', 'Old MI only'] },
+    { q: 'Deep symmetric T inversion in V2–V3 in a patient whose pain has eased warns of…', a: 'A critical LAD narrowing (Wellens)', wrong: ['Right ventricular infarct', 'Hyperkalemia', 'Normal variant'], std: true },
+    { q: 'Q waves in II, III and aVF with a flat ST segment suggest…', a: 'An old inferior MI', wrong: ['An acute inferior STEMI', 'Pericarditis', 'A posterior MI'], std: true },
+    { q: 'Why is LBBB no longer called a STEMI equivalent by itself?', a: 'In the field you often can\'t tell if it is new or old', wrong: ['It never occurs with MI', 'It always means pericarditis', 'Its QRS is too narrow'] },
+    { q: 'LBBB is treated as a STEMI equivalent when it meets…', a: 'Sgarbossa criteria', wrong: ['Wellens criteria', 'Brugada criteria', 'The turn signal rule'] },
+    { q: 'Sgarbossa: concordant ST depression of 1 mm or more counts in which leads?', a: 'V1–V3', wrong: ['V5–V6', 'II, III, aVF', 'I and aVL'], std: true },
+    { q: 'Diffuse ST elevation with PR depression and no reciprocal changes suggests…', a: 'Pericarditis, a STEMI mimic', wrong: ['Anterolateral STEMI', 'Posterior STEMI', 'Old MI'] },
+    { q: 'Primary goal for a STEMI patient in the field?', a: 'Prompt recognition and triage to the appropriate hospital', wrong: ['Waiting for a second 12-lead at the scene', 'Giving fibrinolytics without a checklist', 'Treating only the pain'] },
+    { q: 'Infarct size depends on…', a: 'The tissue\'s needs, collateral circulation, and time to restore flow', wrong: ['Only the patient\'s age', 'The paper speed', 'Which lead shows it first'] },
+    { q: 'Early deaths after MI are usually from…', a: 'Lethal dysrhythmias, pump failure, or tissue rupture', wrong: ['Pericarditis', 'Hypertension', 'Stroke only'] }
+  ]
+};

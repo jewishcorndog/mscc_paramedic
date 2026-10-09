@@ -829,3 +829,33 @@ svg.angle .needle { stroke: var(--accent); stroke-width: 2.6; stroke-linecap: ro
 .mm-form input { width: 9em; font-family: var(--font-mono); font-size: 1.15rem; }
 .mm-form .unit { font-family: var(--font-mono); color: var(--muted); }
 .steps { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; font-family: var(--font-mono); font-size: 0.9rem; }
+
+/* 12-lead */
+.tw-wrap { display: grid; gap: 4px; min-width: 0; }
+.tw-svg { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); }
+.tw-narrow { display: none; }
+@media (max-width: 640px) {
+  .tw-wide { display: none; }
+  .tw-narrow { display: block; }
+}
+.tw-svg .ecg-trace { stroke-width: 0.4; }
+.tw-cell { fill: transparent; cursor: pointer; }
+.tw-cell.face { fill: rgba(240, 162, 2, 0.24); }
+.tw-cell.recip { fill: rgba(11, 88, 166, 0.16); }
+.tw-cell.picked { stroke: var(--accent); stroke-width: 0.6; }
+.tw-lab { font: 600 3.4px var(--font-mono); fill: var(--ecg-trace); pointer-events: none; }
+.tw-sep { stroke: var(--ecg-trace); stroke-width: 0.4; }
+.tw-controls select { flex: 1 1 220px; max-width: 100%; width: auto; }
+.tw-cap { min-height: 0; }
+.tw-cap ul { margin: 4px 0; }
+.tw-lead-info { margin-top: 8px; }
+.tw-up { color: var(--ok); font-weight: 600; white-space: nowrap; }
+.tw-down { color: var(--bad); font-weight: 600; white-space: nowrap; }
+.tw-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+@media (prefers-color-scheme: dark) {
+  .tw-cell.face { fill: rgba(240, 162, 2, 0.2); }
+  .tw-cell.recip { fill: rgba(108, 180, 234, 0.2); }
+}
+@media (max-width: 560px) {
+  .panel > .tw-wrap, .card-body > .tw-wrap, #tw-slot > .tw-wrap { margin-inline: -10px; }
+}
