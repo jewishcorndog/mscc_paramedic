@@ -14,6 +14,10 @@ subjects, switched at the top of the page:
   Paramedic Textbook* (6th ed.), the lecture slides. It opens on how blood moves through the
   heart and body, then lays out all 13 body systems in one place. Topics beyond the slides
   are marked *.
+- **Pathophysiology** (Patho Box), built from Chapter 11 of *Sanders' Paramedic Textbook*
+  (6th ed.), *General Principles of Pathophysiology*: the lecture slides, including the
+  tables and flowcharts that are pictures on the slides. It covers the whole chapter, with
+  pH and acid-base balance in the most depth.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -39,9 +43,9 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | Tab | What it does |
 | --- | --- |
 | **Strips** | Name the rhythm on a 6-second lead II strip. Pick which rhythms to drill (by group or one at a time, or your weakest 6) and answer by multiple choice, from the full list, or by typing the name. Choose drawn strips, real recorded strips, or a mix. After each strip you see the rules for interpretation and what the rhythm you picked would have looked like. |
-| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, and the sodium-potassium pump and cardiac cell. |
+| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, and the conduction pathway. |
 | **Quiz** | Multiple-choice questions mixed from the same topics. |
-| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. |
+| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page starts with where the heart's electricity comes from and walks one beat through a membrane diagram (channels opening, ions moving, inside voltage on a meter: rest, threshold, depolarization, plateau, repolarization, reset), then steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows calcium's electrical and contractile jobs (trigger calcium, release from the sarcoplasmic reticulum, troponin, relaxation) with calcium channel blockers, calcium for hyperkalemia, digoxin and calcium levels at the bedside, shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. |
 | **Stats** | Accuracy per rhythm (strips, rules, care) and per condition, with a button to drill your weakest strips. |
 
 ## A&P modes
@@ -58,7 +62,7 @@ A&P content lives in `js/ap-data.js`.
 The strips are drawn by `js/ecg.js`, not copied from the textbook. Each one is generated
 fresh on standard ECG paper (25 mm/s, 10 mm/mV; small box 0.04 s, large box 0.20 s)
 with a random rate, PR interval and beat placement inside the rhythm's textbook range,
-so no two are the same. On a phone the 6 seconds are split into two 3-second rows.
+so no two are the same.
 
 Real strips come from the [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/)
 (Moody GB, Mark RG. The impact of the MIT-BIH Arrhythmia Database. IEEE Eng in Med and Biol
@@ -79,6 +83,22 @@ interpretation" blank for most rhythms after the atrial ones (they are tables in
 book), so those rules use standard ECG criteria and the app labels them that way. The
 same goes for a few ECG basics (box times, rate methods, 12-lead wall/lead groups).
 
+## Pathophysiology modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | **pH**: the acid-base balance (carbonic acid and the lungs against bicarbonate and the kidneys) as a seesaw with a pH gauge from 6.9 to 8.0. Pick one of 22 patients (opioid overdose, DKA, vomiting, cardiac arrest…) to see what tips the balance, then step to the body's compensation and watch the pH move back. **pH flowcharts**: the chapter's cause and compensation flowcharts for each disturbance. **Topics**: 31 topics in six groups (pH and acid-base, the cell, fluids and electrolytes, hypoperfusion and shock, inflammation and immunity, stress and disease). **Shock**: the shock types side by side. **ABG**: practice blood gases with a step-by-step interpretation, or type in your own. **Facts**: 94 key facts and normal values, searchable. |
+| **Cards** | pH scenario cards (name the disturbance and its compensation), topic cards, key facts and practice ABGs. The pH page has a button for a pH-only deck. |
+| **Quiz** | Multiple choice from pH scenarios, the topic groups, key facts and ABG interpretation. The pH page has a button for a pH-only quiz. |
+| **Stats** | Accuracy overall, on pH scenarios and on ABGs, and per topic, weakest first. |
+
+Content lives in `js/patho-data.js`. Material the slides don't spell out (reading an ABG,
+IV fluid tonicity, specific electrolyte disorders, the shock comparison) is marked with *.
+Table 11-2 gives serum bicarbonate as 22–30 mEq/L; blood gas interpretation uses the usual
+arterial range of 22–26. `js/abg.js` interprets blood gases and makes practice gases whose
+pH is computed from the PaCO₂ and HCO₃⁻ (Henderson-Hasselbalch), so every gas is
+internally consistent.
+
 ## Running it
 
 It's a static site with no build step:
@@ -97,8 +117,8 @@ It's a static site with no build step:
   abbreviations (2nd/3rd degree HB, VF/VT, ALOC, CCB OD…).
 - **Doses** count only when every number in the deck's dose is in your answer.
 
-Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js` and
-`node tests/ap.test.js`.
+Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
+`node tests/ap.test.js` and `node tests/patho.test.js`.
 
 ## Updating the drug list
 

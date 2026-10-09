@@ -788,9 +788,48 @@ window.CARDIO_BASICS = [
   { q: 'Five-step infarct recognition, in order?', a: 'Rate and rhythm, area of infarct, other conditions, clinical presentation, recognize and treat', wrong: ['Axis, rate, QRS, ST, T', 'History, vitals, 12-lead, drugs, transport', 'P, PR, QRS, ST, QT'] }
 ];
 
-// Sodium-potassium pump and cardiac cell electrophysiology (slides 16–24, 27, 175; outline II.G–III).
+// Sodium-potassium pump and cardiac cell electrophysiology (slides 16–24, 27, 175; outline II.G–III),
+// plus the calcium points from Chapter 13 (cardiac glycosides) and the drug deck.
 // std: true marks standard physiology the slides use but don't spell out.
 window.CARDIO_PUMP = {
+  // Where the electricity comes from (slide 17).
+  spark: 'Charged particles act like small magnets. Pulling opposite charges apart takes energy, and once they are apart they want to rush back together, so the separation stores potential energy, like a charged battery. The Na-K pump spends ATP to keep that separation: lots of Na⁺ outside, lots of K⁺ inside, and the inside more negative than the outside. A heartbeat is the moment channels open and those ions are allowed to rush down their gradients. That flow of charge is the electrical current the ECG picks up.',
+  // One beat in a ventricular muscle cell, from rest and back. open: channels open in the diagram;
+  // flows: ion movements drawn; mv: inside voltage; inside: the charge drawn along the inner membrane.
+  story: [
+    { title: 'Charged up at rest', phase: 'Phase 4', mv: -90, inside: 'neg', open: ['k', 'pump'], flows: ['kLeak', 'pump'], ecg: 'Flat baseline (TP segment)', std: true,
+      text: 'The pump has stacked Na⁺ outside and K⁺ inside. At rest the membrane lets potassium through easily and sodium barely at all, so a little K⁺ drifts out and leaves negative proteins behind. The inside sits at about –90 mV: the resting membrane potential, recorded from inside the cell.' },
+    { title: 'A nudge to threshold', phase: 'Phase 4 → 0', mv: -70, inside: 'neg', open: ['k', 'pump'], flows: ['nbr'], ecg: 'Still baseline', std: true,
+      text: 'Positive current spreading from the neighboring cell (through the intercalated discs that join heart cells) makes the inside a little less negative. Once it drifts up to threshold, the fast sodium channels are triggered. It is all or none: below threshold nothing happens, at threshold the cell fires fully.' },
+    { title: 'Depolarization: sodium rushes in', phase: 'Phase 0', mv: 20, inside: 'pos', open: ['na', 'pump'], flows: ['naIn'], ecg: 'QRS complex',
+      text: 'The fast sodium channels open and Na⁺ floods in down both its concentration gradient and the pull of the negative inside. In about a millisecond the inside swings from negative to positive. That is depolarization: the cell loses its resting charge. It is an electrical event, not the squeeze itself.' },
+    { title: 'Plateau: calcium comes in', phase: 'Phase 2', mv: 0, inside: 'pos', open: ['ca', 'k', 'pump'], flows: ['caIn', 'kOut'], ecg: 'ST segment',
+      text: 'The sodium channels slam shut (phase 1). The slow channels open and Ca²⁺ trickles in while K⁺ leaks out, so the voltage holds near 0. That calcium is the link between the electrical signal and the muscle: it sets off the release of stored calcium and the cell contracts (see Calcium below).' },
+    { title: 'Repolarization: potassium rushes out', phase: 'Phase 3', mv: -85, inside: 'neg', open: ['k', 'pump'], flows: ['kOut'], ecg: 'T wave',
+      text: 'The calcium channels close and the potassium channels open wide. K⁺ pours out, carrying positive charge with it, so the inside turns negative again. That is repolarization. Until it is mostly done, the cell is refractory and cannot fire again.' },
+    { title: 'Reset: the pump restores the gradients', phase: 'Phase 4', mv: -90, inside: 'neg', open: ['k', 'pump'], flows: ['pump'], ecg: 'Baseline before the next P wave', std: true,
+      text: 'The voltage is back, but the ions are in the wrong places: extra Na⁺ inside, K⁺ outside. The Na-K pump moves 3 Na⁺ out for every 2 K⁺ in and returns the cell to its resting state, while calcium is pumped away so the muscle relaxes. The cell is charged up for the next beat.' }
+  ],
+  // Excitation-contraction coupling, one step per frame of the calcium diagram.
+  calcium: [
+    { title: 'Trigger calcium enters', text: 'During the plateau (phase 2), the slow channels let a small amount of Ca²⁺ into the cell. On its own it is not enough to squeeze the muscle.', show: ['caIn'], std: true },
+    { title: 'Stored calcium floods out', text: 'That trigger calcium opens release channels on the sarcoplasmic reticulum, the cell\'s calcium store, and a much larger burst of Ca²⁺ pours into the cell (calcium-induced calcium release).', show: ['srOut', 'cloud'], std: true },
+    { title: 'Calcium switches on the squeeze', text: 'Ca²⁺ binds troponin on the thin actin filaments. That uncovers the binding sites, the myosin heads grab the actin and pull, and the sarcomere shortens. More calcium inside means a stronger contraction.', show: ['cloud', 'bound', 'contract'], std: true },
+    { title: 'Calcium removed, muscle relaxes', text: 'Pumps spend ATP to pull Ca²⁺ back into the sarcoplasmic reticulum, and the sodium-calcium exchanger pushes it out of the cell using the sodium gradient the Na-K pump built. Troponin lets go and the muscle relaxes, ready for the next beat.', show: ['srIn', 'ncx'], std: true }
+  ],
+  // Calcium's two jobs, and where they show up in patients.
+  calciumJobs: [
+    { name: 'Electrical job', text: 'In the SA and AV nodes there are few fast sodium channels, so the upstroke (phase 0) is carried mostly by Ca²⁺ through the slow channels. In muscle cells, calcium holds up the plateau, which makes the refractory period long enough that the heart can\'t be driven into a sustained cramp.', std: true },
+    { name: 'Contractile job', text: 'Calcium turns the electrical signal into a squeeze. Without enough of it you can have electrical activity on the monitor and a weak or absent pulse.', std: true }
+  ],
+  calciumClinical: [
+    { name: 'Calcium channel blockers', text: 'Slow the slow channels, so the SA node fires slower, the AV node conducts slower, and the heart squeezes less hard. That is why diltiazem treats SVT and why an overdose looks like bradycardia, heart block and hypotension.' },
+    { name: 'CCB overdose', text: 'Treated with calcium chloride or gluconate, glucagon and atropine in the drug deck. Extra calcium outside pushes more through the channels that are still working.' },
+    { name: 'Calcium for hyperkalemia', text: 'Calcium competes with potassium at the cardiac cell membrane and restores conduction (drug deck). It protects the heart from the high potassium for a while but does not lower the potassium. It is also given for hypocalcemia and hypermagnesemia.' },
+    { name: 'Digoxin', text: 'Cardiac glycosides block ionic pumps in the membrane, which indirectly increases the calcium reaching the contractile proteins: a stronger squeeze and a slower heart. Because digoxin already loads the cell with calcium, digitalis toxicity is listed as a contraindication to calcium chloride.' },
+    { name: 'Low calcium', text: 'Hyperventilation and alkalosis lower ionized calcium. Expect tingling and carpopedal spasm, a long QT (a longer plateau), and weaker contractions.', std: true },
+    { name: 'High calcium', text: 'Shortens the plateau, so the QT is short. Calcium chloride is contraindicated in hypercalcemia.', std: true }
+  ],
   // The pump cycle, one step per frame of the Learn diagram.
   steps: [
     { title: '3 Na⁺ bind inside', text: 'The pump opens toward the inside of the cell, where sodium is low. Three sodium ions lock onto it.', std: true },
@@ -814,7 +853,7 @@ window.CARDIO_PUMP = {
   ions: [
     { ion: 'Sodium (Na⁺)', where: 'Outside the cell', role: 'Rushes in through fast channels to start depolarization (phase 0). Pumped back out 3 at a time.', std: true },
     { ion: 'Potassium (K⁺)', where: 'Inside the cell', role: 'Leaks out to repolarize (phases 1 and 3). The membrane is most permeable to it at rest. Pumped back in 2 at a time.', std: true },
-    { ion: 'Calcium (Ca²⁺)', where: 'Outside the cell', role: 'Enters through slow channels in phase 2. Plays an electrical role and the contractile role.', std: false },
+    { ion: 'Calcium (Ca²⁺)', where: 'Outside the cell (and stored in the sarcoplasmic reticulum)', role: 'Enters through slow channels: the upstroke in pacemaker cells, the plateau in muscle cells. Then triggers the release of stored calcium, which makes the muscle contract.', std: true },
     { ion: 'Magnesium (Mg²⁺)', where: 'Inside the cell', role: 'Major intracellular cation; it also plays an important role in cardiac function.', std: false }
   ],
   // Bedside connections.
@@ -858,6 +897,79 @@ window.CARDIO_PUMP = {
     { q: 'Classic first ECG sign of hyperkalemia?', a: 'Tall, peaked T waves', wrong: ['U waves', 'Delta waves', 'Short QT with J waves'], std: true },
     { q: 'Hypokalemia in the slides is a cause of…', a: 'PVCs, VT and VF', wrong: ['Sinus bradycardia only', 'Pericarditis', 'Wandering atrial pacemaker'] },
     { q: 'Brugada syndrome is a genetic defect in…', a: 'Sodium channels', wrong: ['Potassium channels', 'The Na-K pump', 'Calcium storage'] },
-    { q: 'Calcium channel blockers act on which channels?', a: 'The slow channels', wrong: ['The fast sodium channels', 'Potassium leak channels', 'The Na-K pump'] }
+    { q: 'Calcium channel blockers act on which channels?', a: 'The slow channels', wrong: ['The fast sodium channels', 'Potassium leak channels', 'The Na-K pump'] },
+    { q: 'Separated particles with opposite charges have…', a: 'A force of attraction, which gives them potential energy', wrong: ['A force that pushes them apart', 'No energy until they touch', 'Kinetic energy only'] },
+    { q: 'The resting membrane potential is recorded from…', a: 'Inside the cell', wrong: ['Outside the cell', 'The skin surface', 'The sarcoplasmic reticulum'] },
+    { q: 'Why is the inside of a resting cell negative?', a: 'K⁺ leaks out through open channels, leaving negative charges behind, and the pump moves more positive ions out than in', wrong: ['Na⁺ leaks in faster than it is pumped out', 'Calcium is stored inside', 'Chloride is pumped out'], std: true },
+    { q: 'Depolarization means…', a: 'Positive ions rush in and the inside loses its negative charge', wrong: ['Potassium leaves and the inside turns more negative', 'The muscle relaxes', 'The pump stops running'] },
+    { q: 'Repolarization means…', a: 'The inside returns to negative as K⁺ leaves', wrong: ['Na⁺ rushes in and the inside turns positive', 'Calcium is released from storage', 'The cell contracts'] },
+    { q: 'A cardiac cell that reaches threshold…', a: 'Fires a full action potential (all or none)', wrong: ['Fires a small action potential sized to the stimulus', 'Contracts without depolarizing', 'Becomes refractory without firing'], std: true },
+    { q: 'How does the impulse pass from one cardiac muscle cell to the next?', a: 'Through intercalated discs (gap junctions) that join the cells', wrong: ['Through nerves to every cell', 'Through the blood', 'Through the sarcoplasmic reticulum'], std: true },
+    { q: 'Electrical activity on the monitor without a pulse is…', a: 'PEA: depolarization is happening but the muscle is not squeezing effectively', wrong: ['Asystole', 'Always VF', 'A sign the monitor is broken'], std: true },
+    { q: 'The calcium that enters during phase 2 triggers…', a: 'Release of much more calcium from the sarcoplasmic reticulum', wrong: ['The fast sodium channels to open', 'The Na-K pump to stop', 'Potassium to re-enter the cell'], std: true },
+    { q: 'Inside the muscle cell, calcium binds to…', a: 'Troponin, uncovering sites so myosin can pull actin', wrong: ['Myosin, which then releases actin', 'The Na-K pump', 'Potassium channels'], std: true },
+    { q: 'How is calcium cleared so the heart can relax?', a: 'Pumped back into the sarcoplasmic reticulum and out of the cell (sodium-calcium exchanger)', wrong: ['It diffuses into the blood on its own', 'Potassium binds and neutralizes it', 'The fast sodium channels absorb it'], std: true },
+    { q: 'In SA and AV node cells, phase 0 is carried mostly by…', a: 'Ca²⁺ through the slow channels', wrong: ['Na⁺ through fast channels', 'K⁺ leaving the cell', 'The Na-K pump'], std: true },
+    { q: 'Why do calcium channel blockers slow the heart rate and AV conduction?', a: 'SA and AV node cells depend on calcium to depolarize', wrong: ['They block the fast sodium channels', 'They speed up the Na-K pump', 'They raise serum potassium'], std: true },
+    { q: 'How does calcium help in hyperkalemia with ECG changes?', a: 'It competes with potassium at the cardiac membrane and restores conduction, but does not lower potassium', wrong: ['It drives potassium into the cells', 'It makes the kidneys excrete potassium', 'It binds potassium in the blood'] },
+    { q: 'Calcium chloride is contraindicated in…', a: 'Digitalis toxicity', wrong: ['Hyperkalemia', 'Calcium channel blocker overdose', 'Hypermagnesemia'] },
+    { q: 'Cardiac glycosides strengthen contraction by…', a: 'Blocking ionic pumps, which indirectly increases calcium to the contractile proteins', wrong: ['Opening fast sodium channels', 'Blocking calcium channels', 'Stimulating beta receptors'] },
+    { q: 'Besides calcium, what else does the drug deck list for calcium channel blocker overdose?', a: 'Glucagon and atropine', wrong: ['Adenosine and diltiazem', 'Digoxin and magnesium', 'Amiodarone and lidocaine'] },
+    { q: 'Hypocalcemia on the ECG?', a: 'Long QT interval', wrong: ['Short QT interval', 'Peaked T waves', 'Delta waves'], std: true },
+    { q: 'What lowers ionized calcium in the field?', a: 'Hyperventilation and alkalosis', wrong: ['Acidosis and hypoventilation', 'Dehydration', 'High potassium'], std: true }
+  ]
+};
+
+// Electrical conduction system (slides 25–28, 34–40; outline IV.C and VI).
+// std: true marks standard anatomy the slides use but don't spell out.
+window.CARDIO_CONDUCTION = {
+  // One step per stop on the pathway, in firing order. wave: which part of the ECG it makes.
+  steps: [
+    { id: 'sa', name: 'SA node', where: 'Wall of the right atrium, medial to the opening of the superior vena cava', does: 'The chief pacemaker. It reaches threshold faster than any other pacemaker cells, so its rapid rate keeps the slower pacemakers from taking over.', rate: '60–100/min', ecg: 'Start of the P wave', wave: 'p0', problems: ['sinus-brady', 'sinus-tach', 'sinus-arrhythmia', 'sinus-arrest'] },
+    { id: 'atria', name: 'Internodal pathways and atria', where: 'Three internodal pathways run through the right atrium to the AV node; Bachmann\'s bundle carries the impulse across to the left atrium', does: 'Spread the impulse through both atria so they depolarize and contract together.', rate: 'Atrial ectopic sites can fire, but the atria are not a normal backup pacemaker', ecg: 'P wave (atrial depolarization)', wave: 'p', problems: ['pac', 'wap', 'flutter', 'afib'], std: true },
+    { id: 'av', name: 'AV node', where: 'Floor of the right atrium, medial to the right AV (tricuspid) valve', does: 'Holds the impulse back briefly so the atria can finish emptying into the ventricles before they contract. With the bundle of His it forms the AV junction, normally the only electrical link between atria and ventricles.', rate: 'AV junction: 40–60/min', ecg: 'Flat PR segment after the P wave (part of the PR interval)', wave: 'pr', problems: ['avb-1', 'avb-2-1', 'svt', 'pjc', 'junctional-escape', 'accel-junctional', 'wpw'] },
+    { id: 'his', name: 'Bundle of His', where: 'Passes through a small opening in the heart\'s fibrous skeleton to the top of the interventricular septum', does: 'Carries the impulse from the AV node into the ventricles, then divides into the right and left bundle branches.', rate: 'AV junction: 40–60/min', ecg: 'End of the PR interval', wave: 'pr2', problems: ['avb-2-2', 'avb-3'] },
+    { id: 'bb', name: 'Right and left bundle branches', where: 'Down each side of the interventricular septum. The left branch splits into anterior and posterior fascicles', does: 'Carry the impulse to the right and left ventricles at the same time, so both depolarize together.', rate: 'Ventricles: 20–40/min', ecg: 'Start of the QRS complex (septal depolarization)', wave: 'q', problems: ['avb-2-2', 'avb-3'], extra: 'Bundle branch block: a delay in one branch makes the QRS 0.12 s or wider.' },
+    { id: 'purkinje', name: 'Purkinje fibers', where: 'A network spreading through the inner walls of both ventricles', does: 'Deliver the impulse to the ventricular muscle cells, which depolarize from the inside out and contract.', rate: 'Ventricles: 20–40/min', ecg: 'QRS complex (ventricular depolarization)', wave: 'qrs', problems: ['pvc', 'vt', 'vf', 'idioventricular'] },
+    { id: 'repol', name: 'Ventricles recover', where: 'Ventricular muscle', does: 'The ventricles repolarize so they can fire again. No impulse travels the pathway in this step.', rate: '', ecg: 'ST segment and T wave (ventricular repolarization)', wave: 't', problems: [] }
+  ],
+  // Where each block happens along the pathway.
+  blocks: [
+    { name: 'First-degree AV block', where: 'A delay, not a true block, usually at the AV node', id: 'avb-1' },
+    { name: 'Second-degree type I (Wenckebach)', where: 'Usually at the AV node', id: 'avb-2-1' },
+    { name: 'Second-degree type II', where: 'Usually below the bundle of His', id: 'avb-2-2' },
+    { name: 'Third-degree (complete heart block)', where: 'At or below the AV node; no atrial impulses reach the ventricles', id: 'avb-3' },
+    { name: 'Bundle branch block', where: 'In the right or left bundle branch, below the bundle of His', id: null }
+  ],
+  ectopic: [
+    { name: 'Ectopic beat', text: 'A contraction started by cells other than the SA node. The new pacemaker is called an ectopic focus.' },
+    { name: 'Enhanced automaticity', text: 'An ectopic site depolarizes faster than normal, usually from abnormally high sodium leakage into the cells, and fires before the SA node.' },
+    { name: 'Reentry', text: 'The same impulse reactivates tissue a second time because conduction is delayed or blocked in part of the pathway. It is behind most SVTs (AVNRT, and AVRT through an accessory pathway as in WPW).' },
+    { name: 'Autonomic control', text: 'Acetylcholine (parasympathetic, vagus nerve) slows the SA and AV nodes; norepinephrine (sympathetic) speeds them. Vagal maneuvers work by boosting the parasympathetic side.' }
+  ],
+  qa: [
+    { q: 'Correct order of the conduction pathway?', a: 'SA node, internodal pathways, AV node, bundle of His, bundle branches, Purkinje fibers', wrong: ['AV node, SA node, bundle of His, Purkinje fibers, bundle branches', 'SA node, bundle of His, AV node, Purkinje fibers, bundle branches', 'SA node, AV node, Purkinje fibers, bundle branches, bundle of His'] },
+    { q: 'Where is the SA node?', a: 'Right atrium, medial to the opening of the superior vena cava', wrong: ['Left atrium, near the pulmonary veins', 'Interventricular septum', 'Medial to the mitral valve'] },
+    { q: 'Where is the AV node?', a: 'Medial to the right AV (tricuspid) valve', wrong: ['Medial to the superior vena cava', 'At the apex of the left ventricle', 'In the left atrium'] },
+    { q: 'The AV junction is made of…', a: 'The AV node and the bundle of His', wrong: ['The SA node and the AV node', 'The bundle branches and Purkinje fibers', 'The internodal pathways and the AV node'] },
+    { q: 'In a normal heart, the only electrical link between atria and ventricles is…', a: 'The AV junction', wrong: ['The interatrial septum', 'Bachmann\'s bundle', 'The Purkinje fibers'] },
+    { q: 'Why does the AV node delay the impulse?', a: 'So the atria finish emptying into the ventricles before they contract', wrong: ['To let the SA node recharge', 'To speed up ventricular contraction', 'To protect the Purkinje fibers from calcium'], std: true },
+    { q: 'Where does the bundle of His divide into the bundle branches?', a: 'At the interventricular septum', wrong: ['In the right atrium', 'At the apex', 'Inside the AV node'] },
+    { q: 'The left bundle branch divides into…', a: 'Anterior and posterior fascicles', wrong: ['Right and left fascicles', 'Three internodal pathways', 'Bachmann\'s bundle and the His bundle'], std: true },
+    { q: 'What carries the impulse from the right atrium to the left atrium?', a: 'Bachmann\'s bundle', wrong: ['The bundle of His', 'The right bundle branch', 'The Purkinje fibers'], std: true },
+    { q: 'Intrinsic rate of the SA node?', a: '60 to 100/min', wrong: ['40 to 60/min', '20 to 40/min', '100 to 150/min'] },
+    { q: 'Intrinsic rate of the AV junction?', a: '40 to 60/min', wrong: ['60 to 100/min', '20 to 40/min', '10 to 20/min'] },
+    { q: 'Intrinsic rate of the bundle branches and Purkinje fibers?', a: '20 to 40/min', wrong: ['40 to 60/min', '60 to 100/min', '100 to 150/min'] },
+    { q: 'Why is the SA node normally in charge?', a: 'It reaches threshold first, so its faster rate overrides slower pacemakers', wrong: ['It is the largest node', 'It is closest to the ventricles', 'It is the only tissue with automaticity'] },
+    { q: 'Which part of the pathway makes the P wave?', a: 'SA node firing and atrial depolarization', wrong: ['AV node delay', 'Bundle branches', 'Ventricular repolarization'] },
+    { q: 'The PR interval covers conduction through…', a: 'The atria and the AV node up to ventricular depolarization', wrong: ['The ventricles only', 'The SA node only', 'Ventricular repolarization'] },
+    { q: 'Which part of the pathway makes the QRS complex?', a: 'Bundle branches and Purkinje fibers depolarizing the ventricles', wrong: ['The SA node', 'The AV node delay', 'Atrial repolarization'] },
+    { q: 'First-degree AV block is a delay usually at…', a: 'The AV node', wrong: ['The SA node', 'The bundle branches', 'The Purkinje fibers'] },
+    { q: 'Second-degree AV block type II usually occurs…', a: 'Below the bundle of His', wrong: ['At the SA node', 'In the atria', 'In the AV node only'] },
+    { q: 'Third-degree AV block is a complete block…', a: 'At or below the AV node', wrong: ['At the SA node', 'In Bachmann\'s bundle', 'Only in the Purkinje fibers'] },
+    { q: 'A contraction started by cells other than the SA node is…', a: 'An ectopic beat', wrong: ['A sinus beat', 'A fusion beat only', 'A refractory beat'] },
+    { q: 'Reentry happens when…', a: 'An impulse is delayed or blocked and reactivates tissue a second time', wrong: ['The SA node fires twice as fast', 'Sodium leaks into cells', 'The AV node is removed'] },
+    { q: 'Which chemical slows the SA and AV nodes?', a: 'Acetylcholine (parasympathetic)', wrong: ['Norepinephrine', 'Epinephrine', 'Dopamine'] },
+    { q: 'WPW conducts around the AV node through…', a: 'An accessory pathway (bypass tract)', wrong: ['The bundle of His', 'Bachmann\'s bundle', 'The left posterior fascicle'] }
   ]
 };
