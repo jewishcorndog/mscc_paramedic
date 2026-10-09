@@ -33,6 +33,8 @@ study aid, not a clinical reference.
 | **Write** | Practice for the written test. Pick exactly which drugs to write out (tap them, add a whole group, or take your weakest 5), then for each drug you type out indications, contraindications, adult dose and pediatric dose. The app checks each item from the deck and marks it ✓ or ✗. Tap a line to flip it if the checker got it wrong. There is also a warm-up: list every drug on the list from memory. |
 | **Drugs** | Searchable reference with everything from the deck, including the secondary info (trade names, class, mechanism, adverse reactions, TN/NASEMSO protocols, memory tricks). |
 | **Stats** | Accuracy per drug and topic, weakest first, with a button to study your weakest 8. |
+| **Learn** | Chapters 13 and 14 of *Sanders' Paramedic Textbook*: routes and their rates of absorption (Table 13-2), pharmacokinetics and pharmacodynamics (with a drug-level curve), receptors and the autonomic nervous system (and what each Drug Box drug does at its receptor), drug classes, and how to give meds (six rights, injection angles, IV complications, med errors). Read it, or drill it with its own flashcards and quiz. Items marked * go beyond the slides. |
+| **Math** | Med math practice with fresh numbers every time: desire over have (D/H × Q), weight-based doses, IV flow rates, drug drips, concentrations, lb ↔ kg, metric, temperature and ET doses. Type the answer and see every step worked out. A **Formulas** page has D/H × Q, ratio and proportion, dimensional analysis, the drip formulas and the equivalents. |
 
 **Change** (on the Cards and Quiz tabs) picks which drugs to study (all of them, a
 group such as Cardiac or RSI, your weakest, or hand-picked) and which topics to include.
