@@ -260,7 +260,7 @@ h2.title {
 .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
 .check:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
 
-textarea, input[type="text"], input[type="search"], select {
+textarea, input[type="text"], input[type="search"], input[type="number"], select {
   width: 100%;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -269,7 +269,7 @@ textarea, input[type="text"], input[type="search"], select {
   min-height: 44px;
 }
 textarea { resize: vertical; min-height: 88px; line-height: 1.45; }
-input[type="text"]:focus, textarea:focus, input[type="search"]:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+input[type="text"]:focus, textarea:focus, input[type="search"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
 
 /* ---------- Deck bar ---------- */
 .deckbar {
@@ -278,6 +278,64 @@ input[type="text"]:focus, textarea:focus, input[type="search"]:focus, select:foc
   padding: 10px 14px; font-size: 0.95rem;
 }
 .deckbar strong { font-variant-numeric: tabular-nums; }
+
+/* ---------- Pathophysiology ---------- */
+.label-band.cell { --lab: #1d7a72; color: #fff; }
+.label-band.cell .label-meta { color: rgba(255, 255, 255, 0.85); }
+.label-band.cell.hidden-name { --lab: var(--surface-2); color: var(--ink); }
+.label-band.cell.hidden-name .label-meta { color: var(--muted); }
+.abg-vals { display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--font-mono); font-size: 1.15rem; font-weight: 500; }
+.abg-vals em { font-style: normal; font-family: var(--font-body); font-size: 0.85rem; color: var(--muted); margin-right: 4px; }
+.abg-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.abg-inputs label { display: grid; gap: 4px; font-size: 0.9rem; color: var(--muted); }
+.abg-inputs input { width: 100%; min-width: 0; font-family: var(--font-mono); font-size: 1.1rem; }
+.abg-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.abg-panel { display: grid; gap: 12px; }
+.ph-panel { display: grid; gap: 12px; }
+.ph-svg { width: 100%; max-width: 30rem; margin: 0 auto; display: block; }
+.ph-arc { fill: none; stroke: var(--line); stroke-width: 10; stroke-linecap: round; }
+.ph-normal { fill: none; stroke: var(--ok); stroke-width: 10; }
+.ph-tick { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+.ph-tick.small { font-size: 9px; }
+.ph-tick.end, .ph-side.end { text-anchor: end; }
+.ph-tick.mid, .ph-val, .ph-box { text-anchor: middle; }
+.ph-side { font-family: var(--font-display); font-weight: 700; font-size: 14px; text-transform: uppercase; fill: var(--muted); }
+.ph-val { font-family: var(--font-display); font-weight: 700; font-size: 22px; fill: var(--ink); }
+.ph-val.acid { fill: var(--bad); }
+.ph-val.base { fill: var(--accent); }
+.ph-val.ok { fill: var(--ok); }
+.ph-needle, .ph-beam { transform-box: view-box; transition: transform 0.6s ease; }
+.ph-needle { transform-origin: 160px 118px; }
+.ph-needle path { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.ph-needle circle { fill: var(--ink); }
+.ph-beam { transform-origin: 160px 182px; }
+.ph-bar { fill: var(--muted); }
+.ph-acid { fill: #f1d9b5; stroke: #c98a2e; }
+.ph-base { fill: #f6c2b5; stroke: #d9573e; }
+.ph-box { font-family: var(--font-mono); font-size: 13px; font-weight: 500; fill: #222; }
+.ph-fulcrum { fill: #e07a5f; }
+.ph-pick { display: grid; gap: 4px; }
+.ph-pick select { font-size: 1rem; }
+.ph-flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.ph-flow li { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.ph-flow li + li::before { content: '↓'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); color: var(--muted); line-height: 16px; }
+.ph-flow.dim { opacity: 0.6; }
+/* Learn sub-pages sit three to a row, with 1px gaps as dividers. */
+.learn-seg .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); width: 100%; }
+.learn-seg .seg button { background: var(--surface); padding: 8px 4px; min-width: 0; }
+.learn-seg .seg button + button { border-left: 0; }
+.learn-seg .seg button[aria-pressed="true"] { background: var(--accent-soft); }
+.ph-flow.cause li { background: #fbefe2; border-color: #e3c39a; color: #222; }
+.ph-flow.comp li { background: #e6f0f8; border-color: #a9c6de; color: #222; }
+.ph-flow-turn { margin: 0; text-align: center; color: var(--muted); font-size: 1.2rem; line-height: 1; }
+.kind-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+.kind-card { gap: 8px; }
+.kind-name { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; text-transform: uppercase; border-left: 4px solid; padding-left: 8px; }
+.kind-card.acid .kind-name { border-color: #c98a2e; }
+.kind-card.base .kind-name { border-color: #d9573e; }
+.shock-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+.shock-card { gap: 8px; }
+.shock-name { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; text-transform: uppercase; border-left: 4px solid #1d7a72; padding-left: 8px; }
 
 /* ---------- Syringe-label drug header ---------- */
 .label-band {
