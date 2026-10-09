@@ -37,6 +37,7 @@
   --ecg-trace: #16120f;
   --na: #e07b16;
   --k: #6a4bc4;
+  --ca: #0d8b94;
   --membrane: #e9d9b8;
 
   --font-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
@@ -71,6 +72,7 @@
     --ecg-trace: #f4efe9;
     --na: #f39a3d;
     --k: #a68cf0;
+    --ca: #45c8d2;
     --membrane: #4a4231;
     color-scheme: dark;
   }
@@ -98,6 +100,7 @@
   --ecg-trace: #f4efe9;
   --na: #f39a3d;
   --k: #a68cf0;
+  --ca: #45c8d2;
   --membrane: #4a4231;
   color-scheme: dark;
 }
@@ -478,7 +481,6 @@ table.grid td.cell { text-align: center; }
 
 .ecg-wrap { display: grid; gap: 4px; }
 .ecg { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); }
-.ecg-narrow { display: none; }
 .ecg-bg { fill: var(--ecg-bg); }
 .ecg-minor { fill: none; stroke: var(--ecg-minor); stroke-width: 0.1; }
 .ecg-major { fill: none; stroke: var(--ecg-major); stroke-width: 0.22; }
@@ -488,8 +490,10 @@ table.grid td.cell { text-align: center; }
 .ecg-mark { font: 600 2.6px var(--font-mono); fill: var(--heart); text-anchor: middle; }
 .real-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
 @media (max-width: 560px) {
-  .ecg-wide { display: none; }
-  .ecg-narrow { display: block; }
+  .ecg-trace { stroke-width: 0.55; }
+  /* Let the strip use the panel's side padding so the 6 seconds are as wide as possible. */
+  .panel > .ecg-wrap, .card-body > .ecg-wrap { margin-inline: -10px; }
+  .ecg-cap { padding-inline: 10px; }
 }
 
 .rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
@@ -565,7 +569,101 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .ap-seg.on .ap-num { fill: var(--heart); }
 #ap-box { display: grid; gap: 10px; }
 .ap-info p { margin: 0 0 4px; }
+/* Membrane story and calcium steppers */
+.story-svg { width: 100%; height: auto; display: block; max-width: 640px; }
+.story-svg .zone-out { fill: var(--surface-2); }
+.story-svg .zone-in { fill: var(--accent-soft); opacity: 0.55; }
+.story-svg .membrane { fill: var(--membrane); }
+.story-svg .membrane-line { stroke: var(--muted); stroke-width: 0.8; stroke-dasharray: 3 2; }
+.story-svg .bg-na { fill: var(--na); opacity: 0.3; }
+.story-svg .bg-k { fill: var(--k); opacity: 0.3; }
+.bg-ca { fill: var(--ca); opacity: 0.35; }
+.zone-v { font: 700 7px var(--font-body); fill: var(--muted); text-anchor: middle; letter-spacing: 0.12em; }
+.ch-label { font: 600 7.5px var(--font-body); fill: var(--muted); text-anchor: middle; }
+.ch-label.end { text-anchor: end; }
+.ch-wall { fill: var(--surface); stroke: var(--ink); stroke-width: 1; }
+.ch-gate { fill: var(--ink); transition: opacity 0.4s; }
+.chan.on .ch-gate { opacity: 0; }
+.chan.on .ch-wall { stroke: var(--heart); stroke-width: 1.6; }
+.chan.on .ch-label { fill: var(--heart); }
+.ch-pump { fill: var(--surface); stroke: var(--ink); stroke-width: 1.2; }
+.ch-pump-t { font: 700 8px var(--font-mono); fill: var(--ink); text-anchor: middle; }
+.sign { font: 700 13px var(--font-body); fill: var(--muted); text-anchor: middle; opacity: 0; transition: opacity 0.4s; }
+.sign.on { opacity: 1; }
+.sign.neg.on { fill: var(--k); }
+.sign.pos.on { fill: var(--na); }
+.ion-flow { opacity: 0; transition: opacity 0.4s; }
+.ion-flow.on { opacity: 1; }
+.flow-arrow { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; fill: none; }
+.arrow-tip { fill: var(--muted); }
+.ion.ca circle { fill: var(--ca); }
+.ion.plus circle { fill: var(--heart); }
+.ion text { pointer-events: none; }
+.mover { transform: translateY(calc(var(--dy) * var(--f))); }
+.mover.side { transform: translateX(calc(var(--dx) * var(--f))); }
+.gone { opacity: 0.15; transition: opacity 0.4s; }
+.gauge-bg { fill: var(--surface-2); stroke: var(--line); }
+.gauge-tick { stroke: var(--muted); stroke-width: 1; }
+.gauge-num { font: 500 7px var(--font-mono); fill: var(--muted); }
+.gauge-num.mid { text-anchor: middle; }
+.needle { transition: transform 0.8s ease; }
+.needle path { stroke: var(--heart); stroke-width: 2.4; stroke-linecap: round; }
+.needle circle { fill: var(--heart); }
+.story-cap { min-height: 8.5em; }
+.story-cap .tag { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); margin: 0 4px 6px 0; }
+.defs { margin-top: 12px; }
+.ca-bedside { margin-top: 14px; }
+.sr { fill: var(--ca); opacity: 0.12; stroke: var(--ca); stroke-width: 1; }
+.atp-pill { fill: var(--ok-soft); stroke: var(--ok); }
+.atp-t { font: 700 7.5px var(--font-mono); fill: var(--ok); text-anchor: middle; }
+.actin { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.zline { stroke: var(--ink); stroke-width: 2.4; }
+.myosin { stroke: var(--ink); stroke-width: 6; stroke-linecap: round; }
+.myo-head { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: round; }
+.trop { fill: var(--surface); stroke: var(--accent); stroke-width: 1.2; }
+.trop-on { fill: var(--ca); transition: transform 0.9s ease; }
+.sarc-l, .sarc-r { transition: transform 0.9s ease; }
+.sarc.short .sarc-l, .sarc.short ~ .ion-flow .trop-on.sl { transform: translateX(20px); }
+.sarc.short .sarc-r, .sarc.short ~ .ion-flow .trop-on.sr2 { transform: translateX(-20px); }
+@media (prefers-reduced-motion: no-preference) {
+  .ion-flow.on .mover { animation: flow-y 1.8s linear infinite; }
+  .ion-flow.on .mover.side { animation-name: flow-x; }
+}
+@keyframes flow-y { from { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translateY(var(--dy)); opacity: 0; } }
+@keyframes flow-x { from { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translateX(var(--dx)); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .ion, .pump-body, .atp { transition: none; }
+  .ch-gate, .sign, .ion-flow, .needle, .sarc-l, .sarc-r, .trop-on, .gone { transition: none; }
+}
+.cx-svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
+.cx-ecg { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }
+.cx-heart { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.cx-vessel { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.cx-groove, .cx-septum { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 2; fill: none; }
+.cx-atria, .cx-vents { fill: var(--heart); opacity: 0; transition: opacity 0.6s, fill 0.6s; }
+.cx-atria[data-state="on"], .cx-vents[data-state="on"] { opacity: 0.16; }
+.cx-atria[data-state="done"] { opacity: 0.07; }
+.cx-vents[data-state="rec"] { fill: var(--accent); opacity: 0.1; }
+.cx-label { font: 600 9px var(--font-body); fill: var(--muted); text-anchor: middle; }
+.cx-part { cursor: pointer; }
+.cx-hit { stroke: transparent; stroke-width: 16; fill: none; }
+.cx-path { stroke: var(--line); stroke-width: 2.4; fill: none; stroke-linecap: round; transition: stroke 0.4s; }
+.cx-path.thick { stroke-width: 3.6; }
+.cx-node { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; transition: fill 0.4s; }
+.cx-part.done .cx-path { stroke: var(--accent); }
+.cx-part.done .cx-node { fill: var(--accent); }
+.cx-part.on .cx-path { stroke: var(--heart); }
+.cx-part.on .cx-node { fill: var(--heart); stroke: var(--heart); }
+.cx-part.on .cx-path.thick { stroke-width: 4.4; }
+.cx-w { stroke: var(--line); stroke-width: 2; fill: none; stroke-linejoin: round; transition: stroke 0.4s; }
+.cx-w.done { stroke: var(--ink); }
+.cx-w.on { stroke: var(--heart); stroke-width: 3; }
+.cx-cap { min-height: 11em; }
+.cx-cap p { margin: 0 0 6px; }
+.cx-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0 0 8px; }
+.cx-facts dt { font-weight: 700; color: var(--muted); font-size: 0.85rem; }
+.cx-facts dd { margin: 0; }
+@media (max-width: 560px) { .cx-facts { grid-template-columns: 1fr; } .cx-facts dd { margin-bottom: 4px; } }
+@media (prefers-reduced-motion: reduce) {
+  .ion, .pump-body, .atp, .cx-atria, .cx-vents, .cx-path, .cx-node, .cx-w { transition: none; }
 }
 .real-tag { font: 600 0.68rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--heart); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }

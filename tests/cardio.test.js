@@ -94,7 +94,7 @@ t('wenckebach drops beats; complete heart block has more P waves than QRS', () =
 t('same seed draws the same strip', () => {
   assert.strictEqual(ECG.strip('vf', 42).replace(/[sl]\d+/g, ''), ECG.strip('vf', 42).replace(/[sl]\d+/g, ''));
   const svg = ECG.strip('nsr', 3);
-  assert(svg.indexOf('ecg-wide') !== -1 && svg.indexOf('ecg-narrow') !== -1);
+  assert(svg.indexOf('ecg-wide') !== -1 && svg.indexOf('ecg-narrow') === -1, 'one strip, not two rows');
 });
 
 t('typed rhythm names match aliases and tolerate typos', () => {
@@ -137,6 +137,57 @@ t('sodium-potassium pump content is complete', () => {
     assert(!b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, 'bad choices: ' + b.q);
   });
   assert(/3 Na⁺ out and 2 K⁺ in/.test(P.qa[0].a));
+  // The beat story starts and ends at rest, and every channel or flow it names is drawn.
+  assert(P.spark && P.story.length >= 5);
+  assert.strictEqual(P.story[0].mv, P.story[P.story.length - 1].mv);
+  P.story.forEach(st => {
+    assert(st.title && st.text && st.ecg && st.phase && Number.isFinite(st.mv), st.title);
+    assert(st.mv >= -90 && st.mv <= 30 && ['neg', 'pos'].includes(st.inside), st.title);
+    st.open.forEach(c => assert(['na', 'ca', 'k', 'pump'].includes(c), st.title + ' ' + c));
+    st.flows.forEach(f => assert(['naIn', 'caIn', 'kOut', 'kLeak', 'pump', 'nbr'].includes(f), st.title + ' ' + f));
+    assert(st.inside === (st.mv > -10 ? 'pos' : 'neg'), 'inside charge does not match mV: ' + st.title);
+  });
+  assert(P.story.some(st => st.open.includes('ca') && st.flows.includes('caIn')), 'calcium never enters');
+  assert.strictEqual(P.calcium.length, 4);
+  P.calcium.forEach(st => st.show.forEach(k => assert(['caIn', 'srOut', 'srIn', 'cloud', 'bound', 'contract', 'ncx'].includes(k), st.title + ' ' + k)));
+  assert(P.calciumJobs.length === 2 && P.calciumClinical.length >= 4);
+});
+
+t('block strips show their criteria inside the strip', () => {
+  // Pair each P with a QRS that follows within 0.5 s; unpaired P waves are dropped beats.
+  function pairs(id, seed) {
+    const ev = ECG.generate(id, seed).spec.events;
+    const P = ev.filter(e => e.k === 'P').map(e => e.t), Q = ev.filter(e => e.k === 'N' || e.k === 'W').map(e => e.t);
+    return P.map(tp => { const q = Q.find(tq => tq > tp && tq - tp < 0.5); return { tp, pr: q == null ? null : q - tp }; });
+  }
+  for (let seed = 1; seed <= 60; seed++) {
+    const w = pairs('avb-2-1', seed);
+    const drops = w.filter(x => x.pr == null && x.tp > 0 && x.tp < 6);
+    assert(drops.length >= 1 && drops[0].tp >= 1.2 && drops[0].tp <= 2.3, 'Wenckebach drop not inside the strip, seed ' + seed);
+    // PR before each drop is longer than the PR right after it.
+    drops.forEach(d => {
+      const i = w.indexOf(d), before = w[i - 1], after = w[i + 1];
+      if (before && after && after.pr != null) assert(before.pr - after.pr >= 0.12, 'Wenckebach PR does not lengthen visibly, seed ' + seed);
+    });
+    const m = pairs('avb-2-2', seed);
+    const prs = m.filter(x => x.pr != null).map(x => x.pr);
+    assert(Math.max(...prs) - Math.min(...prs) < 0.01, 'Mobitz II PR not constant, seed ' + seed);
+    const md = m.filter(x => x.pr == null && x.tp > 0 && x.tp < 6);
+    assert(md.length >= 1 && md[0].tp >= 1.2 && md[0].tp <= 2.3, 'Mobitz II drop not inside the strip, seed ' + seed);
+    assert(ECG.generate('avb-2-2', seed).spec.ratio !== '2:1', 'Mobitz II should not be 2:1');
+  }
+});
+
+t('conduction pathway runs in order and links real rhythms', () => {
+  const C = globalThis.CARDIO_CONDUCTION, ids = new Set(globalThis.CARDIO_RHYTHMS.map(r => r.id));
+  assert.deepStrictEqual(C.steps.map(s => s.id), ['sa', 'atria', 'av', 'his', 'bb', 'purkinje', 'repol']);
+  C.steps.forEach(s => s.problems.forEach(id => assert(ids.has(id), 'unknown rhythm ' + id)));
+  C.blocks.forEach(b => assert(b.id === null || ids.has(b.id), 'unknown block ' + b.id));
+  assert(C.qa.length >= 20);
+  C.qa.forEach(b => {
+    assert(b.q && b.a && b.wrong.length >= 3, b.q);
+    assert(!b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, 'bad choices: ' + b.q);
+  });
 });
 
 console.log(n + ' cardiology test groups passed');
