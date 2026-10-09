@@ -933,3 +933,9 @@ svg.angle .needle { stroke: var(--accent); stroke-width: 2.6; stroke-linecap: ro
 @media (max-width: 640px) { .ap-flow { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .ap-part { transition: none; } }
 [id^="ap-g-"] { scroll-margin-top: 64px; }
+
+/* ---------- Midterm ---------- */
+.mt-strip-wrap { overflow-x: auto; border-radius: 6px; border: 1px solid var(--line); background: #fff; -webkit-overflow-scrolling: touch; }
+.mt-strip { display: block; width: 100%; min-width: 720px; height: auto; }
+.mt-points li { line-height: 1.45; }
+@media (min-width: 760px) { .mt-strip { min-width: 0; } }

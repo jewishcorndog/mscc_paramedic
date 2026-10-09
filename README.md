@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has four
+Study app for the Motlow State Community College paramedic program. It has six
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -24,6 +24,10 @@ subjects, switched at the top of the page:
   covers the legal system, scope of practice, consent and refusal, confidentiality,
   transport, resuscitation and advance directives, crime scenes and documentation.
   Anything beyond the slides is marked * and Tennessee specifics are tagged **TN**.
+- **Midterm** (Midterm Box): review for the midterm, built around the instructor's topic
+  list: negligence, electrolytes and the Na-K pump, patient assessment, acid-base balance,
+  blood flow through the heart, the conduction system and intrinsic rates, intubation
+  DOPE, med math and drip rates, rhythm/ECG/12-lead analysis, and COPD and asthma.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -129,6 +133,18 @@ internally consistent.
 
 Legal content lives in `js/legal-data.js`.
 
+## Midterm modes
+
+| Tab | What it does |
+| --- | --- |
+| **Review** | A review sheet for each of the 10 midterm topics, with a button to drill that topic and, where the app has a deeper section (Cardiology's Na-K pump page, for example), a link to it. |
+| **Exam** | A mixed practice exam (20, 40, 60 or 100 questions) spread evenly over the topics you pick. Med math (D/H × V, weight-based doses, drip rates, dopamine and lidocaine drips) and ABG questions are generated fresh each time; the ECG topic includes the handout strips. Answers can show after each question or only at the end (test mode). Results break down by topic, with the missed questions explained. |
+| **Strips** | The 36 strips from the class handout *Send home rhythms*, checked against its answer key, by multiple choice or "say it, then reveal". |
+| **Stats** | Accuracy per topic and per handout strip. |
+
+Midterm content lives in `js/midterm-data.js`. The handout strips are in `img/midterm/`
+(strips 1 to 30 were generated with 12LeadTrainer.com).
+
 ## Running it
 
 It's a static site with no build step:
@@ -148,7 +164,8 @@ It's a static site with no build step:
 - **Doses** count only when every number in the deck's dose is in your answer.
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
-`node tests/ap.test.js`, `node tests/patho.test.js` and `node tests/legal.test.js`.
+`node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js` and
+`node tests/midterm.test.js`.
 
 ## Updating the drug list
 
