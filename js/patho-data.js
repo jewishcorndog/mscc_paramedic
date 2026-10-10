@@ -69,7 +69,8 @@ window.PATHO_TOPICS = [
       'Renal correction: increased acid titration; more acid excreted in urine and more bicarbonate regenerated → ↑ serum pH'],
     signs: ['Fast, deep breathing (Kussmaul respirations), low ETCO₂, altered mental status, fruity breath in DKA'],
     care: ['Causes: lactic acid from shock, cardiac arrest or seizures; DKA; kidney failure; toxic alcohols or aspirin; severe diarrhea (loss of base)',
-      'Treat the cause (perfusion, fluids). If you ventilate this patient, keep the fast rate; slowing it removes their compensation']
+      'Treat the cause (perfusion, fluids). If you ventilate this patient, keep the fast rate; slowing it removes their compensation',
+      'Sodium bicarbonate (1 mEq/kg IV, per protocol) for specific causes only: prolonged cardiac arrest, hyperkalemia, crush syndrome, TCA or aspirin overdose, severe DKA. It turns into CO₂, so the patient must be well ventilated']
   },
   {
     id: 'resp-alkalosis', name: 'Respiratory alkalosis', group: 'acidbase', aliases: ['hyperventilation', 'hypocapnia'],

@@ -133,6 +133,9 @@ window.MIDTERM_TOPICS = [
       'Respiratory acidosis: CO₂ builds up from hypoventilation (COPD, overdose of opioids or sedatives, head injury, airway obstruction). pH ↓, PaCO₂ ↑. Fix: ventilate.',
       'Respiratory alkalosis: CO₂ blown off by hyperventilation (anxiety, pain, high altitude, early sepsis, PE, overventilation with a BVM). pH ↑, PaCO₂ ↓. Fix: slow the breathing, treat the cause.',
       'Metabolic acidosis: acid gained or bicarbonate lost (DKA, lactic acidosis from shock or cardiac arrest, aspirin overdose, renal failure, severe diarrhea). pH ↓, HCO₃⁻ ↓. The body compensates with deep, rapid Kussmaul respirations.',
+      'Sodium bicarbonate treats metabolic acidosis, not respiratory: it adds base (HCO₃⁻) to bind H⁺. It is not routine. Fix the cause first (ventilation, oxygen, fluids, perfusion, insulin in the hospital for DKA). Per TN protocol it is given for prolonged cardiac arrest, hyperkalemia, crush syndrome, TCA, aspirin, cocaine or Benadryl (sodium channel blocker) overdose, and severe DKA.',
+      'Bicarb dose: 8.4%, 1 mEq/kg IV, then 0.5 mEq/kg every 10 minutes (4.2% for newborns). It must be ventilated off: HCO₃⁻ + H⁺ → H₂CO₃ → CO₂ + H₂O, so without good ventilation the extra CO₂ worsens acidosis inside the cells. Never mix it with calcium (it precipitates). Contraindicated in alkalosis, severe pulmonary edema, hypernatremia and hypocalcemia; too much causes metabolic alkalosis.',
+      'Respiratory acidosis is treated with ventilation (airway, BVM, naloxone for opioids, CPAP), never bicarb.',
       'Metabolic alkalosis: acid lost or bicarbonate gained (prolonged vomiting or NG suction, diuretics, too much antacid or bicarb). pH ↑, HCO₃⁻ ↑. Compensation: slower, shallower breathing.',
       'ROME: Respiratory Opposite (pH and PaCO₂ move in opposite directions), Metabolic Equal (pH and HCO₃⁻ move the same direction).',
       'Reading an ABG: 1) pH acid or base? 2) Does PaCO₂ explain it (respiratory)? 3) Does HCO₃⁻ explain it (metabolic)? 4) Is the other value moving to compensate?'
@@ -152,6 +155,14 @@ window.MIDTERM_TOPICS = [
       { q: 'In ROME, "Respiratory Opposite" means…', a: 'pH and PaCO₂ move in opposite directions', wrong: ['pH and HCO₃⁻ move in opposite directions', 'Breathing slows in acidosis', 'The lungs oppose the kidneys'] },
       { q: 'Lactic acid buildup in shock or cardiac arrest causes…', a: 'Metabolic acidosis', wrong: ['Respiratory acidosis', 'Metabolic alkalosis', 'Respiratory alkalosis'] },
       { q: 'How do the lungs correct a metabolic acidosis?', a: 'Breathe faster and deeper to blow off CO₂', wrong: ['Breathe slower to keep CO₂', 'Excrete bicarbonate', 'Hold acid in the alveoli'] },
+      { q: 'Sodium bicarbonate is used to treat which disturbance?', a: 'Metabolic acidosis', wrong: ['Respiratory acidosis', 'Metabolic alkalosis', 'Respiratory alkalosis'] },
+      { q: 'How does sodium bicarbonate raise the pH?', a: 'Its bicarbonate binds hydrogen ions to form carbonic acid, which becomes CO₂ and water', wrong: ['It makes the kidneys excrete acid', 'It slows the breathing to retain CO₂', 'It pulls potassium into the cells'] },
+      { q: 'Why must a patient given sodium bicarbonate be well ventilated?', a: 'Bicarb is broken down into CO₂, which has to be breathed off', wrong: ['Bicarb causes bronchospasm', 'Bicarb lowers the respiratory drive', 'Bicarb only works in the lungs'] },
+      { q: 'Adult sodium bicarbonate dose (TN protocol)?', a: '1 mEq/kg IV, then 0.5 mEq/kg every 10 minutes', wrong: ['50 mEq/kg IV once', '0.1 mEq/kg IV every 5 minutes', '1 mg/kg IV, then 0.5 mg/kg every 10 minutes'] },
+      { q: 'Which is an indication for sodium bicarbonate?', a: 'Tricyclic antidepressant (TCA) overdose', wrong: ['Opioid overdose with slow breathing', 'Anxiety with hyperventilation', 'Prolonged vomiting'] },
+      { q: 'Sodium bicarbonate should never be given in the same line with…', a: 'Calcium (it precipitates)', wrong: ['Normal saline', 'Sterile water', 'Dextrose 5% in water'] },
+      { q: 'Opioid overdose with pH 7.22 and PaCO₂ 68. Is bicarb the treatment?', a: 'No: it is respiratory acidosis, so ventilate (BVM, naloxone)', wrong: ['Yes, 1 mEq/kg right away', 'Yes, but only half the dose', 'No: give calcium instead'] },
+      { q: 'Giving too much sodium bicarbonate can cause…', a: 'Metabolic alkalosis', wrong: ['Metabolic acidosis', 'Respiratory alkalosis', 'Hyperkalemia'] },
       { q: 'A COPD patient retaining CO₂ has chronic…', a: 'Respiratory acidosis (kidneys compensate by keeping HCO₃⁻)', wrong: ['Respiratory alkalosis', 'Metabolic acidosis', 'Metabolic alkalosis'] }
     ]
   },
