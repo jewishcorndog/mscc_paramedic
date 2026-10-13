@@ -815,12 +815,19 @@ window.CARDIO_PUMP = {
     { title: 'Trigger calcium enters', text: 'During the plateau (phase 2), the slow channels let a small amount of Ca²⁺ into the cell. On its own it is not enough to squeeze the muscle.', show: ['caIn'], std: true },
     { title: 'Stored calcium floods out', text: 'That trigger calcium opens release channels on the sarcoplasmic reticulum, the cell\'s calcium store, and a much larger burst of Ca²⁺ pours into the cell (calcium-induced calcium release).', show: ['srOut', 'cloud'], std: true },
     { title: 'Calcium switches on the squeeze', text: 'Ca²⁺ binds troponin on the thin actin filaments. That uncovers the binding sites, the myosin heads grab the actin and pull, and the sarcomere shortens. More calcium inside means a stronger contraction.', show: ['cloud', 'bound', 'contract'], std: true },
-    { title: 'Calcium removed, muscle relaxes', text: 'Pumps spend ATP to pull Ca²⁺ back into the sarcoplasmic reticulum, and the sodium-calcium exchanger pushes it out of the cell using the sodium gradient the Na-K pump built. Troponin lets go and the muscle relaxes, ready for the next beat.', show: ['srIn', 'ncx'], std: true }
+    { title: 'Calcium removed, muscle relaxes', text: 'Pumps spend ATP to pull Ca²⁺ back into the sarcoplasmic reticulum, and the sodium-calcium exchanger pushes the rest out of the cell, trading 3 Na⁺ in for each Ca²⁺ out, using the sodium gradient the Na-K pump built. Most of the calcium goes back into storage. Troponin lets go and the muscle relaxes, ready for the next beat.', show: ['srIn', 'ncx'], std: true }
   ],
   // Calcium's two jobs, and where they show up in patients.
   calciumJobs: [
     { name: 'Electrical job', text: 'In the SA and AV nodes there are few fast sodium channels, so the upstroke (phase 0) is carried mostly by Ca²⁺ through the slow channels. In muscle cells, calcium holds up the plateau, which makes the refractory period long enough that the heart can\'t be driven into a sustained cramp.', std: true },
     { name: 'Contractile job', text: 'Calcium turns the electrical signal into a squeeze. Without enough of it you can have electrical activity on the monitor and a weak or absent pulse.', std: true }
+  ],
+  // Common mix-ups, from study questions.
+  mixups: [
+    { q: 'Does sodium coming in make the cell lose calcium and relax?', a: 'No. Sodium rushing in through the fast channels (phase 0, QRS) is only the electrical trigger. Calcium coming in during the plateau (phase 2) causes the contraction. Relaxation comes from removing calcium, during repolarization (phase 3, T wave).' },
+    { q: 'When does the muscle relax: during repolarization or before depolarization?', a: 'Both, in order. It starts relaxing during repolarization as calcium is pumped away, and is fully relaxed during phase 4 (the baseline between the T wave and the next P wave). That relaxed time is diastole, when the ventricles fill.' },
+    { q: 'Is the sodium-calcium exchanger the fast sodium channel?', a: 'No. The fast sodium channel is an open pore that lets only sodium flood in for about a millisecond to fire the cell. The exchanger is a separate swap that trades 3 Na⁺ in for 1 Ca²⁺ out, slowly and steadily, to clear calcium so the muscle can relax.' },
+    { q: 'Is calcium pumped out together with sodium?', a: 'No, they move in opposite directions. Sodium flows in through the exchanger, and that inflow pushes calcium out. The Na-K pump later removes that sodium. Most calcium is not removed from the cell at all; it is pumped back into the sarcoplasmic reticulum using ATP.' }
   ],
   calciumClinical: [
     { name: 'Calcium channel blockers', text: 'Slow the slow channels, so the SA node fires slower, the AV node conducts slower, and the heart squeezes less hard. That is why diltiazem treats SVT and why an overdose looks like bradycardia, heart block and hypotension.' },
@@ -916,6 +923,11 @@ window.CARDIO_PUMP = {
     { q: 'Cardiac glycosides strengthen contraction by…', a: 'Blocking ionic pumps, which indirectly increases calcium to the contractile proteins', wrong: ['Opening fast sodium channels', 'Blocking calcium channels', 'Stimulating beta receptors'] },
     { q: 'Besides calcium, what else does the drug deck list for calcium channel blocker overdose?', a: 'Glucagon and atropine', wrong: ['Adenosine and diltiazem', 'Digoxin and magnesium', 'Amiodarone and lidocaine'] },
     { q: 'Hypocalcemia on the ECG?', a: 'Long QT interval', wrong: ['Short QT interval', 'Peaked T waves', 'Delta waves'], std: true },
+    { q: 'The sodium-calcium exchanger moves…', a: '3 Na⁺ into the cell for every 1 Ca²⁺ out', wrong: ['3 Na⁺ out for every 2 K⁺ in', '1 Na⁺ and 1 Ca²⁺ out together', 'Only sodium, during phase 0'], std: true },
+    { q: 'What powers the sodium-calcium exchanger?', a: 'The sodium gradient built by the Na-K pump', wrong: ['ATP split by the exchanger itself', 'The fast sodium channels opening', 'Calcium released from storage'], std: true },
+    { q: 'Where does most calcium go when the heart muscle relaxes?', a: 'Back into the sarcoplasmic reticulum', wrong: ['Out of the cell with potassium', 'Into the fast sodium channels', 'It stays bound to troponin'], std: true },
+    { q: 'In the cardiac cycle, the muscle is fully relaxed during…', a: 'Phase 4, between the T wave and the next P wave', wrong: ['Phase 0, during the QRS', 'Phase 2, during the ST segment', 'The moment sodium channels open'], std: true },
+    { q: 'What makes cardiac muscle relax?', a: 'Calcium being removed from inside the cell', wrong: ['Sodium rushing in through fast channels', 'Calcium entering through slow channels', 'The fast sodium channels opening'], std: true },
     { q: 'What lowers ionized calcium in the field?', a: 'Hyperventilation and alkalosis', wrong: ['Acidosis and hypoventilation', 'Dehydration', 'High potassium'], std: true }
   ]
 };

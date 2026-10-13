@@ -1320,6 +1320,9 @@
       '<p class="pump-sum">Sodium and potassium make the electrical signal. <strong>Calcium turns it into a heartbeat.</strong> It has two jobs.</p>' +
       '<div class="core-grid">' + PUMP.calciumJobs.map(function (c) { return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>'; }).join('') + '</div>' +
       caSvg() + '<div class="pump-cap"><p class="v-title" id="ca-cap-t"></p><p id="ca-cap-p"></p></div>' + stpControls('ca') +
+      '<p class="eyebrow ca-bedside">Common mix-ups</p><div class="core-grid">' + PUMP.mixups.map(function (m) {
+        return '<div><h4>' + esc(m.q) + '</h4><p>' + esc(m.a) + STD + '</p></div>';
+      }).join('') + '</div>' +
       '<p class="eyebrow ca-bedside">Calcium at the bedside</p><div class="core-grid">' + PUMP.calciumClinical.map(function (c) {
         return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>';
       }).join('') + '</div></div>' +
