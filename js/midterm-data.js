@@ -98,10 +98,14 @@ window.MIDTERM_TOPICS = [
       'AVPU: Alert, responsive to Verbal, responsive to Pain, Unresponsive. GCS: eyes 4, verbal 5, motor 6 (3 to 15).',
       'SAMPLE history: Signs and symptoms, Allergies, Medications, Pertinent past history, Last oral intake, Events leading up.',
       'OPQRST for pain: Onset, Provocation/palliation, Quality, Region/radiation, Severity, Time.',
-      'Secondary assessment: full-body exam (trauma) or focused exam (medical), plus a full set of vital signs. DCAP-BTLS for trauma: Deformities, Contusions, Abrasions, Punctures/penetrations, Burns, Tenderness, Lacerations, Swelling.',
+      'Secondary assessment: a full head-to-toe (rapid, full-body) exam OR a focused exam, plus a full set of vital signs. Which one depends on the patient, not just on trauma vs medical.',
+      'Head-to-toe (full-body) exam: trauma with a significant mechanism of injury or multiple injuries, and any unresponsive or altered patient (trauma or medical). Order: head, neck, chest, abdomen/pelvis, lower and upper extremities (each with motor, sensory and distal circulation), then posterior thorax, lumbar area and buttocks.',
+      'Focused exam: a responsive medical patient (examine the body system tied to the chief complaint) or trauma with an isolated injury and no significant mechanism (examine the injured area). The TN State medical assessment form says: assesses affected body part/system or, if indicated, completes rapid assessment.',
+      'DCAP-BTLS for trauma: Deformities, Contusions, Abrasions, Punctures/penetrations, Burns, Tenderness, Lacerations, Swelling.',
       'Pertinent negatives: findings you looked for and did not find (no chest pain with shortness of breath). Document them.',
       'Reassessment: every 5 minutes for unstable patients, every 15 minutes for stable patients, and after every intervention.',
-      'Trauma vs medical: trauma leans on the mechanism and a rapid exam; responsive medical patients lean on the history first.'
+      'Trauma vs medical: in trauma the mechanism decides the exam; in a responsive medical patient the history (SAMPLE, OPQRST) comes first and guides a focused exam. An unresponsive medical patient gets the head-to-toe exam first, then history from family or bystanders.',
+      'Reassessment repeats the primary survey, the vital signs, the secondary assessment of the complaint or injuries, and checks how the patient responded to treatment.'
     ],
     facts: [
       { q: 'First step of every patient assessment?', a: 'Scene size-up (scene safety and standard precautions)', wrong: ['Check the airway', 'Take a SAMPLE history', 'Get a full set of vitals'] },
@@ -117,6 +121,11 @@ window.MIDTERM_TOPICS = [
       { q: 'GCS components and their maximum points?', a: 'Eyes 4, verbal 5, motor 6', wrong: ['Eyes 5, verbal 4, motor 6', 'Eyes 4, verbal 6, motor 5', 'Eyes 3, verbal 5, motor 7'] },
       { q: '"Denies chest pain" in a short-of-breath patient is a…', a: 'Pertinent negative', wrong: ['Chief complaint', 'Sign', 'Mechanism of injury'] },
       { q: 'In DCAP-BTLS, the P stands for…', a: 'Punctures/penetrations', wrong: ['Pain', 'Pulses', 'Paradoxical motion'] },
+      { q: 'Responsive patient with chest pain and no trauma: which secondary exam?', a: 'Focused exam of the body system tied to the complaint (cardiac and respiratory)', wrong: ['Full head-to-toe exam every time', 'No exam, only vital signs', 'DCAP-BTLS of all four extremities only'] },
+      { q: 'Unresponsive medical patient found on the floor: which secondary exam?', a: 'Rapid full-body (head-to-toe) exam', wrong: ['Focused exam of the chief complaint', 'History first, exam later', 'Skip the exam and transport'] },
+      { q: 'Rollover crash, patient ejected: which secondary exam?', a: 'Full head-to-toe exam (significant mechanism of injury)', wrong: ['Focused exam of the most painful area', 'Vital signs only', 'Focused cardiac exam'] },
+      { q: 'Cut finger from a kitchen knife, no other injury: which secondary exam?', a: 'Focused exam of the injured area', wrong: ['Full head-to-toe exam with spinal precautions', 'Rapid trauma exam of the whole body', 'No exam needed'] },
+      { q: 'What decides head-to-toe vs focused exam?', a: 'Mechanism of injury and the patient\'s responsiveness and condition', wrong: ['Only whether it is trauma or medical', 'The patient\'s age', 'Transport time to the hospital'] },
       { q: 'A responsive medical patient: what usually comes before the physical exam?', a: 'The history (SAMPLE, OPQRST)', wrong: ['A rapid head-to-toe trauma exam', 'Spinal immobilization', 'A 12-lead in every case'] }
     ]
   },
