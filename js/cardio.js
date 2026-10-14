@@ -1304,7 +1304,7 @@
     var linked = RHYTHMS.filter(function (r) { return PUMP_LINK.test(r.causes.join(' ')); });
     return '<div class="panel"><p class="eyebrow">Where the heart\'s electricity comes from</p><p class="pump-sum">' + esc(PUMP.spark) + '</p></div>' +
       '<div class="panel" data-stp-root="story"><p class="eyebrow">One beat, from rest and back</p>' +
-      '<p class="small muted">A ventricular muscle cell. Watch which channels open, which way the ions move, and what that does to the charge inside.</p>' +
+      '<p class="small muted"><strong>A ventricular muscle cell</strong>, the working muscle that squeezes. It is not a pacemaker cell: it fires on fast sodium when the impulse reaches it. (Pacemaker cells fire on calcium; see Pacemaker cells vs. the rest below.) Watch which channels open, which way the ions move, and what that does to the charge inside.</p>' +
       storySvg() + '<div class="pump-cap story-cap"><p class="v-title" id="story-cap-t"></p><p id="story-cap-p"></p></div>' + stpControls('story') +
       '<div class="core-grid defs"><div><h4>Depolarization</h4><p>Positive ions (Na⁺, and Ca²⁺ in pacemaker cells) rush in and the inside loses its negative charge. Electrical, and it comes first.</p></div>' +
       '<div><h4>Repolarization</h4><p>K⁺ flows out and the inside returns to negative. Then the pump puts the ions back where they started.</p></div>' +
