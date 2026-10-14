@@ -152,6 +152,8 @@ t('sodium-potassium pump content is complete', () => {
   assert.strictEqual(P.calcium.length, 4);
   P.calcium.forEach(st => st.show.forEach(k => assert(['caIn', 'srOut', 'srIn', 'cloud', 'bound', 'contract', 'ncx'].includes(k), st.title + ' ' + k)));
   assert(P.calciumJobs.length === 2 && P.calciumClinical.length >= 4);
+  assert(P.mixups.length >= 4 && P.mixups.every(m => m.q && m.a));
+  assert(P.cellTypes.rows.every(r => r.v.length === P.cellTypes.cols.length), 'cell type row width');
 });
 
 t('block strips show their criteria inside the strip', () => {

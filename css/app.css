@@ -720,6 +720,16 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 @media (prefers-reduced-motion: reduce) {
   .ch-gate, .sign, .ion-flow, .needle, .sarc-l, .sarc-r, .trop-on, .gone { transition: none; }
 }
+.pk-ladder { display: grid; grid-template-columns: 1fr; gap: 6px; margin: 0 0 14px; }
+.pk-rung { display: grid; gap: 2px; padding: 8px 12px; border-left: 4px solid var(--accent); background: var(--surface-2); border-radius: 6px; margin-left: calc(var(--lvl) * 18px); }
+.pk-rung span { font-size: 0.9rem; color: var(--muted); }
+.pk-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 10px; }
+.pk-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; background: var(--surface); }
+.pk-card.pace { border-color: var(--heart); }
+.pk-card h4 { margin: 0 0 8px; }
+.pk-card dl { margin: 0; }
+.pk-card dt { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+.pk-card dd { margin: 2px 0 0; }
 .cx-svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
 .cx-ecg { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }
 .cx-heart { fill: none; stroke: var(--ink); stroke-width: 1.6; }
