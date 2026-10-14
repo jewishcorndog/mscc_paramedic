@@ -45,6 +45,7 @@ window.PATHO_TOPICS = [
       'Four compensatory mechanisms: carbonic acid–bicarbonate buffering, renal buffering, protein buffering, and the lungs'],
     patho: ['Carbonic acid–bicarbonate: bicarbonate, carbon dioxide and carbonic acid are always present in a dynamic balance in the blood: H₂O + CO₂ ⇄ H₂CO₃ ⇄ H⁺ + HCO₃⁻',
       'That balance is mainly controlled by the lungs (CO₂, the carbonic acid side) and the kidneys (HCO₃⁻, the bicarbonate side)',
+      'The buffer itself is not the lungs: it is a chemical reaction in the blood that soaks up H⁺ within seconds. The lungs are a separate mechanism that removes the CO₂ the reaction makes, over minutes',
       'Renal buffering: the kidneys reabsorb bicarbonate from urine back into the blood and secrete H⁺ into urine. They work slowly: hours to days to bring pH back to normal',
       'Protein buffering: proteins inside and outside cells have negative charges and can serve as buffers',
       'Lungs: ventilation keeps pH normal by regulating the amount of CO₂ in the blood. Any disruption in ventilation affects acid-base balance'],
