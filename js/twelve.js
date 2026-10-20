@@ -65,7 +65,12 @@
     lbbb: { axis: [-20, 40], qrs: 'lbbb' },
     lah: { axis: [-75, -45] },
     lph: { axis: [105, 140] },
-    bifasc: { axis: [-75, -50], qrs: 'rbbb' },
+    bifasc: { axis: [-75, -50], qrs: 'rbbb', tVec: [0.7, 0.3, -0.5] },
+    // Bundle branch block page: incomplete RBBB, RBBB with posterior hemiblock, and trifascicular
+    // block (RBBB + anterior hemiblock + first-degree AV block).
+    irbbb: { axis: [40, 80], qrs: 'irbbb' },
+    'bifasc-p': { axis: [105, 135], qrs: 'rbbb' },
+    trifasc: { axis: [-75, -50], qrs: 'rbbb', tVec: [0.7, 0.3, -0.5], prInt: [0.24, 0.32] },
     wpw: { axis: [20, 75], qrs: 'wpw' },
     brugada: { axis: [30, 75], brugada: { V1: 0.32, V2: 0.28 } },
     'long-qt': { axis: [30, 75], qtExtra: [0.14, 0.2], rate: [56, 72] },
@@ -96,6 +101,8 @@
   // ---------- One beat ----------
   // Vector components: { d: direction, t: center (s), s: width, a: size, k: 'g' bump or 'pl' plateau }.
   function C(d, t, s, a) { return { d: unit(d), t: t, s: s, a: a, k: 'g' }; }
+  // The late right-ventricular wave of RBBB stays rightward when a hemiblock turns the left ventricle's axis.
+  function late(c) { c.late = true; return c; }
 
   // QRS shapes. Each returns { comps, j } with j the J point (end of QRS), relative to tq.
   var QRS = {
@@ -117,9 +124,17 @@
       var n = QRS.normal();
       n.comps[3].a = 0.05;
       // Late, slow spread through the right ventricle: rightward and forward.
-      n.comps.push(C([-0.55, 0.1, 0.8], 0.068, 0.02, 0.78));
+      n.comps.push(late(C([-0.55, 0.1, 0.8], 0.068, 0.02, 0.78)));
       n.j = 0.11;
       n.t = [0.6, 0.6, -0.5]; // T opposite the late R' in V1 to V3
+      return n;
+    },
+    // Same shape as RBBB, but the late right-ventricular wave is smaller and sooner: QRS 0.10–0.12 s.
+    irbbb: function () {
+      var n = QRS.normal();
+      n.comps[3].a = 0.05;
+      n.comps.push(late(C([-0.55, 0.1, 0.8], 0.05, 0.012, 0.55)));
+      n.j = 0.066;
       return n;
     },
     lbbb: function () {
@@ -139,10 +154,10 @@
   // Turn the QRS (and T, which follows it) in the frontal plane so its axis is `target`.
   function rotate(q, target) {
     var x = 0, y = 0;
-    q.comps.forEach(function (c) { if (c.a > 0.5) { x += c.d[0] * c.a; y += c.d[1] * c.a; } });
+    q.comps.forEach(function (c) { if (c.a > 0.5 && !c.late) { x += c.d[0] * c.a; y += c.d[1] * c.a; } });
     var by = rad(target) - Math.atan2(y, x), cs = Math.cos(by), sn = Math.sin(by);
     function turn(d) { return [d[0] * cs - d[1] * sn, d[0] * sn + d[1] * cs, d[2]]; }
-    q.comps.forEach(function (c) { c.d = turn(c.d); });
+    q.comps.forEach(function (c) { if (!c.late) c.d = turn(c.d); });
     q.t = turn(unit(q.t));
   }
 
@@ -154,12 +169,12 @@
     var rng = root.ECG.makeRng(seed);
     var rate = P.rate ? U(rng, P.rate[0], P.rate[1]) : U(rng, 60, 92), rr = 60 / rate;
     var axis = opts.axis != null ? opts.axis : Math.round(U(rng, P.axis[0], P.axis[1]));
-    var pr = P.qrs === 'wpw' ? U(rng, 0.09, 0.11) : U(rng, 0.13, 0.18);
+    var pr = P.qrs === 'wpw' ? U(rng, 0.09, 0.11) : P.prInt ? U(rng, P.prInt[0], P.prInt[1]) : U(rng, 0.13, 0.18);
     var qtExtra = P.qtExtra ? U(rng, P.qtExtra[0], P.qtExtra[1]) : 0;
     var stage = opts.stage ? STAGES[opts.stage] : null;
 
     var q = QRS[P.qrs || 'normal']();
-    if (P.qrs === 'rbbb' && id === 'bifasc') q.t = [0.7, 0.3, -0.5];
+    if (P.tVec) q.t = P.tVec;
     rotate(q, axis);
     var j = q.j, tGap = tOffset(rr) - 0.03 + qtExtra + (q.discord ? 0.03 : 0) + (P.qrs === 'rbbb' ? 0.03 : 0);
     var tWidth = qtExtra ? 0.065 : 0.05;
@@ -260,10 +275,11 @@
     return '<path d="M0.8 ' + mid + 'h1v-10h5v10h1" class="ecg-trace tw-cal"/>';
   }
 
-  // One sheet: rows of leads, each column a 2.5 s slice, then a lead II rhythm strip.
+  // One sheet: rows of leads, each column a 2.5 s slice, then a lead II rhythm strip
+  // (rhythm = its length in seconds; 0 leaves it off).
   function sheet(g, rows, rhythm, hl, cls, aria) {
     var id = ++uid, cols = rows[0].length;
-    var w = LEFT + cols * COL_S * MM_PER_S, h = (rows.length + 1) * ROW_H, body = '', cells = '';
+    var w = LEFT + cols * COL_S * MM_PER_S, h = (rows.length + (rhythm ? 1 : 0)) * ROW_H, body = '', cells = '';
     rows.forEach(function (row, r) {
       var y = r * ROW_H;
       body += calib(y, ROW_H);
@@ -277,7 +293,7 @@
       });
     });
     var ry = rows.length * ROW_H;
-    body += calib(ry, ROW_H) + '<path d="' + trace(g.leads.II, g.hz, 0, rhythm, LEFT, ry, ROW_H) + '" class="ecg-trace"/>' +
+    if (rhythm) body += calib(ry, ROW_H) + '<path d="' + trace(g.leads.II, g.hz, 0, rhythm, LEFT, ry, ROW_H) + '" class="ecg-trace"/>' +
       '<text x="' + (LEFT + 1.2) + '" y="' + (ry + 5) + '" class="tw-lab">II</text>';
     return '<svg class="tw-svg ' + cls + '" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + aria + '">' +
       paper(id, w, h) + '<g class="tw-cells">' + cells + '</g>' + body + '</svg>';
@@ -295,12 +311,20 @@
       '<div class="ecg-cap"><span>12-lead · drawn' + (opts.extra ? ' · with V4R, V7–V9' : '') + '</span><span>25 mm/s · 10 mm/mV</span></div></div>';
   }
 
+  // A few leads side by side, bigger, with no rhythm strip: the V1 and V6 "turn signal" view.
+  function closeup(g, leads, opts) {
+    opts = opts || {};
+    return '<div class="tw-wrap">' + sheet(g, [leads], 0, opts.hl || {}, 'tw-zoom', 'Leads ' + leads.join(' and ')) +
+      '<div class="ecg-cap"><span>' + leads.join(' · ') + ' · drawn</span><span>25 mm/s · 10 mm/mV</span></div></div>';
+  }
+
   root.TWELVE = {
     ids: Object.keys(PATTERNS),
     stages: Object.keys(STAGES),
     leads: STANDARD,
     extra: EXTRA,
     generate: generate,
-    render: render
+    render: render,
+    closeup: closeup
   };
 })(typeof window !== 'undefined' ? window : globalThis);

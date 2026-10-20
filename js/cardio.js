@@ -17,6 +17,10 @@
     conduct: { list: CONDUCT.qa, pre: 'c', title: 'Conduction pathway' }, twelve: { list: TW.qa, pre: 'w', title: '12-lead' } };
   var MI = window.CARDIO_MI;
   QA.mi = { list: MI.qa, pre: 'm', title: '12-lead MI' };
+  var BBB = window.CARDIO_BBB;
+  QA.bbb = { list: BBB.qa, pre: 'k', title: 'Bundle branch blocks' };
+  var TURN_BY = {};
+  BBB.turn.forEach(function (x) { TURN_BY[x.id] = x; });
   var TWP_BY = {}, WALL_BY = {}, LEAD_BY = {}, TERR_BY = {}, STAGE_BY = {}, TERR_OF = {};
   MI.territories.forEach(function (t) { TERR_BY[t.id] = t; t.pids.forEach(function (id) { TERR_OF[id] = t; }); });
   MI.stages.forEach(function (st) { STAGE_BY[st.id] = st; });
@@ -107,10 +111,10 @@
     stripMode: 'mc',
     stripLen: 20,
     stripSrc: 'mix',
-    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false, twelve: false, mi: false },
+    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false, twelve: false, mi: false, bbb: false },
     cardDir: 'forward',
     quizLen: 20,
-    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, twelve: true, mi: true },
+    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, twelve: true, mi: true, bbb: true },
     learn: 'rhythms',
     stats: {}
   }, loadSaved());
@@ -126,7 +130,10 @@
   // ...and the MI deck.
   if (S.cardDecks.mi === undefined) S.cardDecks.mi = false;
   if (S.quizTopics.mi === undefined) S.quizTopics.mi = true;
-  if (S.twPage !== 'mi') S.twPage = 'read';
+  // ...and the bundle branch block deck.
+  if (S.cardDecks.bbb === undefined) S.cardDecks.bbb = false;
+  if (S.quizTopics.bbb === undefined) S.quizTopics.bbb = true;
+  if (S.twPage !== 'mi' && S.twPage !== 'bbb') S.twPage = 'read';
   S.stripSel = S.stripSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
 
   function save() {
@@ -526,6 +533,14 @@
       (a.II !== 'either' ? ', ' + a.II + ' in II' : '') + '.' + (a.note ? ' ' + esc(a.note) + '.' : '') + '</p>';
   }
 
+  // V1 and V6 close-up for the turn signal. Normal conduction is drawn from the normal 12-lead.
+  function turnHtml(id, seed) {
+    return TWG.closeup(TWG.generate(id, seed), ['V1', 'V6']);
+  }
+  function turnFindHtml(tn) {
+    return '<dl class="cx-facts"><dt>V1</dt><dd>' + esc(tn.v1) + '</dd><dt>V6</dt><dd>' + esc(tn.v6) + '</dd></dl>';
+  }
+
   // =====================================================================
   // Flashcards
   // =====================================================================
@@ -541,7 +556,8 @@
     ['pump', 'Na-K pump & cell', 'Pump, resting potential, depolarization, calcium, action potential phases'],
     ['conduct', 'Conduction pathway', 'SA node to Purkinje fibers, rates, blocks, ectopic beats'],
     ['twelve', '12-lead', 'Drawn 12-leads to name, plus walls, axis, bundle branch blocks, can\'t-miss ECGs'],
-    ['mi', '12-lead MI', 'Find the MI on drawn 12-leads, its stage and artery, STEMI criteria, equivalents and mimics']
+    ['mi', '12-lead MI', 'Find the MI on drawn 12-leads, its stage and artery, STEMI criteria, equivalents and mimics'],
+    ['bbb', 'Bundle branch blocks', 'RBBB, LBBB, incomplete, hemiblocks, bi- and trifascicular: drawn blocks, the V1 turn signal, risk and care']
   ];
 
   function dirFor() { return S.cardDir === 'mixed' ? (Math.random() < 0.5 ? 'forward' : 'reverse') : S.cardDir; }
@@ -557,13 +573,17 @@
       if (t.kind === 'condition' ? !d.conditions : !d.treatments) return;
       TFIELDS.forEach(function (f) { if ((t[f[0]] || []).length) list.push({ kind: 'topic', id: t.id, field: f[0], dir: dirFor() }); });
     });
-    ['basics', 'pump', 'conduct', 'twelve', 'mi'].forEach(function (set) {
+    ['basics', 'pump', 'conduct', 'twelve', 'mi', 'bbb'].forEach(function (set) {
       if (d[set]) QA[set].list.forEach(function (b, i) { list.push({ kind: 'basic', set: set, id: QA[set].pre + i, idx: i, field: set }); });
     });
     if (d.twelve) TW.patterns.forEach(function (p) { list.push({ kind: 'tw', id: 'tw-' + p.id, pid: p.id, field: 'twelve' }); });
     if (d.mi) {
       MI.territories.forEach(function (t) { list.push({ kind: 'mi', id: 'mi-where-' + t.id, terr: t.id, field: 'mi' }); });
       MI.stages.forEach(function (st) { list.push({ kind: 'mi', id: 'mi-stage-' + st.id, stage: st.id, field: 'mi' }); });
+    }
+    if (d.bbb) {
+      BBB.pids.forEach(function (pid) { list.push({ kind: 'tw', id: 'bbb-' + pid, pid: pid, field: 'bbb' }); });
+      BBB.turn.forEach(function (x) { list.push({ kind: 'turn', id: 'bbb-turn-' + x.id, turn: x.id, field: 'bbb' }); });
     }
     return shuffle(list);
   }
@@ -600,6 +620,12 @@
       var sg = STAGE_BY[card.stage];
       return band(flipped ? sg.name : '', 'What stage is this STEMI?', !flipped) + '<div class="card-body">' +
         twHtml({ pid: card.pid, seed: card.seed, stage: card.stage }, flipped) + (flipped ? '<hr class="divider">' + stageHtml(sg) : '<p class="hint">Tap to flip</p>') + '</div>';
+    }
+    if (card.kind === 'turn') {
+      if (!card.seed) card.seed = newSeed();
+      var tn = TURN_BY[card.turn];
+      return band(flipped ? tn.name : '', 'V1 and V6: which conduction?', !flipped) + '<div class="card-body">' + turnHtml(card.turn, card.seed) +
+        (flipped ? '<hr class="divider">' + turnFindHtml(tn) : '<p class="hint">Turn signal: which way does V1 end? Tap to flip</p>') + '</div>';
     }
     if (card.kind === 'tw') {
       var pat = TWP_BY[card.pid];
@@ -667,7 +693,7 @@
     if (card.kind === 'rules') return 'rules';
     if (card.kind === 'care') return 'care';
     if (card.kind === 'topic') return 'topic';
-    if (card.kind === 'tw') return 'twelve';
+    if (card.kind === 'tw' || card.kind === 'turn') return card.field === 'bbb' ? 'bbb' : 'twelve';
     if (card.kind === 'mi') return 'mi';
     return card.set || 'basics';
   }
@@ -716,7 +742,7 @@
   var quizEl = $('#cview-quiz');
   var Q = null;
   var QTOPICS = [['strips', 'Rhythm strips'], ['rules', 'Rhythm rules'], ['care', 'Rhythm causes & care'],
-    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway'], ['twelve', '12-lead'], ['mi', '12-lead MI']];
+    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway'], ['twelve', '12-lead'], ['mi', '12-lead MI'], ['bbb', 'Bundle branch blocks']];
 
   function notIn(list, item) {
     return !list.some(function (x) { return x === item || G.sameItem(x, item); });
@@ -776,6 +802,22 @@
     basics: function () { return qaQ('basics'); },
     pump: function () { return qaQ('pump'); },
     conduct: function () { return qaQ('conduct'); },
+    // Bundle branch blocks: name a drawn block, read the V1 turn signal, or a question from the set.
+    bbb: function () {
+      var r = Math.random(), mc;
+      if (r < 0.4) {
+        var pid = pick(BBB.pids);
+        mc = mcFrom(TWP_BY[pid].name, shuffle(BBB.pids.filter(function (x) { return x !== pid; }).map(function (x) { return TWP_BY[x].name; })));
+        return { id: 'bbb-' + pid, stat: 'bbb', tw: { pid: pid, seed: newSeed() }, prompt: 'Which conduction block is this?', options: mc.options, answer: mc.answer, explain: 'tw' };
+      }
+      if (r < 0.6) {
+        var tn = pick(BBB.turn);
+        mc = mcFrom(tn.name, shuffle(BBB.turn.filter(function (x) { return x.id !== tn.id; }).map(function (x) { return x.name; })));
+        return { id: 'bbb-turn-' + tn.id, stat: 'bbb', turn: tn.id, seed: newSeed(), prompt: 'V1 and V6 from a supraventricular rhythm. What do they show?',
+          options: mc.options, answer: mc.answer, explain: 'turn' };
+      }
+      return qaQ('bbb');
+    },
     // 12-lead: name a drawn 12-lead, read the axis, or a question from the set.
     // MI: where is it, what stage, how would you sort it, or a question from the set.
     mi: function () {
@@ -864,7 +906,7 @@
 
   function quizSetup(error) {
     quizEl.innerHTML =
-      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump, the conduction pathway, the 12-lead and MI.</p></div>' +
+      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump, the conduction pathway, the 12-lead, MI and bundle branch blocks.</p></div>' +
       '<div class="panel"><div class="field-row"><p class="eyebrow">Questions</p>' + seg('quizLen', S.quizLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Topics</p><div class="row">' + QTOPICS.map(function (k) {
         return '<label class="check"><input type="checkbox" data-qtopic="' + k[0] + '"' + (S.quizTopics[k[0]] ? ' checked' : '') + '> ' + esc(k[1]) + '</label>';
@@ -894,6 +936,7 @@
       return '<p><strong>' + esc(pat.name) + '</strong> <span class="muted small">Tinted: where to look' + (pat.recip.length ? '; blue: mirror-image (reciprocal) leads' : '') + '.</span></p>' + twFindHtml(pat);
     }
     if (q.explain === 'axis') return axisExplain(q.axisId);
+    if (q.explain === 'turn') return '<p><strong>' + esc(TURN_BY[q.turn].name) + '</strong></p>' + turnFindHtml(TURN_BY[q.turn]);
     if (q.explain === 'mi-where') return '<p><strong>' + esc(TERR_BY[q.terr].name) + ' MI</strong>' + (q.tw.stage ? ' <span class="muted small">(Q waves forming)</span>' : '') + '</p>' + terrHtml(TERR_BY[q.terr]);
     if (q.explain === 'mi-stage') return stageHtml(STAGE_BY[q.stage]) + '<p class="muted small">Drawn as: ' + esc(TWP_BY[q.tw.pid].name) + '.</p>';
     if (q.explain === 'mi-class') { var cp = TWP_BY[q.tw.pid]; return '<p><strong>' + esc(cp.name) + '</strong></p>' + twFindHtml(cp); }
@@ -905,7 +948,7 @@
     var q = Q.list[Q.i], st = Q.state;
     var html = '<div class="progress-line"><span>Question ' + (Q.i + 1) + ' of ' + Q.list.length + '</span><span>' + Q.right + ' right</span></div>' +
       '<div class="meter"><span style="width:' + Math.round(Q.i / Q.list.length * 100) + '%"></span></div>' +
-      '<div class="panel">' + (q.strip ? stripHtml(q.id, q.seed) : '') + (q.tw ? twHtml(q.tw, !!st) : '') + '<p class="q-prompt">' + q.prompt + '</p>' + (q.block || '') +
+      '<div class="panel">' + (q.strip ? stripHtml(q.id, q.seed) : '') + (q.tw ? twHtml(q.tw, !!st) : '') + (q.turn ? turnHtml(q.turn, q.seed) : '') + '<p class="q-prompt">' + q.prompt + '</p>' + (q.block || '') +
       '<div class="options">' + q.options.map(function (o, i) {
         var cls = 'option';
         if (st) { if (i === q.answer) cls += ' right'; else if (i === st.choice) cls += ' wrong'; }
@@ -937,7 +980,7 @@
       '<div class="row">' + (Q.missed.length ? '<button class="btn primary" data-act="retry">Retry the ' + Q.missed.length + ' missed</button>' : '') +
       '<button class="btn" data-act="new">New quiz</button></div></div>' +
       (Q.missed.length ? '<div class="panel"><p class="eyebrow">Review</p><ul class="missed-list">' + Q.missed.map(function (q) {
-        return '<li><span>' + (q.strip ? 'Strip: ' : '') + (q.tw ? '12-lead: ' : '') + q.prompt + '</span><span class="muted small">Answer: <strong>' + esc(q.options[q.answer]) + '</strong></span></li>';
+        return '<li><span>' + (q.strip ? 'Strip: ' : '') + (q.tw ? '12-lead: ' : '') + (q.turn ? 'V1 and V6: ' : '') + q.prompt + '</span><span class="muted small">Answer: <strong>' + esc(q.options[q.answer]) + '</strong></span></li>';
       }).join('') + '</ul></div>' : '');
   }
 
@@ -1001,10 +1044,11 @@
       seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump'], ['conduct', 'Conduction'], ['twelve', '12-lead']]) +
       (S.learn === 'pump' ? '<div id="learn-list" class="pump-view">' + pumpHtml() + '</div>' :
         S.learn === 'conduct' ? '<div id="learn-list" class="pump-view cx-view">' + cxHtml() + '</div>' :
-        S.learn === 'twelve' ? '<div id="learn-list" class="pump-view tw-view">' + seg('twPage', S.twPage, [['read', 'Reading the 12-lead'], ['mi', 'MI']]) + (S.twPage === 'mi' ? miPageHtml() : twPageHtml()) + '</div>' :
+        S.learn === 'twelve' ? '<div id="learn-list" class="pump-view tw-view">' + seg('twPage', S.twPage, [['read', 'Reading the 12-lead'], ['mi', 'MI'], ['bbb', 'Bundle branch blocks']]) +
+          (S.twPage === 'mi' ? miPageHtml() : S.twPage === 'bbb' ? bbbPageHtml() : twPageHtml()) + '</div>' :
         '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
         '<div class="ref-list" id="learn-list"></div>');
-    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); stpSet('story', STP.story.i); stpSet('ca', STP.ca.i); } else if (S.learn === 'conduct') cxSet(cxStep); else if (S.learn === 'twelve') { if (S.twPage === 'mi') miDraw(); else twDraw(); } else learnFilter();
+    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); stpSet('story', STP.story.i); stpSet('ca', STP.ca.i); } else if (S.learn === 'conduct') cxSet(cxStep); else if (S.learn === 'twelve') { if (S.twPage === 'mi') miDraw(); else if (S.twPage === 'bbb') bbbDraw(); else twDraw(); } else learnFilter();
   }
 
   function learnFilter() {
@@ -1613,7 +1657,69 @@
       '<p class="std-note">From your Chapter 21 slides and outline (ST changes, five-step infarct analysis, right-sided and posterior ECGs, ACS and MI). * Standard ECG teaching the slides use but don\'t spell out, including the STEMI millimeter thresholds, Q-wave size, stage timing and Sgarbossa numbers.</p>';
   }
 
+  // ---------- Bundle branch block view ----------
+  var BV = { pid: 'rbbb', seed: newSeed(), show: true, turnSeed: newSeed() };
+  function bbbDraw() {
+    var slot = $('#bbb-slot');
+    if (!slot) return;
+    var pat = TWP_BY[BV.pid];
+    slot.innerHTML = twHtml({ pid: BV.pid, seed: BV.seed }, BV.show);
+    $('#bbb-info').innerHTML = '<p class="v-title">' + esc(pat.name) + '</p>' + twFindHtml(pat);
+    var sel = $('#bbb-pick');
+    if (sel) sel.value = BV.pid;
+    $all('[data-bbb-draw]', learnEl).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.bbbDraw === BV.pid)); });
+    var turn = $('#bbb-turn');
+    if (turn) turn.innerHTML = ['normal', 'rbbb', 'lbbb'].map(function (id, i) {
+      var tn = TURN_BY[id];
+      return '<div class="bbb-turn-one"><p class="eyebrow">' + esc(tn.name) + '</p>' + turnHtml(id, BV.turnSeed + i) + turnFindHtml(tn) + '</div>';
+    }).join('');
+  }
+  function bbbPageHtml() {
+    var STDB = ' <span class="std-mark" title="Standard ECG teaching; not spelled out on the slides">*</span>';
+    function star(x) { return x.std ? STDB : ''; }
+    return '<div class="panel"><p class="eyebrow">Spot the block</p>' +
+      '<p class="pump-sum">A bundle branch block is a delay or block <strong>below the split of the bundle of His</strong>. One ventricle fires late, cell to cell through the muscle, so the QRS gets wide. Pick a block to draw it; tinted leads show where to look.</p>' +
+      '<div class="row tw-controls"><select id="bbb-pick" aria-label="Block to draw">' + BBB.pids.map(function (pid) {
+        return '<option value="' + pid + '"' + (pid === BV.pid ? ' selected' : '') + '>' + esc(TWP_BY[pid].name) + '</option>';
+      }).join('') + '</select><button class="btn" data-act="bbb-new">New example</button></div>' +
+      '<div class="row"><label class="check"><input type="checkbox" id="bbb-show"' + (BV.show ? ' checked' : '') + '> Tint where to look</label></div>' +
+      '<div id="bbb-slot"></div><div class="pump-cap tw-cap" id="bbb-info"></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">How to read it, in order</p><ol class="tw-steps">' +
+      BBB.steps.map(function (st) { return '<li><strong>' + esc(st.name) + (/\?$/.test(st.name) ? '' : '.') + '</strong> ' + esc(st.text) + star(st) + '</li>'; }).join('') + '</ol></div>' +
+
+      '<div class="panel"><p class="eyebrow">The turn signal: V1 and V6</p>' +
+      '<p>Look at the end of the QRS in V1. Up means the right bundle is blocked, down means the left. Then check V6, which shows the opposite picture.' + STDB + '</p>' +
+      '<div id="bbb-turn" class="bbb-turn"></div><div class="row"><button class="btn" data-act="bbb-turn-new">New examples</button></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">RBBB vs LBBB</p><div class="table-wrap"><table class="grid basics"><thead><tr><th></th><th>' +
+      '<button class="chip" data-bbb-draw="rbbb">RBBB</button></th><th><button class="chip" data-bbb-draw="lbbb">LBBB</button></th></tr></thead><tbody>' +
+      BBB.compare.map(function (c) { return '<tr><td><strong>' + esc(c.name) + '</strong>' + star(c) + '</td><td>' + esc(c.r) + '</td><td>' + esc(c.l) + '</td></tr>'; }).join('') +
+      '</tbody></table></div><p class="small"><strong>Incomplete RBBB:</strong> the same rSR\' shape with a QRS of 0.10 to 0.12 s. It does not meet the 0.12 s criterion and is often a normal variant.' + STDB +
+      ' <button class="chip" data-bbb-draw="irbbb">Draw it</button></p></div>' +
+
+      '<div class="panel"><p class="eyebrow">Three fascicles</p><p>The bundle of His splits into the right bundle branch and the left bundle branch; the left splits again into anterior and posterior fascicles (slide 135).</p><div class="core-grid">' +
+      BBB.fascicles.map(function (f) { return '<div><h4>' + esc(f.name) + '</h4><p>' + esc(f.text) + '</p></div>'; }).join('') + '</div>' +
+      '<div class="chips"><button class="chip" data-bbb-draw="lah">Draw anterior hemiblock</button><button class="chip" data-bbb-draw="lph">Draw posterior hemiblock</button></div>' +
+      '<p class="eyebrow">How many are blocked?</p><div class="table-wrap"><table class="grid basics"><tbody>' +
+      BBB.combos.map(function (c) { return '<tr><td><button class="chip" data-bbb-draw="' + c.pid + '">' + esc(c.name) + '</button></td><td>' + esc(c.text) + star(c) + '</td></tr>'; }).join('') +
+      '</tbody></table></div><div class="chips"><button class="chip" data-bbb-draw="bifasc-p">Draw RBBB + posterior hemiblock</button></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">Why it matters on a call</p><div class="core-grid">' +
+      BBB.matters.map(function (c) { return '<div><h4>' + esc(c.name) + '</h4><p>' + esc(c.text) + star(c) + '</p></div>'; }).join('') + '</div>' +
+      '<div class="chips"><button class="chip" data-mi-draw="sgarbossa">LBBB with Sgarbossa (MI tab)</button><button class="chip" data-goto-rhythm="avb-3">Third-degree AV block</button></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">In the field</p>' + listHtml(BBB.care) +
+      '<div class="chips"><button class="chip" data-goto-topic="bbb">Bundle branch block: causes and management</button></div></div>' +
+
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>Name ' + BBB.pids.length + ' drawn conduction findings, read the turn signal in V1 and V6, and ' + BBB.qa.length + ' questions.</p>' +
+      '<div class="row"><button class="btn primary" data-act="bbb-quiz">Quiz me</button><button class="btn" data-act="bbb-cards">Flashcards</button></div></div>' +
+      '<p class="std-note">From your Chapter 21 slides (ventricular conduction disturbances, bundle branch anatomy, common ECG findings, management, hemiblocks, bifascicular block, and trifascicular block on the first-degree AV block slide). * Standard ECG teaching the slides use but don\'t spell out, including the V1 and V6 shapes, the turn signal and incomplete RBBB. The tracings are drawn by the app.</p>';
+  }
+
   learnEl.addEventListener('change', function (e) {
+    if (e.target.id === 'bbb-pick' && e.target.value) { BV.pid = e.target.value; BV.seed = newSeed(); return bbbDraw(); }
+    if (e.target.id === 'bbb-show') { BV.show = e.target.checked; return bbbDraw(); }
     if (e.target.id === 'tw-pick' && e.target.value) { TV.pid = e.target.value; TV.axis = null; TV.wall = null; TV.lead = null; TV.seed = newSeed(); TV.extra = !!TWP_BY[TV.pid].extra; return learnRender(); }
     if (e.target.id === 'mi-pick' && e.target.value) { MV.pid = e.target.value; MV.seed = newSeed(); if (!miStaged()) MV.stage = 'acute'; return learnRender(); }
     if (e.target.id === 'mi-show') { MV.show = e.target.checked; return miDraw(); }
@@ -1624,7 +1730,7 @@
   learnEl.addEventListener('click', function (e) {
     var cell = e.target.closest('.tw-cell');
     if (cell) { TV.lead = TV.lead === cell.dataset.lead ? null : cell.dataset.lead; return twDraw(); }
-    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-stp],[data-phase],[data-goto-rhythm],[data-goto-topic],[data-tw-wall],[data-tw-axis],[data-mi-draw]');
+    var t = e.target.closest('[data-seg],[data-act],[data-pstep],[data-cstep],[data-stp],[data-phase],[data-goto-rhythm],[data-goto-topic],[data-tw-wall],[data-tw-axis],[data-mi-draw],[data-bbb-draw]');
     if (!t) return;
     if (t.dataset.twWall) { TV.wall = TV.wall === t.dataset.twWall ? null : t.dataset.twWall; twDraw(); $('#tw-slot').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
     if (t.dataset.twAxis) { TV.pid = 'axis'; TV.axis = axisAngle(t.dataset.twAxis); TV.wall = null; TV.seed = newSeed(); learnRender(); $('#tw-slot').scrollIntoView({ block: 'nearest' }); return; }
@@ -1647,7 +1753,18 @@
     if (t.dataset.seg === 'apCell') { apCell = t.dataset.val; return apRender(); }
     if (t.dataset.seg === 'twPage') { S.twPage = t.dataset.val; save(); return learnRender(); }
     if (t.dataset.seg === 'miStage') { MV.stage = t.dataset.val; MV.seed = newSeed(); return miDraw(); }
-    if (t.dataset.miDraw) { MV.pid = t.dataset.miDraw; MV.stage = t.dataset.miStage || 'acute'; MV.seed = newSeed(); learnRender(); $('#mi-slot').scrollIntoView({ block: 'nearest' }); return; }
+    if (t.dataset.bbbDraw) { BV.pid = t.dataset.bbbDraw; BV.seed = newSeed(); bbbDraw(); $('#bbb-slot').scrollIntoView({ block: 'nearest' }); return; }
+    if (t.dataset.act === 'bbb-new') { BV.seed = newSeed(); return bbbDraw(); }
+    if (t.dataset.act === 'bbb-turn-new') { BV.turnSeed = newSeed(); return bbbDraw(); }
+    if (t.dataset.act === 'bbb-quiz' || t.dataset.act === 'bbb-cards') {
+      if (t.dataset.act === 'bbb-cards') {
+        Object.keys(S.cardDecks).forEach(function (k) { S.cardDecks[k] = k === 'bbb'; });
+        save(); showTab('cards'); return cardsStart(buildCards());
+      }
+      Object.keys(S.quizTopics).forEach(function (k) { S.quizTopics[k] = k === 'bbb'; });
+      save(); showTab('quiz'); return quizStart(buildQuiz());
+    }
+    if (t.dataset.miDraw) { if (S.twPage !== 'mi') { S.twPage = 'mi'; save(); } MV.pid = t.dataset.miDraw; MV.stage = t.dataset.miStage || 'acute'; MV.seed = newSeed(); learnRender(); $('#mi-slot').scrollIntoView({ block: 'nearest' }); return; }
     if (t.dataset.act === 'mi-new') { MV.seed = newSeed(); return miDraw(); }
     if (t.dataset.act === 'mi-quiz' || t.dataset.act === 'mi-cards') {
       if (t.dataset.act === 'mi-cards') {
@@ -1763,7 +1880,12 @@
       .filter(function (r) { return S.stats[r[0]]; })
       .sort(function (a, b) { return (acc(a[0], 'mi') || 0) - (acc(b[0], 'mi') || 0); })
       .map(function (r) { return '<tr><td>' + esc(r[1]) + '</td>' + cell(r[0], 'mi') + '</tr>'; }).join('');
-    var miQa = qaTotals('mi');
+    var miQa = qaTotals('mi'), bbbQa = qaTotals('bbb');
+    var bbbRows = BBB.pids.map(function (pid) { return ['bbb-' + pid, TWP_BY[pid].name]; })
+      .concat(BBB.turn.map(function (x) { return ['bbb-turn-' + x.id, 'V1/V6: ' + x.name]; }))
+      .filter(function (r) { return S.stats[r[0]]; })
+      .sort(function (a, b) { return (acc(a[0], 'bbb') || 0) - (acc(b[0], 'bbb') || 0); })
+      .map(function (r) { return '<tr><td>' + esc(r[1]) + '</td>' + cell(r[0], 'bbb') + '</tr>'; }).join('');
     var axisRows = TW.axis.filter(function (a) { return S.stats['tw-axis-' + a.id]; })
       .map(function (a) { return '<tr><td>Axis: ' + esc(a.name) + '</td>' + cell('tw-axis-' + a.id, 'twelve') + '</tr>'; }).join('');
     statsEl.innerHTML =
@@ -1777,10 +1899,12 @@
       (topicRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Condition or treatment</th><th style="text-align:center">Score</th></tr></thead><tbody>' + topicRows + '</tbody></table></div>' : '') +
       (twRows || axisRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead finding</th><th style="text-align:center">Named</th></tr></thead><tbody>' + twRows + axisRows + '</tbody></table></div>' : '') +
       (miRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead MI</th><th style="text-align:center">Score</th></tr></thead><tbody>' + miRows + '</tbody></table></div>' : '') +
+      (bbbRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Bundle branch block</th><th style="text-align:center">Named</th></tr></thead><tbody>' + bbbRows + '</tbody></table></div>' : '') +
       (basics.n ? '<p class="muted">ECG basics: ' + Math.round(basics.c / basics.n * 100) + '% of ' + basics.n + ' answers right.</p>' : '') +
       (pump.n ? '<p class="muted">Na-K pump &amp; cell: ' + Math.round(pump.c / pump.n * 100) + '% of ' + pump.n + ' answers right.</p>' : '') +
       (conduct.n ? '<p class="muted">Conduction pathway: ' + Math.round(conduct.c / conduct.n * 100) + '% of ' + conduct.n + ' answers right.</p>' : '') +
       (miQa.n ? '<p class="muted">MI questions: ' + Math.round(miQa.c / miQa.n * 100) + '% of ' + miQa.n + ' answers right.</p>' : '') +
+      (bbbQa.n ? '<p class="muted">Bundle branch block questions: ' + Math.round(bbbQa.c / bbbQa.n * 100) + '% of ' + bbbQa.n + ' answers right.</p>' : '') +
       (twelve.n ? '<p class="muted">12-lead questions: ' + Math.round(twelve.c / twelve.n * 100) + '% of ' + twelve.n + ' answers right.</p>' : '') +
       '<div class="row">' + (confirmReset
         ? '<span class="muted">Erase all cardiology progress?</span><button class="btn bad" data-act="reset-yes">Erase</button><button class="btn" data-act="reset-no">Keep it</button>'
