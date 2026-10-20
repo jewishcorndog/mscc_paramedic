@@ -83,7 +83,7 @@ the axis in every lead at once. ST elevation and depression, the extra R or Q wa
 Brugada and ARVD shapes are added per lead from each finding's textbook leads. Wide screens
 get the standard 3 × 4 printout with a 10-second lead II strip; phones get the same leads in
 two columns (limb leads, chest leads) so nothing needs side scrolling. A STEMI can also be drawn at any stage (hyperacute, acute, evolving with Q waves,
-T inversion, old). 12-lead content lives in `CARDIO_TWELVE` MI content in `CARDIO_MI` and bundle branch block content in `CARDIO_BBB` in
+T inversion, old). 12-lead content lives in `CARDIO_TWELVE`, MI content in `CARDIO_MI`, and bundle branch block content in `CARDIO_BBB` in
 `js/cardio-data.js`, from slides 30–31, 131–161 and 170–177 and the chapter outline; wall and artery maps,
 lead placement and a few criteria are standard ECG teaching and are marked that way.
 
