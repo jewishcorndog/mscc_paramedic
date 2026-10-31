@@ -1350,7 +1350,7 @@
     var linked = RHYTHMS.filter(function (r) { return PUMP_LINK.test(r.causes.join(' ')); });
     return '<div class="panel"><p class="eyebrow">Where the heart\'s electricity comes from</p><p class="pump-sum">' + esc(PUMP.spark) + '</p></div>' +
       '<div class="panel" data-stp-root="story"><p class="eyebrow">One beat, from rest and back</p>' +
-      '<p class="small muted">A ventricular muscle cell. Watch which channels open, which way the ions move, and what that does to the charge inside.</p>' +
+      '<p class="small muted"><strong>A ventricular muscle cell</strong>, the working muscle that squeezes. It is not a pacemaker cell: it fires on fast sodium when the impulse reaches it. (Pacemaker cells fire on calcium; see Pacemaker cells vs. the rest below.) Watch which channels open, which way the ions move, and what that does to the charge inside.</p>' +
       storySvg() + '<div class="pump-cap story-cap"><p class="v-title" id="story-cap-t"></p><p id="story-cap-p"></p></div>' + stpControls('story') +
       '<div class="core-grid defs"><div><h4>Depolarization</h4><p>Positive ions (Na⁺, and Ca²⁺ in pacemaker cells) rush in and the inside loses its negative charge. Electrical, and it comes first.</p></div>' +
       '<div><h4>Repolarization</h4><p>K⁺ flows out and the inside returns to negative. Then the pump puts the ions back where they started.</p></div>' +
@@ -1362,10 +1362,24 @@
       '<div class="row spread"><div class="seg">' + [0, 1, 2, 3].map(function (i) { return '<button data-pstep="' + i + '" aria-label="Step ' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
       '<div class="row"><button class="btn" data-act="pump-prev">Back</button><button class="btn" data-act="pump-play">Play</button><button class="btn primary" data-act="pump-next">Next</button></div></div></div>' +
       '<div class="panel"><p class="eyebrow">Action potential</p><p class="small muted">Tap a phase on the curve or below. Shaded areas are the refractory periods.</p><div id="ap-box"></div></div>' +
+      '<div class="panel"><p class="eyebrow">Pacemaker cells vs. the rest</p>' +
+      '<div class="pk-ladder">' + PUMP.cellTypes.ladder.map(function (l, i) {
+        return '<div class="pk-rung" style="--lvl:' + i + '"><strong>' + esc(l.who) + '</strong><span>' + esc(l.name) + '</span></div>';
+      }).join('') + '</div>' +
+      '<div class="pk-cards">' + PUMP.cellTypes.cols.map(function (c, ci) {
+        return '<div class="pk-card' + (ci === 0 ? ' pace' : '') + '"><h4>' + esc(c) + '</h4><dl>' + PUMP.cellTypes.rows.map(function (r) {
+          return '<dt>' + esc(r.name) + '</dt><dd>' + esc(r.v[ci]) + '</dd>';
+        }).join('') + '</dl></div>';
+      }).join('') + '</div>' +
+      '<p class="small muted">' + esc(PUMP.cellTypes.note) + STD + '</p></div>' +
+
       '<div class="panel" data-stp-root="ca"><p class="eyebrow">Calcium: from signal to squeeze</p>' +
       '<p class="pump-sum">Sodium and potassium make the electrical signal. <strong>Calcium turns it into a heartbeat.</strong> It has two jobs.</p>' +
       '<div class="core-grid">' + PUMP.calciumJobs.map(function (c) { return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>'; }).join('') + '</div>' +
       caSvg() + '<div class="pump-cap"><p class="v-title" id="ca-cap-t"></p><p id="ca-cap-p"></p></div>' + stpControls('ca') +
+      '<p class="eyebrow ca-bedside">Common mix-ups</p><div class="core-grid">' + PUMP.mixups.map(function (m) {
+        return '<div><h4>' + esc(m.q) + '</h4><p>' + esc(m.a) + STD + '</p></div>';
+      }).join('') + '</div>' +
       '<p class="eyebrow ca-bedside">Calcium at the bedside</p><div class="core-grid">' + PUMP.calciumClinical.map(function (c) {
         return '<div><h4>' + esc(c.name) + (c.std ? STD : '') + '</h4><p>' + esc(c.text) + '</p></div>';
       }).join('') + '</div></div>' +
