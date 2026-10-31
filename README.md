@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has six
+Study app for the Motlow State Community College paramedic program. It has seven
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -28,6 +28,10 @@ subjects, switched at the top of the page:
   list: negligence, electrolytes and the Na-K pump, patient assessment, acid-base balance,
   blood flow through the heart, the conduction system and intrinsic rates, intubation
   DOPE, med math and drip rates, rhythm/ECG/12-lead analysis, and COPD and asthma.
+- **ACLS** (Code Box): the adult algorithms of the 2025 AHA Guidelines for CPR and ECC
+  (cardiac arrest, post-arrest care, bradycardia, tachycardia, ACS, stroke) and megacodes
+  to run as team leader. Where the Tennessee EMS protocol guidelines (2022-23) differ from
+  AHA, the app says so and tags it **TN**.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -145,6 +149,24 @@ Legal content lives in `js/legal-data.js`.
 Midterm content lives in `js/midterm-data.js`. The handout strips are in `img/midterm/`
 (strips 1 to 30 were generated with 12LeadTrainer.com).
 
+## ACLS modes
+
+| Tab | What it does |
+| --- | --- |
+| **Algorithms** | Each 2025 AHA adult algorithm as a flowchart (steps, decision points and their branches) with its doses and details, plus pages for drugs and energies, the H's and T's, and a Tennessee vs AHA table. TN notes sit on the steps they change; items that changed in 2025 are tagged **2025**. |
+| **Megacode** | Eight cases run like a megacode testing station: a dispatch, then stages with a code clock, vitals and a fresh monitor strip. Call the rhythm, then choose the next action; the rhythm changes as the case goes (VF to ROSC, heart block to pacing to VF, stable to unstable SVT, PEA from hyperkalemia, VT, STEMI, torsades, stroke). Feedback after each decision, or only at the end (test mode), and a debrief with the key points and the decisions to review. |
+| **Cards** | Flashcard decks: drugs and energies, key facts, and Tennessee vs AHA. |
+| **Quiz** | Multiple choice: key facts, doses and energies, "here is the monitor, what next?" strips, and single decisions pulled from the megacodes. |
+| **Stats** | Accuracy per algorithm, best score per megacode, and a button to quiz your weakest algorithm. |
+
+ACLS content lives in `js/acls-data.js`. Doses and energies follow the 2025 AHA algorithm
+cards; a few standard ACLS teaching points the cards do not print (pacing technique, signs of
+ROSC, diltiazem dose, unsynchronized shocks for polymorphic VT) are marked *. Tennessee notes
+come from the *Tennessee EMS ALS/BLS Blended Protocol Guidelines 2022-23* (SOP numbers given)
+and the class pharmacology deck. The biggest differences: adenosine starts at 12 mg in TN
+(AHA 6 mg), arrest epinephrine is 0.5 mg in VF/pVT and asystole (AHA 1 mg), atropine starts at
+0.5 mg (AHA 1 mg), and TN gives fixed cardioversion energies (50, 100, 200 J).
+
 ## Running it
 
 It's a static site with no build step:
@@ -164,8 +186,8 @@ It's a static site with no build step:
 - **Doses** count only when every number in the deck's dose is in your answer.
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
-`node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js` and
-`node tests/midterm.test.js`.
+`node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js`,
+`node tests/midterm.test.js` and `node tests/acls.test.js`.
 
 ## Updating the drug list
 

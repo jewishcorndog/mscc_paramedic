@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paramedic Drug Box</title>
-<meta name="description" content="Flashcards, quizzes, write-out drills, med math and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols), cardiology, anatomy &amp; physiology, pathophysiology, medical-legal issues and midterm review.">
+<meta name="description" content="Flashcards, quizzes, write-out drills, med math and ECG rhythm strips for the Motlow State paramedic program: pharmacology (TN protocols), cardiology, anatomy &amp; physiology, pathophysiology, medical-legal issues, midterm review and ACLS megacodes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -21,6 +21,7 @@
     <button data-subject="legal" aria-pressed="false">Legal</button>
     <button data-subject="ap" aria-pressed="false">A&amp;P</button>
     <button data-subject="midterm" aria-pressed="false">Midterm</button>
+    <button data-subject="acls" aria-pressed="false">ACLS</button>
   </div>
 </header>
 
@@ -140,6 +141,26 @@
 </main>
 </div>
 
+<div id="subj-acls" hidden>
+<nav class="tabs" aria-label="ACLS study modes">
+  <div class="tabs-inner" role="tablist">
+    <button class="tab" role="tab" id="xtab-algos" data-xtab="algos" aria-selected="true">Algorithms</button>
+    <button class="tab" role="tab" id="xtab-codes" data-xtab="codes" aria-selected="false">Megacode</button>
+    <button class="tab" role="tab" id="xtab-cards" data-xtab="cards" aria-selected="false">Cards</button>
+    <button class="tab" role="tab" id="xtab-quiz" data-xtab="quiz" aria-selected="false">Quiz</button>
+    <button class="tab" role="tab" id="xtab-stats" data-xtab="stats" aria-selected="false">Stats</button>
+  </div>
+</nav>
+
+<main>
+  <section class="view" id="xview-algos" role="tabpanel" aria-labelledby="xtab-algos"></section>
+  <section class="view" id="xview-codes" role="tabpanel" aria-labelledby="xtab-codes" hidden></section>
+  <section class="view" id="xview-cards" role="tabpanel" aria-labelledby="xtab-cards" hidden></section>
+  <section class="view" id="xview-quiz" role="tabpanel" aria-labelledby="xtab-quiz" hidden></section>
+  <section class="view" id="xview-stats" role="tabpanel" aria-labelledby="xtab-stats" hidden></section>
+</main>
+</div>
+
 <div class="overlay" id="setup" hidden></div>
 
 <script src="js/drugs.js"></script>
@@ -161,6 +182,8 @@
 <script src="js/legal.js"></script>
 <script src="js/midterm-data.js"></script>
 <script src="js/midterm.js"></script>
+<script src="js/acls-data.js"></script>
+<script src="js/acls.js"></script>
 <script src="js/cardio.js"></script>
 </body>
 </html>
