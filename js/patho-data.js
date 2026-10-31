@@ -45,6 +45,7 @@ window.PATHO_TOPICS = [
       'Four compensatory mechanisms: carbonic acid–bicarbonate buffering, renal buffering, protein buffering, and the lungs'],
     patho: ['Carbonic acid–bicarbonate: bicarbonate, carbon dioxide and carbonic acid are always present in a dynamic balance in the blood: H₂O + CO₂ ⇄ H₂CO₃ ⇄ H⁺ + HCO₃⁻',
       'That balance is mainly controlled by the lungs (CO₂, the carbonic acid side) and the kidneys (HCO₃⁻, the bicarbonate side)',
+      'The buffer itself is not the lungs: it is a chemical reaction in the blood that soaks up H⁺ within seconds. The lungs are a separate mechanism that removes the CO₂ the reaction makes, over minutes',
       'Renal buffering: the kidneys reabsorb bicarbonate from urine back into the blood and secrete H⁺ into urine. They work slowly: hours to days to bring pH back to normal',
       'Protein buffering: proteins inside and outside cells have negative charges and can serve as buffers',
       'Lungs: ventilation keeps pH normal by regulating the amount of CO₂ in the blood. Any disruption in ventilation affects acid-base balance'],
@@ -69,7 +70,8 @@ window.PATHO_TOPICS = [
       'Renal correction: increased acid titration; more acid excreted in urine and more bicarbonate regenerated → ↑ serum pH'],
     signs: ['Fast, deep breathing (Kussmaul respirations), low ETCO₂, altered mental status, fruity breath in DKA'],
     care: ['Causes: lactic acid from shock, cardiac arrest or seizures; DKA; kidney failure; toxic alcohols or aspirin; severe diarrhea (loss of base)',
-      'Treat the cause (perfusion, fluids). If you ventilate this patient, keep the fast rate; slowing it removes their compensation']
+      'Treat the cause (perfusion, fluids). If you ventilate this patient, keep the fast rate; slowing it removes their compensation',
+      'Sodium bicarbonate (1 mEq/kg IV, per protocol) for specific causes only: prolonged cardiac arrest, hyperkalemia, crush syndrome, TCA or aspirin overdose, severe DKA. It turns into CO₂, so the patient must be well ventilated']
   },
   {
     id: 'resp-alkalosis', name: 'Respiratory alkalosis', group: 'acidbase', aliases: ['hyperventilation', 'hypocapnia'],
