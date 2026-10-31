@@ -1,5 +1,5 @@
 /* Cardiology: rhythm strips, flashcards, quiz, reference and stats over
-   window.CARDIO_* data, plus the subject switch (Pharmacology, Cardiology, A&P, Patho, Legal, OB, Midterm, ACLS). */
+   window.CARDIO_* data, plus the subject switch (Pharmacology, Cardiology, A&P, Patho, Legal, OB, Midterm, ACLS, Trauma). */
 (function () {
   'use strict';
 
@@ -19,6 +19,10 @@
   QA.mi = { list: MI.qa, pre: 'm', title: '12-lead MI' };
   var BBB = window.CARDIO_BBB;
   QA.bbb = { list: BBB.qa, pre: 'k', title: 'Bundle branch blocks' };
+  var WV = window.CARDIO_WAVES, WVD = window.WAVES;
+  QA.waves = { list: WV.qa, pre: 'v', title: 'Intervals & rhythm analysis' };
+  var WPART_BY = {};
+  WV.parts.forEach(function (p) { WPART_BY[p.id] = p; });
   var TURN_BY = {};
   BBB.turn.forEach(function (x) { TURN_BY[x.id] = x; });
   var TWP_BY = {}, WALL_BY = {}, LEAD_BY = {}, TERR_BY = {}, STAGE_BY = {}, TERR_OF = {};
@@ -111,10 +115,10 @@
     stripMode: 'mc',
     stripLen: 20,
     stripSrc: 'mix',
-    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false, twelve: false, mi: false, bbb: false },
+    cardDecks: { strips: true, rules: true, care: false, conditions: false, treatments: false, basics: false, pump: false, conduct: false, waves: false, twelve: false, mi: false, bbb: false },
     cardDir: 'forward',
     quizLen: 20,
-    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, twelve: true, mi: true, bbb: true },
+    quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, waves: true, twelve: true, mi: true, bbb: true },
     learn: 'rhythms',
     stats: {}
   }, loadSaved());
@@ -133,6 +137,9 @@
   // ...and the bundle branch block deck.
   if (S.cardDecks.bbb === undefined) S.cardDecks.bbb = false;
   if (S.quizTopics.bbb === undefined) S.quizTopics.bbb = true;
+  // ...and the intervals and rhythm analysis deck.
+  if (S.cardDecks.waves === undefined) S.cardDecks.waves = false;
+  if (S.quizTopics.waves === undefined) S.quizTopics.waves = true;
   if (S.twPage !== 'mi' && S.twPage !== 'bbb') S.twPage = 'read';
   S.stripSel = S.stripSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
 
@@ -239,7 +246,8 @@
     ap: ['Body Box', 'Motlow State Paramedic · Ch. 10 Human Systems', 'Paramedic Body Box'],
     ob: ['OB Box', 'Motlow State Paramedic · Ch. 45 Obstetrics', 'Paramedic OB Box'],
     midterm: ['Midterm Box', 'Motlow State Paramedic · Midterm review', 'Paramedic Midterm Review'],
-    acls: ['Code Box', 'Motlow State Paramedic · ACLS (AHA 2025, TN notes)', 'Paramedic Code Box']
+    acls: ['Code Box', 'Motlow State Paramedic · ACLS (AHA 2025, TN notes)', 'Paramedic Code Box'],
+    trauma: ['Trauma Box', 'Motlow State Paramedic · Ch. 35–42 Trauma', 'Paramedic Trauma Box']
   };
   var subject = 'pharm';
   try { subject = localStorage.getItem(SUBJ_KEY) || 'pharm'; } catch (e) { /* storage blocked */ }
@@ -260,6 +268,7 @@
     if (subject === 'ob') window.OBBox.show();
     if (subject === 'midterm') window.MidtermBox.show();
     if (subject === 'acls') window.AclsBox.show();
+    if (subject === 'trauma') window.TraumaBox.show();
   }
   $all('[data-subject]').forEach(function (b) {
     b.addEventListener('click', function () { setSubject(b.dataset.subject); window.scrollTo(0, 0); });
@@ -559,6 +568,7 @@
     ['basics', 'ECG basics', 'Waves, intervals, paper, leads, axis'],
     ['pump', 'Na-K pump & cell', 'Pump, resting potential, depolarization, calcium, action potential phases'],
     ['conduct', 'Conduction pathway', 'SA node to Purkinje fibers, rates, blocks, ectopic beats'],
+    ['waves', 'Intervals & rhythm analysis', 'P, PR, QRS, ST, T, QT, U and R-R: what each means, normal values, measuring on drawn beats, the five steps'],
     ['twelve', '12-lead', 'Drawn 12-leads to name, plus walls, axis, bundle branch blocks, can\'t-miss ECGs'],
     ['mi', '12-lead MI', 'Find the MI on drawn 12-leads, its stage and artery, STEMI criteria, equivalents and mimics'],
     ['bbb', 'Bundle branch blocks', 'RBBB, LBBB, incomplete, hemiblocks, bi- and trifascicular: drawn blocks, the V1 turn signal, risk and care']
@@ -577,9 +587,13 @@
       if (t.kind === 'condition' ? !d.conditions : !d.treatments) return;
       TFIELDS.forEach(function (f) { if ((t[f[0]] || []).length) list.push({ kind: 'topic', id: t.id, field: f[0], dir: dirFor() }); });
     });
-    ['basics', 'pump', 'conduct', 'twelve', 'mi', 'bbb'].forEach(function (set) {
+    ['basics', 'pump', 'conduct', 'waves', 'twelve', 'mi', 'bbb'].forEach(function (set) {
       if (d[set]) QA[set].list.forEach(function (b, i) { list.push({ kind: 'basic', set: set, id: QA[set].pre + i, idx: i, field: set }); });
     });
+    if (d.waves) {
+      WV.parts.forEach(function (p) { list.push({ kind: 'wpart', id: 'wv-p-' + p.id, part: p.id, field: 'waves' }); });
+      WVD.kinds.forEach(function (k) { list.push({ kind: 'measure', id: 'wv-m-' + k, mk: k, field: 'waves' }); });
+    }
     if (d.twelve) TW.patterns.forEach(function (p) { list.push({ kind: 'tw', id: 'tw-' + p.id, pid: p.id, field: 'twelve' }); });
     if (d.mi) {
       MI.territories.forEach(function (t) { list.push({ kind: 'mi', id: 'mi-where-' + t.id, terr: t.id, field: 'mi' }); });
@@ -624,6 +638,17 @@
       var sg = STAGE_BY[card.stage];
       return band(flipped ? sg.name : '', 'What stage is this STEMI?', !flipped) + '<div class="card-body">' +
         twHtml({ pid: card.pid, seed: card.seed, stage: card.stage }, flipped) + (flipped ? '<hr class="divider">' + stageHtml(sg) : '<p class="hint">Tap to flip</p>') + '</div>';
+    }
+    if (card.kind === 'wpart') {
+      var wp = WPART_BY[card.part];
+      return band(flipped ? wp.name : '', 'Name this part of the beat', !flipped) + '<div class="card-body">' + WVD.svg(WVD.DEFAULT, wp, { label: flipped ? wp.name : '?' }) +
+        (flipped ? '<hr class="divider">' + wpartBrief(wp) : '<p class="hint">What is it, what does it represent, and what is normal? Tap to flip</p>') + '</div>';
+    }
+    if (card.kind === 'measure') {
+      if (!card.seed) card.seed = newSeed();
+      var mq = WVD.measure(card.mk, card.seed), mpart = WPART_BY[mq.part];
+      return band(flipped ? mq.options[mq.answer] : '', 'Measure it', !flipped) + '<div class="card-body">' + WVD.svg(mq.params, mpart, { label: flipped ? mpart.name : '?' }) +
+        '<p class="ask">' + esc(mq.prompt) + '</p>' + (flipped ? '<hr class="divider"><p class="answer">' + esc(mq.options[mq.answer]) + '</p><p>' + esc(mq.explain) + '</p>' : '<p class="hint">1 small box = 0.04 s. Tap to flip</p>') + '</div>';
     }
     if (card.kind === 'turn') {
       if (!card.seed) card.seed = newSeed();
@@ -699,6 +724,7 @@
     if (card.kind === 'topic') return 'topic';
     if (card.kind === 'tw' || card.kind === 'turn') return card.field === 'bbb' ? 'bbb' : 'twelve';
     if (card.kind === 'mi') return 'mi';
+    if (card.kind === 'wpart' || card.kind === 'measure') return 'waves';
     return card.set || 'basics';
   }
 
@@ -746,7 +772,7 @@
   var quizEl = $('#cview-quiz');
   var Q = null;
   var QTOPICS = [['strips', 'Rhythm strips'], ['rules', 'Rhythm rules'], ['care', 'Rhythm causes & care'],
-    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway'], ['twelve', '12-lead'], ['mi', '12-lead MI'], ['bbb', 'Bundle branch blocks']];
+    ['conditions', 'Conditions'], ['treatments', 'Treatments & devices'], ['basics', 'ECG basics'], ['pump', 'Na-K pump & cell'], ['conduct', 'Conduction pathway'], ['waves', 'Intervals & rhythm analysis'], ['twelve', '12-lead'], ['mi', '12-lead MI'], ['bbb', 'Bundle branch blocks']];
 
   function notIn(list, item) {
     return !list.some(function (x) { return x === item || G.sameItem(x, item); });
@@ -806,6 +832,20 @@
     basics: function () { return qaQ('basics'); },
     pump: function () { return qaQ('pump'); },
     conduct: function () { return qaQ('conduct'); },
+    // Intervals: measure a drawn beat, name the highlighted part, or a question from the set.
+    waves: function () {
+      var r = Math.random();
+      if (r < 0.35) {
+        var mq = WVD.measure(null, newSeed());
+        return { id: 'wv-m-' + mq.kind, stat: 'waves', wv: { params: mq.params, part: mq.part }, prompt: esc(mq.prompt), options: mq.options, answer: mq.answer, explain: 'wv-measure', wvText: mq.explain };
+      }
+      if (r < 0.55) {
+        var wp = pick(WV.parts);
+        var mc = mcFrom(wp.name, shuffle(WV.parts.filter(function (x) { return x.id !== wp.id; }).map(function (x) { return x.name; })));
+        return { id: 'wv-p-' + wp.id, stat: 'waves', wv: { params: WVD.DEFAULT, part: wp.id }, prompt: 'Which part of the beat is highlighted?', options: mc.options, answer: mc.answer, explain: 'wv-part', part: wp.id };
+      }
+      return qaQ('waves');
+    },
     // Bundle branch blocks: name a drawn block, read the V1 turn signal, or a question from the set.
     bbb: function () {
       var r = Math.random(), mc;
@@ -910,7 +950,7 @@
 
   function quizSetup(error) {
     quizEl.innerHTML =
-      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump, the conduction pathway, the 12-lead, MI and bundle branch blocks.</p></div>' +
+      '<div><h2 class="title">Quiz</h2><p class="lede">Multiple-choice questions mixed from everything you pick: strips, rhythm rules, conditions, treatments, ECG basics, the sodium-potassium pump, the conduction pathway, intervals and rhythm analysis, the 12-lead, MI and bundle branch blocks.</p></div>' +
       '<div class="panel"><div class="field-row"><p class="eyebrow">Questions</p>' + seg('quizLen', S.quizLen, [[10, '10'], [20, '20'], [40, '40']]) + '</div>' +
       '<div class="field-row"><p class="eyebrow">Topics</p><div class="row">' + QTOPICS.map(function (k) {
         return '<label class="check"><input type="checkbox" data-qtopic="' + k[0] + '"' + (S.quizTopics[k[0]] ? ' checked' : '') + '> ' + esc(k[1]) + '</label>';
@@ -940,6 +980,8 @@
       return '<p><strong>' + esc(pat.name) + '</strong> <span class="muted small">Tinted: where to look' + (pat.recip.length ? '; blue: mirror-image (reciprocal) leads' : '') + '.</span></p>' + twFindHtml(pat);
     }
     if (q.explain === 'axis') return axisExplain(q.axisId);
+    if (q.explain === 'wv-measure') return '<p>' + esc(q.wvText) + '</p>';
+    if (q.explain === 'wv-part') return '<p><strong>' + esc(WPART_BY[q.part].name) + '</strong></p>' + wpartBrief(WPART_BY[q.part]);
     if (q.explain === 'turn') return '<p><strong>' + esc(TURN_BY[q.turn].name) + '</strong></p>' + turnFindHtml(TURN_BY[q.turn]);
     if (q.explain === 'mi-where') return '<p><strong>' + esc(TERR_BY[q.terr].name) + ' MI</strong>' + (q.tw.stage ? ' <span class="muted small">(Q waves forming)</span>' : '') + '</p>' + terrHtml(TERR_BY[q.terr]);
     if (q.explain === 'mi-stage') return stageHtml(STAGE_BY[q.stage]) + '<p class="muted small">Drawn as: ' + esc(TWP_BY[q.tw.pid].name) + '.</p>';
@@ -952,7 +994,8 @@
     var q = Q.list[Q.i], st = Q.state;
     var html = '<div class="progress-line"><span>Question ' + (Q.i + 1) + ' of ' + Q.list.length + '</span><span>' + Q.right + ' right</span></div>' +
       '<div class="meter"><span style="width:' + Math.round(Q.i / Q.list.length * 100) + '%"></span></div>' +
-      '<div class="panel">' + (q.strip ? stripHtml(q.id, q.seed) : '') + (q.tw ? twHtml(q.tw, !!st) : '') + (q.turn ? turnHtml(q.turn, q.seed) : '') + '<p class="q-prompt">' + q.prompt + '</p>' + (q.block || '') +
+      '<div class="panel">' + (q.strip ? stripHtml(q.id, q.seed) : '') + (q.tw ? twHtml(q.tw, !!st) : '') + (q.turn ? turnHtml(q.turn, q.seed) : '') +
+        (q.wv ? WVD.svg(q.wv.params, WPART_BY[q.wv.part], { label: st && q.explain === 'wv-part' ? WPART_BY[q.wv.part].name : '?' }) : '') + '<p class="q-prompt">' + q.prompt + '</p>' + (q.block || '') +
       '<div class="options">' + q.options.map(function (o, i) {
         var cls = 'option';
         if (st) { if (i === q.answer) cls += ' right'; else if (i === st.choice) cls += ' wrong'; }
@@ -984,7 +1027,7 @@
       '<div class="row">' + (Q.missed.length ? '<button class="btn primary" data-act="retry">Retry the ' + Q.missed.length + ' missed</button>' : '') +
       '<button class="btn" data-act="new">New quiz</button></div></div>' +
       (Q.missed.length ? '<div class="panel"><p class="eyebrow">Review</p><ul class="missed-list">' + Q.missed.map(function (q) {
-        return '<li><span>' + (q.strip ? 'Strip: ' : '') + (q.tw ? '12-lead: ' : '') + (q.turn ? 'V1 and V6: ' : '') + q.prompt + '</span><span class="muted small">Answer: <strong>' + esc(q.options[q.answer]) + '</strong></span></li>';
+        return '<li><span>' + (q.strip ? 'Strip: ' : '') + (q.tw ? '12-lead: ' : '') + (q.turn ? 'V1 and V6: ' : '') + (q.wv ? 'Drawn beat: ' : '') + q.prompt + '</span><span class="muted small">Answer: <strong>' + esc(q.options[q.answer]) + '</strong></span></li>';
       }).join('') + '</ul></div>' : '');
   }
 
@@ -1045,14 +1088,16 @@
   function learnRender() {
     learnEl.innerHTML =
       '<div><h2 class="title">Learn</h2><p class="lede">Everything from the Chapter 21 slides and outline. Open a rhythm to see a sample strip.</p></div>' +
-      seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump'], ['conduct', 'Conduction'], ['twelve', '12-lead']]) +
+      seg('learn', S.learn, [['rhythms', 'Rhythms'], ['conditions', 'Conditions'], ['treatments', 'Treatments'], ['basics', 'Basics'], ['pump', 'Na-K pump'], ['conduct', 'Conduction'], ['waves', 'Intervals'], ['analyze', 'Analyze'], ['twelve', '12-lead']]) +
       (S.learn === 'pump' ? '<div id="learn-list" class="pump-view">' + pumpHtml() + '</div>' :
         S.learn === 'conduct' ? '<div id="learn-list" class="pump-view cx-view">' + cxHtml() + '</div>' :
+        S.learn === 'waves' ? '<div id="learn-list" class="pump-view wv-view">' + wvHtml() + '</div>' :
+        S.learn === 'analyze' ? '<div id="learn-list" class="pump-view an-view">' + anHtml() + '</div>' :
         S.learn === 'twelve' ? '<div id="learn-list" class="pump-view tw-view">' + seg('twPage', S.twPage, [['read', 'Reading the 12-lead'], ['mi', 'MI'], ['bbb', 'Bundle branch blocks']]) +
           (S.twPage === 'mi' ? miPageHtml() : S.twPage === 'bbb' ? bbbPageHtml() : twPageHtml()) + '</div>' :
         '<input type="search" id="learn-q" placeholder="Search…" value="' + esc(learnQuery) + '">' +
         '<div class="ref-list" id="learn-list"></div>');
-    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); stpSet('story', STP.story.i); stpSet('ca', STP.ca.i); } else if (S.learn === 'conduct') cxSet(cxStep); else if (S.learn === 'twelve') { if (S.twPage === 'mi') miDraw(); else if (S.twPage === 'bbb') bbbDraw(); else twDraw(); } else learnFilter();
+    if (S.learn === 'pump') { pumpSet(pumpStep); apRender(); stpSet('story', STP.story.i); stpSet('ca', STP.ca.i); } else if (S.learn === 'conduct') cxSet(cxStep); else if (S.learn === 'waves') wvSet(wvPart); else if (S.learn === 'analyze') anSet(AN.step); else if (S.learn === 'twelve') { if (S.twPage === 'mi') miDraw(); else if (S.twPage === 'bbb') bbbDraw(); else twDraw(); } else learnFilter();
   }
 
   function learnFilter() {
@@ -1515,6 +1560,129 @@
       '<p class="std-note">* Standard ECG and physiology facts the slides use but don\'t spell out.</p>';
   }
 
+  // ---------- Waves, segments and intervals view ----------
+  var wvPart = 'p';
+  function wvStd(flag) { return flag ? STD : ''; }
+  function wvChips(ids) {
+    return (ids || []).filter(function (id) { return R_BY[id]; }).map(function (id) {
+      return '<button class="chip" data-goto-rhythm="' + id + '">' + esc(R_BY[id].name) + '</button>';
+    }).join('');
+  }
+  // Short version for cards and quiz answers.
+  function wpartBrief(p) {
+    return '<dl class="cx-facts"><dt>Represents</dt><dd>' + esc(p.represents) + wvStd(p.representsStd) + '</dd>' +
+      '<dt>Measured</dt><dd>' + esc(p.measured) + '</dd>' +
+      '<dt>Normal</dt><dd>' + esc(p.normal) + wvStd(p.normalStd) + '</dd></dl>';
+  }
+  function wvSet(id) {
+    wvPart = WPART_BY[id] ? id : 'p';
+    var root = $('.wv-view');
+    if (!root) return;
+    var p = WPART_BY[wvPart];
+    $('#wv-slot').innerHTML = WVD.svg(WVD.DEFAULT, p);
+    $('#wv-cap-t').textContent = p.name;
+    $('#wv-cap-p').innerHTML =
+      '<p class="muted small">' + esc(p.kind) + ' · ' + esc(p.src) + wvStd(p.srcStd) + '</p>' +
+      '<dl class="cx-facts"><dt>Represents</dt><dd>' + esc(p.represents) + wvStd(p.representsStd) + '</dd>' +
+      '<dt>Measured</dt><dd>' + esc(p.measured) + '</dd>' +
+      '<dt>Look for</dt><dd>' + esc(p.look) + '</dd>' +
+      '<dt>Normal</dt><dd>' + esc(p.normal) + wvStd(p.normalStd) + (p.boxes ? '<br><span class="muted small">' + esc(p.boxes) + '</span>' : '') + '</dd></dl>' +
+      '<p class="eyebrow">When it is abnormal</p><div class="table-wrap"><table class="grid basics"><tbody>' + p.abnormal.map(function (a) {
+        var chips = wvChips(a.ids);
+        return '<tr><td><strong>' + esc(a.find) + '</strong></td><td>' + esc(a.means) + wvStd(a.std) + (chips ? '<div class="chips">' + chips + '</div>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    $all('[data-act="wv-part"]', root).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.id === wvPart)); });
+  }
+  function qtcCalc() {
+    var qt = Number(($('#qtc-qt') || {}).value), hr = Number(($('#qtc-hr') || {}).value), out = $('#qtc-out');
+    if (!out) return;
+    if (!(qt > 100 && qt < 800 && hr > 20 && hr < 300)) { out.textContent = 'Enter a QT in ms and a heart rate.'; return; }
+    var rr = 60 / hr, qtc = Math.round(qt / Math.sqrt(rr));
+    out.innerHTML = 'R-R = 60 ÷ ' + hr + ' = ' + rr.toFixed(2) + ' s · QTc = ' + qt + ' ÷ √' + rr.toFixed(2) + ' ≈ <strong>' + qtc + ' ms</strong>: ' +
+      (qtc > 460 ? 'long (over 460 ms).' : qtc > 450 ? 'long in a male (over 450 ms), normal in a female.' : 'not long.');
+  }
+  function wvHtml() {
+    var rows = WV.parts.filter(function (p) { return p.id !== 'j'; });
+    return '<div class="panel"><p class="eyebrow">One beat, piece by piece</p>' +
+      '<p class="pump-sum">A <strong>wave</strong> is a deflection off the baseline (P, QRS, T, U). A <strong>segment</strong> is the flat line between two waves (PR, ST, TP). An <strong>interval</strong> includes at least one wave (PR, QRS, QT, R-R). The paper runs at 25 mm/s, so each small box is <strong>0.04 s</strong> and each large box <strong>0.20 s</strong>.' + STD + ' Tap a part to highlight it.</p>' +
+      '<div id="wv-slot"></div>' +
+      '<div class="row spread"><div class="seg wv-parts">' + WV.parts.map(function (p) {
+        return '<button data-act="wv-part" data-id="' + p.id + '">' + esc(p.name.replace(' interval', '').replace(' segment', ' seg.').replace(' complex', '')) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="row"><button class="btn" data-act="wv-prev">Back</button><button class="btn primary" data-act="wv-next">Next</button></div></div>' +
+      '<div class="pump-cap wv-cap"><p class="v-title" id="wv-cap-t"></p><div id="wv-cap-p"></div></div></div>' +
+      '<div class="panel"><p class="eyebrow">Normal values at a glance</p><div class="table-wrap"><table class="grid basics"><thead><tr><th>Part</th><th>Represents</th><th>Normal</th></tr></thead><tbody>' +
+      rows.map(function (p) {
+        return '<tr><td><button class="chip" data-act="wv-part" data-id="' + p.id + '">' + esc(p.name) + '</button></td><td>' + esc(p.represents.split(':')[0].split('.')[0]) + wvStd(p.representsStd) + '</td><td>' + esc(p.normal) + wvStd(p.normalStd) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="muted small">Atrial repolarization has no wave of its own: it happens during the QRS and is hidden by it.' + STD + '</p></div>' +
+      '<div class="panel"><p class="eyebrow">QTc calculator' + STD + '</p><p>The QT shortens as the heart speeds up, so it is corrected for rate. Bazett: QTc = QT ÷ √(R-R in seconds).</p>' +
+      '<div class="row"><label>QT (ms) <input type="number" id="qtc-qt" inputmode="numeric" value="400" min="200" max="700" style="width:6em"></label>' +
+      '<label>Heart rate <input type="number" id="qtc-hr" inputmode="numeric" value="75" min="30" max="250" style="width:5em"></label></div>' +
+      '<p id="qtc-out"></p><p class="muted small">Long QT (slide 159): QTc greater than 450 ms in males, 460 ms in females. Quick check: a QT more than half the R-R is probably long.' + STD + '</p></div>' +
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>Name the highlighted part, measure the PR, QRS, QT and rate on drawn beats, and ' + WV.qa.length + ' questions on intervals and rhythm analysis.</p>' +
+      '<div class="row"><button class="btn primary" data-act="wv-cards">Flashcards</button><button class="btn" data-act="wv-quiz">Quiz me</button></div></div>' +
+      '<p class="std-note">From your Chapter 21 slides (ECG paper, relationship of the ECG to electrical activity, P wave, PR interval, QRS complex, ST segment, T wave, QT interval, long QT syndrome). * Standard ECG teaching the slides use but don\'t spell out, including most normal durations. The beats are drawn by the app to scale.</p>';
+  }
+
+  // ---------- Rhythm analysis view ----------
+  var AN = { id: 'nsr', seed: newSeed(), step: 0, shown: {} };
+  var AN_IDS = ECG.ids.slice();
+  function anNew(id) {
+    AN.id = id && R_BY[id] ? id : pick(AN_IDS);
+    AN.seed = newSeed(); AN.step = 0; AN.shown = {};
+  }
+  anNew();
+  // QRS complexes on the 6-second strip, for the six-second count.
+  function anCount() {
+    var g = ECG.generate(AN.id, AN.seed);
+    return ((g.spec && g.spec.events) || []).filter(function (e) { return /^(N|W|V|VT)$/.test(e.k) && e.t >= 0 && e.t < 6; }).length;
+  }
+  function anSet(n) {
+    var N = WV.steps.length;
+    AN.step = Math.max(0, Math.min(N - 1, n));
+    var root = $('.an-view');
+    if (!root) return;
+    var st = WV.steps[AN.step], r = R_BY[AN.id], shown = AN.shown[AN.step] || AN.step === 0, ans = '';
+    if (st.rule) {
+      ans = '<p class="eyebrow">This strip</p><p><strong>' + esc(r.rules[st.rule]) + '</strong></p>';
+      if (st.id === 'rate') {
+        var c = anCount();
+        ans += c ? '<p class="small">Six-second count: ' + c + ' QRS complexes × 10 = about ' + c * 10 + '/min.</p>' : '<p class="small">No distinct QRS complexes to count. Check the patient.</p>';
+      }
+    } else if (st.id === 'name') {
+      ans = '<p class="eyebrow">This strip</p><p><strong>' + esc(r.name) + '</strong></p><p>' + esc(r.look) + '</p>' + rulesHtml(r) +
+        '<div class="chips"><button class="chip" data-goto-rhythm="' + r.id + '">Causes and care: ' + esc(r.name) + '</button></div>';
+    }
+    $('#an-cap-t').textContent = st.name;
+    $('#an-cap-p').innerHTML = '<p class="muted small">' + esc(st.src) + '</p><p>' + esc(st.how) + '</p>' +
+      '<ul class="items">' + st.ask.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' +
+      (AN.step === 0 ? '<p class="small">This is a practice strip, so assume the patient has a pulse and go on to the strip.</p>' :
+        shown ? ans : '<button class="btn" data-act="an-reveal">' + (st.id === 'name' ? 'Show the rhythm' : 'Show the answer for this strip') + '</button>');
+    $all('[data-act="an-step"]', root).forEach(function (b) { b.setAttribute('aria-pressed', String(Number(b.dataset.n) === AN.step)); });
+  }
+  function anHtml() {
+    return '<div class="panel"><p class="eyebrow">Analyze a rhythm, step by step</p>' +
+      '<p class="pump-sum">Ask the same five questions of every strip, in the same order (slide 42): <strong>Is the patient sick? What is the rate? Are the QRS complexes normal? Are the P waves normal? How do the P waves relate to the QRS complexes?</strong> Work through this strip one step at a time, decide your answer, then check it.</p>' +
+      '<div id="an-strip">' + stripHtml(AN.id, AN.seed) + '</div>' +
+      '<div class="row spread"><div class="seg an-steps">' + WV.steps.map(function (st, i) { return '<button data-act="an-step" data-n="' + i + '" aria-label="' + esc(st.name) + '">' + (i === 0 ? '?' : i === WV.steps.length - 1 ? 'Name' : i) + '</button>'; }).join('') + '</div>' +
+      '<div class="row"><button class="btn" data-act="an-prev">Back</button><button class="btn primary" data-act="an-next">Next</button></div></div>' +
+      '<div class="pump-cap an-cap"><p class="v-title" id="an-cap-t"></p><div id="an-cap-p"></div></div>' +
+      '<div class="row"><button class="btn" data-act="an-new">New random strip</button><label>Or pick one <select id="an-pick"><option value="">Choose a rhythm…</option>' +
+      AN_IDS.map(function (id) { return '<option value="' + id + '">' + esc(R_BY[id].name) + '</option>'; }).join('') + '</select></label></div></div>' +
+      '<div class="panel"><p class="eyebrow">Interpret it: put the steps together' + STD + '</p>' +
+      '<p>Start with two questions: is the QRS <strong>narrow or wide</strong>, and is the rhythm <strong>regular or irregular</strong>? Then the rate and the P waves narrow it to one rhythm. The slides group rhythms by where they start (SA node, atria, AV junction, ventricles, conduction blocks); this sort gets you there from the strip.</p>' +
+      '<div class="core-grid">' + WV.sort.map(function (g) {
+        return '<div><h4>' + esc(g.name) + '</h4><ul class="items">' + g.items.map(function (x) {
+          return '<li>' + wvChips(x.ids) + ' <span class="small">' + esc(x.clue) + '</span></li>';
+        }).join('') + '</ul></div>';
+      }).join('') + '</div>' +
+      '<p class="small"><strong>Then ask what it means:</strong> is the patient stable? Is the rate too slow or too fast to perfuse? Is there a block that could get worse? Treat the patient, not the monitor (slide 54).</p></div>' +
+      '<div class="panel"><p class="eyebrow">Check yourself</p><p>Questions on the five steps, interpreting strips, and measuring intervals.</p>' +
+      '<div class="row"><button class="btn primary" data-act="wv-cards">Flashcards</button><button class="btn" data-act="wv-quiz">Quiz me</button><button class="btn" data-act="an-strips">Name strips</button></div></div>' +
+      '<p class="std-note">From your Chapter 21 slides (steps in rhythm analysis, analyzing a rhythm using the five steps, classification by rate and pacemaker site, use of algorithms). * The narrow/wide, regular/irregular sort is standard ECG teaching. Strips are drawn by the app.</p>';
+  }
+
   // ---------- 12-lead view ----------
   var TV = { pid: 'normal', seed: newSeed(), axis: null, extra: false, wall: null, show: true, lead: null };
   var STDN = ' <span class="std-mark" title="Standard ECG teaching; not spelled out on the slides">*</span>';
@@ -1737,6 +1905,8 @@
   }
 
   learnEl.addEventListener('change', function (e) {
+    if (e.target.id === 'an-pick') { anNew(e.target.value || null); return learnRender(); }
+    if (e.target.id === 'qtc-qt' || e.target.id === 'qtc-hr') return qtcCalc();
     if (e.target.id === 'bbb-pick' && e.target.value) { BV.pid = e.target.value; BV.seed = newSeed(); return bbbDraw(); }
     if (e.target.id === 'bbb-show') { BV.show = e.target.checked; return bbbDraw(); }
     if (e.target.id === 'tw-pick' && e.target.value) { TV.pid = e.target.value; TV.axis = null; TV.wall = null; TV.lead = null; TV.seed = newSeed(); TV.extra = !!TWP_BY[TV.pid].extra; return learnRender(); }
@@ -1814,6 +1984,25 @@
     if (t.dataset.act === 'pump-next') { pumpPlay(false); return pumpSet(pumpStep + 1); }
     if (t.dataset.act === 'pump-prev') { pumpPlay(false); return pumpSet(pumpStep - 1); }
     if (t.dataset.act === 'pump-play') return pumpPlay(!pumpTimer);
+    if (t.dataset.act === 'wv-part') return wvSet(t.dataset.id);
+    if (t.dataset.act === 'wv-next' || t.dataset.act === 'wv-prev') {
+      var wi = WV.parts.indexOf(WPART_BY[wvPart]) + (t.dataset.act === 'wv-next' ? 1 : -1);
+      return wvSet(WV.parts[(wi + WV.parts.length) % WV.parts.length].id);
+    }
+    if (t.dataset.act === 'an-step') return anSet(Number(t.dataset.n));
+    if (t.dataset.act === 'an-next') return anSet(AN.step + 1);
+    if (t.dataset.act === 'an-prev') return anSet(AN.step - 1);
+    if (t.dataset.act === 'an-new') { anNew(); return learnRender(); }
+    if (t.dataset.act === 'an-strips') return showTab('strips');
+    if (t.dataset.act === 'an-reveal') { AN.shown[AN.step] = true; return anSet(AN.step); }
+    if (t.dataset.act === 'wv-cards' || t.dataset.act === 'wv-quiz') {
+      if (t.dataset.act === 'wv-cards') {
+        Object.keys(S.cardDecks).forEach(function (k) { S.cardDecks[k] = k === 'waves'; });
+        save(); showTab('cards'); return cardsStart(buildCards());
+      }
+      Object.keys(S.quizTopics).forEach(function (k) { S.quizTopics[k] = k === 'waves'; });
+      save(); showTab('quiz'); return quizStart(buildQuiz());
+    }
     if (t.dataset.act === 'cx-next') { cxPlay(false); return cxSet(cxStep + 1); }
     if (t.dataset.act === 'cx-prev') { cxPlay(false); return cxSet(cxStep - 1); }
     if (t.dataset.act === 'cx-play') return cxPlay(!cxTimer);
@@ -1842,6 +2031,7 @@
   });
   learnEl.addEventListener('input', function (e) {
     if (e.target.id === 'learn-q') { learnQuery = e.target.value; learnFilter(); }
+    if (e.target.id === 'qtc-qt' || e.target.id === 'qtc-hr') qtcCalc();
   });
   // Draw a sample strip the first time a rhythm is opened.
   learnEl.addEventListener('toggle', function (e) {
@@ -1889,7 +2079,12 @@
         return m;
       }, { c: 0, n: 0 });
     }
-    var basics = qaTotals('basics'), pump = qaTotals('pump'), conduct = qaTotals('conduct'), twelve = qaTotals('twelve');
+    var basics = qaTotals('basics'), pump = qaTotals('pump'), conduct = qaTotals('conduct'), twelve = qaTotals('twelve'), waves = qaTotals('waves');
+    var wvRows = WV.parts.map(function (p) { return ['wv-p-' + p.id, 'Name it: ' + p.name]; })
+      .concat([['wv-m-pr', 'Measure: PR interval'], ['wv-m-qrs', 'Measure: QRS width'], ['wv-m-qt', 'Measure: QT interval'], ['wv-m-rate', 'Measure: rate from R-R']])
+      .filter(function (r) { return S.stats[r[0]]; })
+      .sort(function (a, b) { return (acc(a[0], 'waves') || 0) - (acc(b[0], 'waves') || 0); })
+      .map(function (r) { return '<tr><td>' + esc(r[1]) + '</td>' + cell(r[0], 'waves') + '</tr>'; }).join('');
     var twRows = TW.patterns.filter(function (p) { return S.stats['tw-' + p.id]; })
       .sort(function (a, b) { return (acc('tw-' + a.id, 'twelve') || 0) - (acc('tw-' + b.id, 'twelve') || 0); })
       .map(function (p) { return '<tr><td>' + esc(p.name) + '</td>' + cell('tw-' + p.id, 'twelve') + '</tr>'; }).join('');
@@ -1917,11 +2112,13 @@
       rhythmRows + '</tbody></table></div>' +
       (topicRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Condition or treatment</th><th style="text-align:center">Score</th></tr></thead><tbody>' + topicRows + '</tbody></table></div>' : '') +
       (twRows || axisRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead finding</th><th style="text-align:center">Named</th></tr></thead><tbody>' + twRows + axisRows + '</tbody></table></div>' : '') +
+      (wvRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Waves and intervals</th><th style="text-align:center">Score</th></tr></thead><tbody>' + wvRows + '</tbody></table></div>' : '') +
       (miRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead MI</th><th style="text-align:center">Score</th></tr></thead><tbody>' + miRows + '</tbody></table></div>' : '') +
       (bbbRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Bundle branch block</th><th style="text-align:center">Named</th></tr></thead><tbody>' + bbbRows + '</tbody></table></div>' : '') +
       (basics.n ? '<p class="muted">ECG basics: ' + Math.round(basics.c / basics.n * 100) + '% of ' + basics.n + ' answers right.</p>' : '') +
       (pump.n ? '<p class="muted">Na-K pump &amp; cell: ' + Math.round(pump.c / pump.n * 100) + '% of ' + pump.n + ' answers right.</p>' : '') +
       (conduct.n ? '<p class="muted">Conduction pathway: ' + Math.round(conduct.c / conduct.n * 100) + '% of ' + conduct.n + ' answers right.</p>' : '') +
+      (waves.n ? '<p class="muted">Intervals and rhythm analysis questions: ' + Math.round(waves.c / waves.n * 100) + '% of ' + waves.n + ' answers right.</p>' : '') +
       (miQa.n ? '<p class="muted">MI questions: ' + Math.round(miQa.c / miQa.n * 100) + '% of ' + miQa.n + ' answers right.</p>' : '') +
       (bbbQa.n ? '<p class="muted">Bundle branch block questions: ' + Math.round(bbbQa.c / bbbQa.n * 100) + '% of ' + bbbQa.n + ' answers right.</p>' : '') +
       (twelve.n ? '<p class="muted">12-lead questions: ' + Math.round(twelve.c / twelve.n * 100) + '% of ' + twelve.n + ' answers right.</p>' : '') +

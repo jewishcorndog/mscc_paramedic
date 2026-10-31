@@ -47,6 +47,9 @@
   --ob-ink: #4f6b17;
   --code: #b4471b;
   --code-ink: #a33d12;
+  --trauma: #2c5f86;
+  --trauma-ink: #24537a;
+  --triage-yellow: #c99a06;
   --o2-poor: #2f62c8;
   --o2-rich: #c8312f;
 
@@ -88,10 +91,13 @@
     --law-ink: #b0a6f2;
     --ap: #b8558a;
     --ap-ink: #f0a8cc;
-  --ob: #5f8a25;
-  --ob-ink: #b9d97a;
+    --ob: #5f8a25;
+    --ob-ink: #b9d97a;
     --code: #d0632f;
     --code-ink: #f4a77e;
+    --trauma: #4f86b8;
+    --trauma-ink: #9cc7ef;
+    --triage-yellow: #e8bf3a;
     --o2-poor: #6f9bf0;
     --o2-rich: #f07470;
     color-scheme: dark;
@@ -130,6 +136,9 @@
   --ob-ink: #b9d97a;
   --code: #d0632f;
   --code-ink: #f4a77e;
+  --trauma: #4f86b8;
+  --trauma-ink: #9cc7ef;
+  --triage-yellow: #e8bf3a;
   --o2-poor: #6f9bf0;
   --o2-rich: #f07470;
   color-scheme: dark;
@@ -766,6 +775,19 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .cx-w.done { stroke: var(--ink); }
 .cx-w.on { stroke: var(--heart); stroke-width: 3; }
 .cx-cap { min-height: 11em; }
+/* Waves, segments and intervals */
+.wv-svg { max-width: 560px; margin: 0 auto 8px; }
+.wv-band { fill: var(--heart); opacity: 0.12; }
+.wv-hl { fill: none; stroke: var(--heart); stroke-width: 0.7; stroke-linejoin: round; stroke-linecap: round; }
+.wv-br { fill: none; stroke: var(--heart); stroke-width: 0.3; }
+.wv-dot { fill: var(--heart); }
+.wv-lab { font: 700 2.1px var(--font-body); fill: var(--heart); text-anchor: middle; }
+.wv-letter { font: 600 1.8px var(--font-mono); fill: var(--muted); text-anchor: middle; }
+.wv-parts { flex-wrap: wrap; }
+.wv-cap, .an-cap { min-height: 9em; }
+.wv-cap p, .an-cap p { margin: 0 0 6px; }
+.an-steps button { min-width: 2.4em; }
+
 .cx-cap p { margin: 0 0 6px; }
 .cx-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0 0 8px; }
 .cx-facts dt { font-weight: 700; color: var(--muted); font-size: 0.85rem; }
@@ -1112,3 +1134,27 @@ button.tl-row:hover { background: var(--surface-2); }
 .apgar-total .btn { margin-left: auto; }
 .nrp-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
 .nrp-steps li { display: grid; gap: 2px; }
+
+/* ---------- Trauma ---------- */
+.label-band.trauma { --lab: var(--trauma); color: #fff; }
+.label-band.trauma .label-meta { color: rgba(255, 255, 255, 0.85); }
+.label-band.trauma.hidden-name { --lab: var(--surface-2); color: var(--ink); }
+.label-band.trauma.hidden-name .label-meta { color: var(--muted); }
+#subj-trauma .neg-el { border-top-color: var(--trauma); }
+#subj-trauma .neg-n { color: var(--trauma-ink); }
+.survey-chain { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.survey-chain .neg-el { flex-direction: column; gap: 4px; }
+.survey-chain .neg-name { font-size: 0.95rem; }
+.triage-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.triage-col { border: 1px solid var(--line); border-top: 5px solid var(--bad); border-radius: 8px; padding: 10px 12px; background: var(--surface-2); min-width: 0; }
+.triage-col.yellow { border-top-color: var(--triage-yellow); }
+.triage-col h4 { margin: 10px 0 4px; }
+.triage-title { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; line-height: 1.15; }
+.gcs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.gcs-grid h4 { margin: 0 0 6px; }
+.gcs-col { display: grid; gap: 6px; }
+.gcs-opt { padding: 8px 10px; font-size: 0.92rem; }
+.gcs-total { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 4px 0 0; }
+.gcs-total .score-big { margin: 0; }
+.hem-table td { white-space: normal; vertical-align: top; }
+@media (max-width: 760px) { .survey-chain { grid-template-columns: repeat(3, minmax(0, 1fr)); } .triage-grid, .gcs-grid { grid-template-columns: 1fr; } }
