@@ -6,6 +6,7 @@ require('../js/ecg.js');
 require('../js/twelve.js');
 require('../js/cardio-data.js');
 require('../js/real-strips.js');
+require('../js/waves.js');
 const G = globalThis.Grading;
 const ECG = globalThis.ECG;
 const R = globalThis.CARDIO_RHYTHMS;
@@ -355,6 +356,42 @@ t('bundle branch block page points at real patterns and draws the right shapes',
     const bp = TWG.generate('bifasc-p', seed);
     assert(netQrs(bp, 'I') < 0 && netQrs(bp, 'aVF') > 0, 'RBBB + posterior hemiblock should be right axis');
     assert(!/NaN|undefined/.test(TWG.closeup(TWG.generate('rbbb', seed), ['V1', 'V6'])));
+  }
+});
+
+t('intervals and rhythm analysis content is complete and links real rhythms', () => {
+  const W = globalThis.CARDIO_WAVES, WD = globalThis.WAVES;
+  const L = WD.landmarks().L;
+  assert.strictEqual(new Set(W.parts.map(p => p.id)).size, W.parts.length);
+  W.parts.forEach(p => {
+    ['name', 'kind', 'measured', 'represents', 'look', 'normal', 'src'].forEach(k => assert(p[k], p.id + ' ' + k));
+    assert(L[p.from] != null && L[p.to] != null && L[p.to] >= L[p.from], p.id + ' landmarks');
+    assert(p.abnormal.length, p.id);
+    p.abnormal.forEach(a => (a.ids || []).forEach(id => assert(ids.indexOf(id) !== -1, p.id + ' links ' + id)));
+    assert(!/NaN|undefined/.test(WD.svg(WD.DEFAULT, p)), p.id + ' svg');
+  });
+  W.steps.forEach(st => assert(st.name && st.how && st.ask.length && (st.rule === null || ['rate', 'rhythm', 'qrs', 'p', 'pr'].indexOf(st.rule) !== -1), st.id));
+  W.sort.forEach(g => g.items.forEach(x => x.ids.forEach(id => assert(ids.indexOf(id) !== -1, g.name + ' links ' + id))));
+  W.qa.forEach(b => assert(b.q && b.a && b.wrong.length >= 3 && b.wrong.indexOf(b.a) === -1, b.q));
+  // The textbook landmarks of the default beat.
+  assert(Math.abs(L.qrsOn - L.pOn - 0.16) < 1e-9 && Math.abs(L.j - L.qrsOn - 0.08) < 1e-9);
+  assert(L.tOn > L.j && L.restOn < L.pOn2, 'beat order');
+});
+
+t('measuring questions are answerable from the drawing', () => {
+  const WD = globalThis.WAVES;
+  for (let seed = 1; seed < 400; seed++) {
+    WD.kinds.forEach(kind => {
+      const m = WD.measure(kind, seed), L = WD.landmarks(m.params).L, ans = m.options[m.answer];
+      assert(m.answer >= 0 && m.options.length >= 3 && new Set(m.options).size === m.options.length, kind);
+      const span = { pr: L.qrsOn - L.pOn, qrs: L.j - L.qrsOn, qt: L.tOff - L.qrsOn, rate: L.r2 - L.r1 }[kind];
+      if (kind === 'rate') assert.strictEqual(ans, Math.round(60 / span) + '/min', kind + ' ' + seed);
+      else assert.strictEqual(ans, span.toFixed(2) + ' s', kind + ' ' + seed);
+      // Every boundary sits on a small-box line (or halfway, for odd QRS widths).
+      [L.pOn, L.qrsOn, L.tOff].forEach(tt => assert(Math.abs(tt / 0.02 - Math.round(tt / 0.02)) < 1e-6, kind + ' grid'));
+      assert(L.tOff < L.pOn2, kind + ' T before next P ' + seed);
+      assert(!/NaN|undefined/.test(WD.svg(m.params, { id: kind, from: 'pOn', to: 'qrsOn', name: 'x' })));
+    });
   }
 });
 
