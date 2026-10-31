@@ -152,6 +152,8 @@ t('sodium-potassium pump content is complete', () => {
   assert.strictEqual(P.calcium.length, 4);
   P.calcium.forEach(st => st.show.forEach(k => assert(['caIn', 'srOut', 'srIn', 'cloud', 'bound', 'contract', 'ncx'].includes(k), st.title + ' ' + k)));
   assert(P.calciumJobs.length === 2 && P.calciumClinical.length >= 4);
+  assert(P.mixups.length >= 4 && P.mixups.every(m => m.q && m.a));
+  assert(P.cellTypes.rows.every(r => r.v.length === P.cellTypes.cols.length), 'cell type row width');
 });
 
 t('block strips show their criteria inside the strip', () => {
@@ -252,7 +254,7 @@ t('12-lead axis follows leads I, aVF and II', () => {
       if (ii) assert.strictEqual(sgn('II'), ii, 'lead II at ' + ax);
     }
   });
-  ['lah', 'bifasc'].forEach(id => { const g = TWG.generate(id, 3); assert(netQrs(g, 'I') > 0 && netQrs(g, 'aVF') < 0 && netQrs(g, 'II') < 0, id + ' should be pathologic left'); });
+  ['lah', 'bifasc', 'trifasc'].forEach(id => { const g = TWG.generate(id, 3); assert(netQrs(g, 'I') > 0 && netQrs(g, 'aVF') < 0 && netQrs(g, 'II') < 0, id + ' should be pathologic left'); });
   const lph = TWG.generate('lph', 3);
   assert(netQrs(lph, 'I') < 0 && netQrs(lph, 'aVF') > 0, 'lph should be right axis');
 });
@@ -271,7 +273,7 @@ t('12-lead ST changes show in the named leads', () => {
 t('12-lead widths and intervals fit the criteria', () => {
   for (let seed = 1; seed < 10; seed++) {
     assert(TWG.generate('normal', seed).qrs < 0.12);
-    ['rbbb', 'lbbb', 'bifasc'].forEach(id => assert(TWG.generate(id, seed).qrs >= 0.12, id + ' QRS too narrow'));
+    ['rbbb', 'lbbb', 'bifasc', 'bifasc-p', 'trifasc'].forEach(id => assert(TWG.generate(id, seed).qrs >= 0.12, id + ' QRS too narrow'));
     assert(TWG.generate('wpw', seed).pr < 0.12, 'WPW PR not short');
     assert(TWG.generate('long-qt', seed).qtc > 0.47, 'long QT not long');
     assert(TWG.generate('normal', seed).qtc < 0.46, 'normal QTc too long');
@@ -323,6 +325,36 @@ t('STEMI stages change over time', () => {
     assert(tWave(hy, 'V3') > 0.45, 'hyperacute T not tall');
     assert(tWave(inv, 'V3') < -0.1, 'T not inverted in the inverted stage');
     assert(tWave(acute, 'V3') > 0.2, 'acute T not upright');
+  }
+});
+
+t('bundle branch block page points at real patterns and draws the right shapes', () => {
+  const BBB = globalThis.CARDIO_BBB, pids = new Set(TW.patterns.map(p => p.id));
+  BBB.pids.forEach(id => assert(pids.has(id), 'unknown pattern ' + id));
+  BBB.turn.concat(BBB.combos.map(c => ({ id: c.pid }))).forEach(x => assert(pids.has(x.id), 'unknown pattern ' + x.id));
+  assert(BBB.qa.length >= 25);
+  BBB.qa.forEach(b => assert(b.q && b.a && b.wrong.length >= 3 && !b.wrong.includes(b.a) && new Set(b.wrong).size === b.wrong.length, b.q));
+  // Voltage at the end of the QRS (the last 20 ms before the J point), against the PR baseline.
+  function terminal(id, L, seed) {
+    const g = TWG.generate(id, seed), s = g.leads[L];
+    const e = s.map((_, i) => TWG.leads.reduce((m, k) => m + Math.abs(g.leads[k][i]), 0));
+    const top = Math.max(...e.slice(0, 2500)), pk = [];
+    for (let i = 100; i < e.length - 200; i++) if (e[i] > 0.5 * top && e[i] >= e[i - 1] && e[i] > e[i + 1] && (!pk.length || i - pk[pk.length - 1] > 150)) pk.push(i);
+    // Peaks land on the biggest wave; use the generator's QRS timing from there.
+    return pk.reduce((m, i) => m + s[i + Math.round((g.qrs - 0.07) * 500)] - s[i - 60], 0) / pk.length;
+  }
+  for (let seed = 1; seed < 6; seed++) {
+    ['rbbb', 'bifasc', 'bifasc-p', 'trifasc'].forEach(id => {
+      assert(terminal(id, 'V1', seed) > 0.2, id + ': V1 should end upright (R\')');
+      assert(terminal(id, 'I', seed) < -0.1, id + ': I should end in a wide S');
+    });
+    assert(netQrs(TWG.generate('lbbb', seed), 'V1') < 0, 'LBBB V1 should point down');
+    const ir = TWG.generate('irbbb', seed);
+    assert(ir.qrs >= 0.1 && ir.qrs < 0.12, 'incomplete RBBB QRS ' + ir.qrs);
+    assert(TWG.generate('trifasc', seed).pr > 0.2, 'trifascicular PR not long');
+    const bp = TWG.generate('bifasc-p', seed);
+    assert(netQrs(bp, 'I') < 0 && netQrs(bp, 'aVF') > 0, 'RBBB + posterior hemiblock should be right axis');
+    assert(!/NaN|undefined/.test(TWG.closeup(TWG.generate('rbbb', seed), ['V1', 'V6'])));
   }
 });
 

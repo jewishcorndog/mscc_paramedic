@@ -815,12 +815,42 @@ window.CARDIO_PUMP = {
     { title: 'Trigger calcium enters', text: 'During the plateau (phase 2), the slow channels let a small amount of Ca²⁺ into the cell. On its own it is not enough to squeeze the muscle.', show: ['caIn'], std: true },
     { title: 'Stored calcium floods out', text: 'That trigger calcium opens release channels on the sarcoplasmic reticulum, the cell\'s calcium store, and a much larger burst of Ca²⁺ pours into the cell (calcium-induced calcium release).', show: ['srOut', 'cloud'], std: true },
     { title: 'Calcium switches on the squeeze', text: 'Ca²⁺ binds troponin on the thin actin filaments. That uncovers the binding sites, the myosin heads grab the actin and pull, and the sarcomere shortens. More calcium inside means a stronger contraction.', show: ['cloud', 'bound', 'contract'], std: true },
-    { title: 'Calcium removed, muscle relaxes', text: 'Pumps spend ATP to pull Ca²⁺ back into the sarcoplasmic reticulum, and the sodium-calcium exchanger pushes it out of the cell using the sodium gradient the Na-K pump built. Troponin lets go and the muscle relaxes, ready for the next beat.', show: ['srIn', 'ncx'], std: true }
+    { title: 'Calcium removed, muscle relaxes', text: 'Pumps spend ATP to pull Ca²⁺ back into the sarcoplasmic reticulum, and the sodium-calcium exchanger pushes the rest out of the cell, trading 3 Na⁺ in for each Ca²⁺ out, using the sodium gradient the Na-K pump built. Most of the calcium goes back into storage. Troponin lets go and the muscle relaxes, ready for the next beat.', show: ['srIn', 'ncx'], std: true }
   ],
   // Calcium's two jobs, and where they show up in patients.
   calciumJobs: [
     { name: 'Electrical job', text: 'In the SA and AV nodes there are few fast sodium channels, so the upstroke (phase 0) is carried mostly by Ca²⁺ through the slow channels. In muscle cells, calcium holds up the plateau, which makes the refractory period long enough that the heart can\'t be driven into a sustained cramp.', std: true },
     { name: 'Contractile job', text: 'Calcium turns the electrical signal into a squeeze. Without enough of it you can have electrical activity on the monitor and a weak or absent pulse.', std: true }
+  ],
+  // Pacemaker cells vs. other excitable cells. cols: pacemaker, cardiac muscle, nerve and skeletal muscle.
+  cellTypes: {
+    cols: ['Pacemaker cells (SA and AV nodes)', 'Cardiac muscle cells (atria, ventricles) and Purkinje fibers', 'Nerve and skeletal muscle cells'],
+    rows: [
+      { name: 'Resting voltage', v: ['About –60 mV, and never truly at rest', 'About –90 mV, steady', 'About –70 to –90 mV, steady'] },
+      { name: 'Phase 4', v: ['Sodium slowly leaks in through special leak channels (the "funny current"), so the cell drifts up to threshold on its own', 'Flat in atrial and ventricular muscle, which wait for an impulse from a neighboring cell. Purkinje fibers drift up very slowly, so they only fire if nothing above them does', 'Flat. Waits for a nerve signal'] },
+      { name: 'Upstroke (phase 0)', v: ['Ca²⁺ through the slow channels. Their fast Na⁺ channels stay switched off because the cell never gets negative enough to reset them', 'Na⁺ through the fast channels', 'Na⁺ through the fast channels'] },
+      { name: 'Shape', v: ['Slow, gently sloped upstroke, no plateau', 'Sharp upstroke, then a long calcium plateau (about 250 ms)', 'Sharp spike, over in a few milliseconds'] },
+      { name: 'Repolarization', v: ['K⁺ out', 'K⁺ out', 'K⁺ out'] },
+      { name: 'Fires on its own?', v: ['Yes (automaticity). SA node 60–100/min, AV junction 40–60/min', 'Only Purkinje fibers, as a backup at 20–40/min. Atrial and ventricular muscle do not', 'No'] },
+      { name: 'Slowed or blocked by', v: ['Calcium channel blockers, beta blockers, digoxin, acetylcholine (vagal tone)', 'Sodium channel blockers (lidocaine, amiodarone in part)', 'Sodium channel blockers (lidocaine as a local anesthetic)'] },
+      { name: 'On the ECG', v: ['Sets the rate. Shows as the P wave start (SA) and the PR delay (AV)', 'P wave (atria), QRS (ventricles), ST and T (plateau and repolarization)', 'Not seen, except as muscle artifact'] }
+    ],
+    // Who has what, across the whole body.
+    ladder: [
+      { name: 'Na-K pump and a negative resting charge', who: 'Every cell in the body' },
+      { name: 'Depolarization and repolarization (action potentials)', who: 'Only excitable cells: nerve and muscle' },
+      { name: 'Firing on their own (automaticity)', who: 'Only pacemaker cells' }
+    ],
+    note: 'Smooth muscle (blood vessels, gut, airways) also depolarizes mostly with calcium. That is why calcium channel blockers lower blood pressure: they relax the muscle in artery walls.'
+  },
+  // Common mix-ups, from study questions.
+  mixups: [
+    { q: 'Does sodium coming in make the cell lose calcium and relax?', a: 'No. Sodium rushing in through the fast channels (phase 0, QRS) is only the electrical trigger. Calcium coming in during the plateau (phase 2) causes the contraction. Relaxation comes from removing calcium, during repolarization (phase 3, T wave).' },
+    { q: 'When does the muscle relax: during repolarization or before depolarization?', a: 'Both, in order. It starts relaxing during repolarization as calcium is pumped away, and is fully relaxed during phase 4 (the baseline between the T wave and the next P wave). That relaxed time is diastole, when the ventricles fill.' },
+    { q: 'Is the sodium-calcium exchanger the fast sodium channel?', a: 'No. The fast sodium channel is an open pore that lets only sodium flood in for about a millisecond to fire the cell. The exchanger is a separate swap that trades 3 Na⁺ in for 1 Ca²⁺ out, slowly and steadily, to clear calcium so the muscle can relax.' },
+    { q: 'Do all cells depolarize?', a: 'No. Every cell has Na-K pumps and a negative resting charge, but only nerve and muscle cells fire action potentials. A skin or liver cell just stays at rest.' },
+    { q: 'Do pacemaker cells use the fast sodium channel?', a: 'Not in the SA and AV nodes: their upstroke is calcium. They still use sodium, though, as a slow leak in phase 4 that drifts them to threshold. Purkinje fibers, the lowest backup pacemakers, do use fast sodium channels.' },
+    { q: 'Is calcium pumped out together with sodium?', a: 'No, they move in opposite directions. Sodium flows in through the exchanger, and that inflow pushes calcium out. The Na-K pump later removes that sodium. Most calcium is not removed from the cell at all; it is pumped back into the sarcoplasmic reticulum using ATP.' }
   ],
   calciumClinical: [
     { name: 'Calcium channel blockers', text: 'Slow the slow channels, so the SA node fires slower, the AV node conducts slower, and the heart squeezes less hard. That is why diltiazem treats SVT and why an overdose looks like bradycardia, heart block and hypotension.' },
@@ -916,6 +946,17 @@ window.CARDIO_PUMP = {
     { q: 'Cardiac glycosides strengthen contraction by…', a: 'Blocking ionic pumps, which indirectly increases calcium to the contractile proteins', wrong: ['Opening fast sodium channels', 'Blocking calcium channels', 'Stimulating beta receptors'] },
     { q: 'Besides calcium, what else does the drug deck list for calcium channel blocker overdose?', a: 'Glucagon and atropine', wrong: ['Adenosine and diltiazem', 'Digoxin and magnesium', 'Amiodarone and lidocaine'] },
     { q: 'Hypocalcemia on the ECG?', a: 'Long QT interval', wrong: ['Short QT interval', 'Peaked T waves', 'Delta waves'], std: true },
+    { q: 'The sodium-calcium exchanger moves…', a: '3 Na⁺ into the cell for every 1 Ca²⁺ out', wrong: ['3 Na⁺ out for every 2 K⁺ in', '1 Na⁺ and 1 Ca²⁺ out together', 'Only sodium, during phase 0'], std: true },
+    { q: 'What powers the sodium-calcium exchanger?', a: 'The sodium gradient built by the Na-K pump', wrong: ['ATP split by the exchanger itself', 'The fast sodium channels opening', 'Calcium released from storage'], std: true },
+    { q: 'Where does most calcium go when the heart muscle relaxes?', a: 'Back into the sarcoplasmic reticulum', wrong: ['Out of the cell with potassium', 'Into the fast sodium channels', 'It stays bound to troponin'], std: true },
+    { q: 'In the cardiac cycle, the muscle is fully relaxed during…', a: 'Phase 4, between the T wave and the next P wave', wrong: ['Phase 0, during the QRS', 'Phase 2, during the ST segment', 'The moment sodium channels open'], std: true },
+    { q: 'What makes cardiac muscle relax?', a: 'Calcium being removed from inside the cell', wrong: ['Sodium rushing in through fast channels', 'Calcium entering through slow channels', 'The fast sodium channels opening'], std: true },
+    { q: 'Which cells have a sodium-potassium pump?', a: 'Every cell in the body', wrong: ['Only nerve and muscle cells', 'Only cardiac cells', 'Only pacemaker cells'], std: true },
+    { q: 'Which cells can depolarize and fire an action potential?', a: 'Only excitable cells: nerve and muscle', wrong: ['Every cell in the body', 'Only pacemaker cells', 'Only cardiac muscle'] },
+    { q: 'Resting voltage of an SA node cell?', a: 'About –60 mV, drifting upward', wrong: ['About –90 mV, steady', '0 mV', 'About +20 mV'], std: true },
+    { q: 'Why don\'t SA node cells use fast sodium channels for phase 0?', a: 'They never get negative enough to reset them, so calcium carries the upstroke', wrong: ['They have no Na-K pump', 'Potassium blocks them', 'Calcium channel blockers remove them'], std: true },
+    { q: 'Which pacemaker site uses fast sodium channels for its upstroke?', a: 'Purkinje fibers', wrong: ['SA node', 'AV node', 'Internodal pathways'], std: true },
+    { q: 'How long is a ventricular muscle action potential compared with a nerve\'s?', a: 'Much longer (about 250 ms vs. a few ms) because of the calcium plateau', wrong: ['About the same', 'Shorter, because there is no plateau', 'Longer, because sodium channels stay open'], std: true },
     { q: 'What lowers ionized calcium in the field?', a: 'Hyperventilation and alkalosis', wrong: ['Acidosis and hypoventilation', 'Dehydration', 'High potassium'], std: true }
   ]
 };
@@ -1067,6 +1108,14 @@ window.CARDIO_TWELVE = {
       std: true },
     { id: 'bifasc', name: 'Bifascicular block (RBBB + anterior hemiblock)', group: 'conduction', leads: ['V1', 'I', 'II', 'aVF'], recip: [], topic: 'bbb',
       find: ['RBBB pattern: wide QRS, RSR\' in V1', 'Plus left axis deviation (anterior hemiblock)', 'Two of the three fascicles blocked: only the posterior fascicle is left', 'Higher risk of complete heart block; have pacing ready'] },
+    { id: 'bifasc-p', name: 'Bifascicular block (RBBB + posterior hemiblock)', group: 'conduction', leads: ['V1', 'I', 'aVF'], recip: [], topic: 'bbb',
+      find: ['RBBB pattern: wide QRS, RSR\' in V1', 'Plus right axis deviation: QRS down in I, up in aVF (posterior hemiblock)', 'Only the anterior fascicle is left', 'Less common than RBBB with anterior hemiblock; same risk of complete heart block'],
+      std: true },
+    { id: 'trifasc', name: 'Trifascicular block (RBBB + hemiblock + first-degree AV block)', group: 'conduction', leads: ['V1', 'I', 'II', 'aVF'], recip: [], topic: 'bbb',
+      find: ['RBBB pattern: wide QRS, RSR\' in V1', 'Plus left axis deviation (anterior hemiblock)', 'Plus a PR interval over 0.20 s (first-degree AV block)', 'Signals risk of complete heart block (slides): pads on, pacing ready'] },
+    { id: 'irbbb', name: 'Incomplete right bundle branch block', group: 'conduction', leads: ['V1', 'V2'], recip: [], topic: 'bbb',
+      find: ['RBBB shape (rSR\' in V1) but the QRS is 0.10 to 0.12 s, not 0.12 s or wider', 'Small slurred S in I and V6', 'Often a normal variant in young, healthy patients', 'Does not meet the slides\' first criterion (QRS ≥ 0.12 s), so it is not called a full BBB'],
+      std: true },
     { id: 'wpw', name: 'Wolff-Parkinson-White (WPW)', group: 'cantmiss', leads: ['I', 'II', 'aVL', 'V4', 'V5', 'V6'], recip: [], rhythm: 'wpw',
       find: ['Short PR interval (under 0.12 s)', 'Delta wave: slurred upstroke at the start of the QRS', 'Slightly wide QRS', 'Avoid AV nodal blockers (adenosine, beta blockers, calcium channel blockers) in WPW tachycardia; treat wide-complex tachycardia as VT'] },
     { id: 'brugada', name: 'Brugada syndrome', group: 'cantmiss', leads: ['V1', 'V2'], recip: [], topic: 'brugada',
@@ -1256,5 +1305,102 @@ window.CARDIO_MI = {
     { q: 'Primary goal for a STEMI patient in the field?', a: 'Prompt recognition and triage to the appropriate hospital', wrong: ['Waiting for a second 12-lead at the scene', 'Giving fibrinolytics without a checklist', 'Treating only the pain'] },
     { q: 'Infarct size depends on…', a: 'The tissue\'s needs, collateral circulation, and time to restore flow', wrong: ['Only the patient\'s age', 'The paper speed', 'Which lead shows it first'] },
     { q: 'Early deaths after MI are usually from…', a: 'Lethal dysrhythmias, pump failure, or tissue rupture', wrong: ['Pericarditis', 'Hypertension', 'Stroke only'] }
+  ]
+};
+
+// Bundle branch blocks and fascicular blocks (slides 133–137, 142–144 and 123; outline on
+// ventricular conduction disturbances). pids are drawn 12-lead patterns in CARDIO_TWELVE.
+// std: true marks standard ECG teaching the slides use but don't spell out.
+window.CARDIO_BBB = {
+  // Findings for "Which conduction block is this?", in the order the page lists them.
+  pids: ['normal', 'rbbb', 'irbbb', 'lbbb', 'lah', 'lph', 'bifasc', 'bifasc-p', 'trifasc'],
+  // Answers for the V1/V6 "turn signal" close-up.
+  turn: [
+    { id: 'rbbb', name: 'Right bundle branch block', v1: 'Up: RSR\' ("rabbit ears")', v6: 'Wide, slurred S' },
+    { id: 'lbbb', name: 'Left bundle branch block', v1: 'Down: deep, wide QS or rS', v6: 'Broad, notched R, no q' },
+    { id: 'normal', name: 'Normal conduction', v1: 'Small r, deep S, narrow', v6: 'Small q, tall narrow R' },
+    { id: 'irbbb', name: 'Incomplete right bundle branch block', v1: 'rSR\' but QRS 0.10–0.12 s', v6: 'Small slurred S' }
+  ],
+  // How to spot one, in order.
+  steps: [
+    { name: 'Is it supraventricular?', text: 'P waves before each QRS (or AF or flutter). A wide QRS from the ventricles (PVCs, VT, idioventricular, paced) is not a bundle branch block.' },
+    { name: 'Is the QRS 0.12 s or wider?', text: 'Three small boxes or more. These two are the slides\' criteria for any bundle branch block.' },
+    { name: 'Turn signal in V1', text: 'Find the end of the QRS in V1. Points up = right bundle; points down = left bundle, like pushing a car\'s turn signal lever up for right and down for left.', std: true },
+    { name: 'Confirm in I and V6', text: 'RBBB: wide, slurred S wave. LBBB: broad, notched R with no small q in front.', std: true },
+    { name: 'Check the axis', text: 'Left axis (up in I, down in II and aVF) = anterior hemiblock. Right axis (down in I, up in aVF) = posterior hemiblock. With RBBB that makes a bifascicular block.' },
+    { name: 'Check the PR', text: 'RBBB + hemiblock + PR over 0.20 s is a trifascicular block, a warning of complete heart block.' }
+  ],
+  // RBBB vs LBBB side by side.
+  compare: [
+    { name: 'Where the block is', r: 'Right bundle branch: the right ventricle fires late, through the muscle', l: 'Left bundle branch (before it splits): the left ventricle fires late, and the septum fires right to left' },
+    { name: 'V1', r: 'RSR\' ("rabbit ears"), mostly upright at the end', l: 'Deep, wide QS or rS, mostly negative' },
+    { name: 'I, aVL, V6', r: 'Wide, slurred S wave', l: 'Broad, notched or slurred R; no septal q', std: true },
+    { name: 'ST and T', r: 'T inverted in V1–V3, opposite the R\'', l: 'ST and T opposite the main QRS in every lead (discordant)', std: true },
+    { name: 'Axis', r: 'Usually normal; left or right axis means a hemiblock too', l: 'Normal or left', std: true },
+    { name: 'Hides an MI?', r: 'No: ST elevation can still be read', l: 'Yes: use Sgarbossa criteria', std: true },
+    { name: 'How serious', r: 'Can be normal in healthy people; new RBBB can come with an anterior or septal MI, an RV infarct or a PE', l: 'Almost always means heart disease; new LBBB with chest pain may be ACS', std: true }
+  ],
+  // The three fascicles and what blocking them does.
+  fascicles: [
+    { name: 'Right bundle branch', text: 'Runs down the right side of the septum toward the apex and spreads through the right ventricle. Block: RBBB.' },
+    { name: 'Left anterior fascicle', text: 'Long and thin, one blood supply (LAD). Blocks easily. Block: anterior hemiblock, left axis deviation, QRS not wide.' },
+    { name: 'Left posterior fascicle', text: 'Thick, double blood supply (left and right coronary arteries). Rarely blocks. Block: posterior hemiblock, right axis deviation, QRS not wide.' }
+  ],
+  // Combinations of blocked fascicles.
+  combos: [
+    { name: 'Unifascicular', text: 'One fascicle: RBBB, anterior hemiblock or posterior hemiblock.', pid: 'rbbb' },
+    { name: 'LBBB', text: 'Blocks the left bundle before it splits, so both left fascicles at once.', pid: 'lbbb', std: true },
+    { name: 'Bifascicular', text: 'Two of the three: usually RBBB with an anterior or posterior hemiblock.', pid: 'bifasc' },
+    { name: 'Trifascicular', text: 'First-degree AV block with RBBB and a hemiblock (slide 123): risk of complete heart block.', pid: 'trifasc' }
+  ],
+  // Why finding a BBB matters on a call.
+  matters: [
+    { name: 'Complete heart block risk', text: 'BBBs and hemiblocks mark patients at higher risk of severe bradycardia and third-degree block (slide 133). The more fascicles blocked, the higher the risk.' },
+    { name: 'Third-degree block with wide QRS', text: 'An ominous sign: the escape rhythm is ventricular. Atropine often fails; pacing is the definitive treatment.' },
+    { name: 'New BBB with an MI', text: 'The septum carries the bundle branches. A septal or anterior MI (LAD) can cause new BBB and type II or third-degree block.' },
+    { name: 'LBBB hides the MI', text: 'Its ST and T are already abnormal, so read it with Sgarbossa criteria. Paced rhythms look the same way.' },
+    { name: 'Wide-complex tachycardia', text: 'SVT with a BBB looks like VT. When in doubt, treat a wide-complex tachycardia as VT.', std: true },
+    { name: 'Toxic and metabolic causes', text: 'Hyperkalemia and sodium channel blocker toxins (for example tricyclic antidepressants) widen the QRS and can look like a BBB.' }
+  ],
+  // Field care from the slides.
+  care: [
+    'No specific treatment for a persistent bundle branch block or hemiblock',
+    'New-onset LBBB with chest pain may be ACS; in the field you often can\'t tell new from old',
+    'LBBB meeting Sgarbossa criteria: treated as a STEMI equivalent in many EMS systems',
+    'Bifascicular or trifascicular block with syncope, bradycardia or an MI: pads on and be ready to pace',
+    'Get and transmit a 12-lead; compare with an old ECG when the patient has one',
+    'Look for the cause: anterior MI, cardiomyopathy, hypertrophy, aortic stenosis, myocarditis, hyperkalemia, digoxin, sodium channel blockers'
+  ],
+  qa: [
+    { q: 'Two criteria for calling a bundle branch block?', a: 'QRS 0.12 s or wider, from a supraventricular rhythm', wrong: ['QRS 0.10 s or wider, from any rhythm', 'Short PR and a delta wave', 'Left axis and a narrow QRS'] },
+    { q: 'Where do bundle branch blocks and hemiblocks occur?', a: 'Below the bifurcation of the bundle of His', wrong: ['In the SA node', 'In the AV node', 'In Bachmann\'s bundle'] },
+    { q: 'The right bundle branch spreads through…', a: 'The right ventricle, toward the apex', wrong: ['The left ventricle', 'Both atria', 'The AV node'] },
+    { q: 'The left bundle branch divides into…', a: 'Anterior and posterior fascicles', wrong: ['Right and left fascicles', 'Three internodal pathways', 'Septal and lateral bundles'] },
+    { q: 'How many fascicles carry the impulse to the ventricles?', a: 'Three: right bundle, left anterior and left posterior fascicles', wrong: ['Two: right and left bundles', 'One: the bundle of His', 'Four: two per ventricle'], std: true },
+    { q: 'Turn signal rule: QRS ends pointing up in V1 means…', a: 'Right bundle branch block', wrong: ['Left bundle branch block', 'Anterior hemiblock', 'Posterior MI'], std: true },
+    { q: 'Turn signal rule: QRS points down in V1 (wide QS) means…', a: 'Left bundle branch block', wrong: ['Right bundle branch block', 'Posterior hemiblock', 'Normal conduction'], std: true },
+    { q: 'RSR\' ("rabbit ears") in V1 with a wide QRS is…', a: 'Right bundle branch block', wrong: ['Left bundle branch block', 'WPW', 'Brugada syndrome'] },
+    { q: 'RBBB in I and V6 shows…', a: 'A wide, slurred S wave', wrong: ['A deep, wide QS', 'A delta wave', 'No change at all'], std: true },
+    { q: 'LBBB in I, aVL and V6 shows…', a: 'A broad, notched R with no septal q', wrong: ['RSR\' rabbit ears', 'A wide, slurred S wave', 'A deep Q wave and ST elevation'], std: true },
+    { q: 'In LBBB the ST and T normally go…', a: 'Opposite the main QRS (discordant)', wrong: ['The same way as the QRS', 'Flat in every lead', 'Up in every lead'], std: true },
+    { q: 'Why is an MI hard to read through LBBB?', a: 'Its ST and T are already abnormal; use Sgarbossa criteria', wrong: ['The QRS is too narrow', 'LBBB rules out MI', 'Lead II disappears'], std: true },
+    { q: 'Which block is more often a normal variant in a healthy person?', a: 'RBBB', wrong: ['LBBB', 'Trifascicular block', 'Third-degree block with wide QRS'], std: true },
+    { q: 'Incomplete RBBB has the RBBB shape with a QRS of…', a: '0.10 to 0.12 s', wrong: ['0.12 s or wider', 'Under 0.08 s', '0.20 s or wider'], std: true },
+    { q: 'Anterior hemiblock shows…', a: 'Left axis deviation with a narrow QRS', wrong: ['Right axis deviation', 'RSR\' in V1', 'A QRS of 0.12 s or more'] },
+    { q: 'Posterior hemiblock shows…', a: 'Right axis deviation with a narrow QRS', wrong: ['Left axis deviation', 'A short PR', 'Diffuse ST elevation'], std: true },
+    { q: 'Why is the anterior fascicle blocked more often?', a: 'It is long and thin with one blood supply (LAD)', wrong: ['It is thick with two blood supplies', 'It has no blood supply', 'It sits in the right atrium'] },
+    { q: 'Why is posterior hemiblock rare?', a: 'The posterior fascicle is thick with a double blood supply', wrong: ['It is long and thin', 'It is supplied only by the LAD', 'It is outside the heart'] },
+    { q: 'Bifascicular block generally means…', a: 'RBBB plus an anterior or posterior hemiblock', wrong: ['LBBB plus first-degree block', 'Two separate MIs', 'Both atria blocked'] },
+    { q: 'RBBB with left axis deviation is…', a: 'Bifascicular block (RBBB + anterior hemiblock)', wrong: ['LBBB', 'Posterior hemiblock', 'Incomplete RBBB'] },
+    { q: 'RBBB + hemiblock + first-degree AV block is called…', a: 'Trifascicular block', wrong: ['Bifascicular block', 'Wenckebach', 'Incomplete LBBB'] },
+    { q: 'Trifascicular block signals a risk of…', a: 'Complete heart block', wrong: ['Atrial fibrillation', 'Pericarditis', 'Long QT'] },
+    { q: 'Detecting a BBB helps you identify patients at risk of…', a: 'Severe bradycardia and third-degree heart block', wrong: ['Hypertensive crisis', 'Atrial flutter', 'Hyperkalemia'] },
+    { q: 'Treatment for a persistent (old) bundle branch block?', a: 'None specific', wrong: ['Amiodarone', 'Synchronized cardioversion', 'Adenosine'] },
+    { q: 'New-onset LBBB with chest pain may be…', a: 'Acute coronary syndrome', wrong: ['Pericarditis', 'A normal variant', 'Hypoglycemia'] },
+    { q: 'A septal or anterior MI can cause new BBB because…', a: 'The septum carries the bundle branches (LAD territory)', wrong: ['The SA node sits in the septum', 'The RCA supplies the bundle branches only', 'The atria are injured'], std: true },
+    { q: 'Common causes of bundle branch block (slides)?', a: 'Cardiomyopathy, hypertrophy, anterior MI, aortic stenosis, myocarditis, hyperkalemia, digoxin, sodium channel blockers', wrong: ['Asthma, COPD and pneumonia', 'Hypoglycemia and stroke', 'Dehydration and fever only'] },
+    { q: 'A wide-complex tachycardia in a patient with a known BBB should be treated as…', a: 'VT, when in doubt', wrong: ['SVT, always', 'Sinus tachycardia', 'Atrial flutter'], std: true },
+    { q: 'Third-degree block with a wide QRS is…', a: 'An ominous sign: prepare to pace', wrong: ['Benign: no treatment', 'Best treated with adenosine', 'A sign of WPW'] },
+    { q: 'Patient with bifascicular block and syncope: what do you get ready?', a: 'Pads on and transcutaneous pacing', wrong: ['Synchronized cardioversion', 'Adenosine', 'Nothing: it is benign'], std: true }
   ]
 };

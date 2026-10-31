@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has seven
+Study app for the Motlow State Community College paramedic program. It has eight
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -34,6 +34,10 @@ subjects, switched at the top of the page:
   list: negligence, electrolytes and the Na-K pump, patient assessment, acid-base balance,
   blood flow through the heart, the conduction system and intrinsic rates, intubation
   DOPE, med math and drip rates, rhythm/ECG/12-lead analysis, and COPD and asthma.
+- **ACLS** (Code Box): the adult algorithms of the 2025 AHA Guidelines for CPR and ECC
+  (cardiac arrest, post-arrest care, bradycardia, tachycardia, ACS, stroke) and megacodes
+  to run as team leader. Where the Tennessee EMS protocol guidelines (2022-23) differ from
+  AHA, the app says so and tags it **TN**.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -61,10 +65,10 @@ Progress is saved in the browser you use (localStorage), so it stays on that dev
 | Tab | What it does |
 | --- | --- |
 | **Strips** | Name the rhythm on a 6-second lead II strip. Pick which rhythms to drill (by group or one at a time, or your weakest 6) and answer by multiple choice, from the full list, or by typing the name. Choose drawn strips, real recorded strips, or a mix. After each strip you see the rules for interpretation and what the rhythm you picked would have looked like. |
-| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, the conduction pathway, the 12-lead (drawn 12-leads to name, plus walls, axis and blocks), and 12-lead MI (find the MI, its stage, STEMI vs NSTE-ACS). |
-| **Quiz** | Multiple-choice questions mixed from the same topics, including "What does this 12-lead show?", "What is the axis?", "Where is this MI?" and "What stage is this STEMI?" on drawn 12-leads. |
-| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page starts with where the heart's electricity comes from and walks one beat through a membrane diagram (channels opening, ions moving, inside voltage on a meter: rest, threshold, depolarization, plateau, repolarization, reset), then steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows calcium's electrical and contractile jobs (trigger calcium, release from the sarcoplasmic reticulum, troponin, relaxation) with calcium channel blockers, calcium for hyperkalemia, digoxin and calcium levels at the bedside, shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. The **12-lead** page draws a full 12-lead for any of 18 findings (normal, STEMI by wall including RV and posterior, pericarditis, RBBB, LBBB, hemiblocks, bifascicular block, and the five can't-miss ECGs), tints the leads to look at and the reciprocal leads, can add V4R and V7–V9, and covers which leads see which wall, axis by leads I, aVF and II, the five-step infarct analysis and chest lead placement. Its **MI** tab draws any STEMI (including anterolateral, inferolateral and inferoposterior) and steps it through hyperacute T waves, ST elevation, Q waves, T inversion and old MI, and covers ischemia vs injury vs infarction, STEMI criteria, wall-artery-complication table, NSTE-ACS (ischemic ST depression, Wellens), old MI, STEMI equivalents (posterior, Sgarbossa, RV infarct), mimics and field care. |
-| **Stats** | Accuracy per rhythm (strips, rules, care), per 12-lead finding, per MI question type and per condition, with a button to drill your weakest strips. |
+| **Cards** | Flashcard decks: strips, rhythm rules (rate, rhythm, QRS, P waves, PR), rhythm causes and care, conditions, treatments and devices, ECG basics, the sodium-potassium pump and cardiac cell, the conduction pathway, the 12-lead (drawn 12-leads to name, plus walls, axis and blocks), 12-lead MI (find the MI, its stage, STEMI vs NSTE-ACS), and bundle branch blocks (drawn blocks to name, the V1/V6 turn signal, fascicles, risk and care). |
+| **Quiz** | Multiple-choice questions mixed from the same topics, including "What does this 12-lead show?", "What is the axis?", "Where is this MI?" "What stage is this STEMI?", "Which conduction block is this?" and V1/V6 turn-signal questions on drawn 12-leads. |
+| **Learn** | Reference for every rhythm (with a sample strip you can redraw, or a real one), condition, treatment and ECG fact. The **Na-K pump** page starts with where the heart's electricity comes from and walks one beat through a membrane diagram (channels opening, ions moving, inside voltage on a meter: rest, threshold, depolarization, plateau, repolarization, reset), then steps through the pump cycle (3 Na⁺ out, 2 K⁺ in), shows calcium's electrical and contractile jobs (trigger calcium, release from the sarcoplasmic reticulum, troponin, relaxation) with calcium channel blockers, calcium for hyperkalemia, digoxin and calcium levels at the bedside, shows the action potential phases 0 to 4 for muscle and pacemaker cells with the refractory periods, and ties electrolytes, digoxin and channel blockers to the rhythms they cause. The **Conduction** page walks a beat from the SA node through the atria, AV node, bundle of His, bundle branches and Purkinje fibers on a heart diagram, lights up the matching part of the ECG, and lists each pacemaker's intrinsic rate, where each block happens and how ectopic beats start. The **12-lead** page draws a full 12-lead for any of 18 findings (normal, STEMI by wall including RV and posterior, pericarditis, RBBB, LBBB, hemiblocks, bifascicular block, and the five can't-miss ECGs), tints the leads to look at and the reciprocal leads, can add V4R and V7–V9, and covers which leads see which wall, axis by leads I, aVF and II, the five-step infarct analysis and chest lead placement. Its **MI** tab draws any STEMI (including anterolateral, inferolateral and inferoposterior) and steps it through hyperacute T waves, ST elevation, Q waves, T inversion and old MI, and covers ischemia vs injury vs infarction, STEMI criteria, wall-artery-complication table, NSTE-ACS (ischemic ST depression, Wellens), old MI, STEMI equivalents (posterior, Sgarbossa, RV infarct), mimics and field care. Its **Bundle branch blocks** tab draws any of 9 conduction findings (normal, RBBB, incomplete RBBB, LBBB, anterior and posterior hemiblock, RBBB with either hemiblock, and trifascicular block), walks the six-step read (supraventricular? QRS ≥ 0.12 s? turn signal in V1, confirm in I and V6, axis, PR), shows normal, RBBB and LBBB side by side in V1 and V6, and covers RBBB vs LBBB, incomplete RBBB, the three fascicles and how many are blocked, why a BBB matters on a call (complete heart block risk, new BBB with MI, LBBB hiding an MI, wide-complex tachycardia) and field care, from slides 123, 133–137 and 142–144. |
+| **Stats** | Accuracy per rhythm (strips, rules, care), per 12-lead finding, per MI question type, per bundle branch block and per condition, with a button to drill your weakest strips. |
 
 ## A&P modes
 
@@ -89,7 +93,7 @@ the axis in every lead at once. ST elevation and depression, the extra R or Q wa
 Brugada and ARVD shapes are added per lead from each finding's textbook leads. Wide screens
 get the standard 3 × 4 printout with a 10-second lead II strip; phones get the same leads in
 two columns (limb leads, chest leads) so nothing needs side scrolling. A STEMI can also be drawn at any stage (hyperacute, acute, evolving with Q waves,
-T inversion, old). 12-lead content lives in `CARDIO_TWELVE` and MI content in `CARDIO_MI` in
+T inversion, old). 12-lead content lives in `CARDIO_TWELVE`, MI content in `CARDIO_MI`, and bundle branch block content in `CARDIO_BBB` in
 `js/cardio-data.js`, from slides 30–31, 131–161 and 170–177 and the chapter outline; wall and artery maps,
 lead placement and a few criteria are standard ECG teaching and are marked that way.
 
@@ -162,6 +166,24 @@ OB content lives in `js/ob-data.js`.
 Midterm content lives in `js/midterm-data.js`. The handout strips are in `img/midterm/`
 (strips 1 to 30 were generated with 12LeadTrainer.com).
 
+## ACLS modes
+
+| Tab | What it does |
+| --- | --- |
+| **Algorithms** | Each 2025 AHA adult algorithm as a flowchart (steps, decision points and their branches) with its doses and details, plus pages for drugs and energies, the H's and T's, and a Tennessee vs AHA table. TN notes sit on the steps they change; items that changed in 2025 are tagged **2025**. |
+| **Megacode** | Eight cases run like a megacode testing station: a dispatch, then stages with a code clock, vitals and a fresh monitor strip. Call the rhythm, then choose the next action; the rhythm changes as the case goes (VF to ROSC, heart block to pacing to VF, stable to unstable SVT, PEA from hyperkalemia, VT, STEMI, torsades, stroke). Feedback after each decision, or only at the end (test mode), and a debrief with the key points and the decisions to review. |
+| **Cards** | Flashcard decks: drugs and energies, key facts, and Tennessee vs AHA. |
+| **Quiz** | Multiple choice: key facts, doses and energies, "here is the monitor, what next?" strips, and single decisions pulled from the megacodes. |
+| **Stats** | Accuracy per algorithm, best score per megacode, and a button to quiz your weakest algorithm. |
+
+ACLS content lives in `js/acls-data.js`. Doses and energies follow the 2025 AHA algorithm
+cards; a few standard ACLS teaching points the cards do not print (pacing technique, signs of
+ROSC, diltiazem dose, unsynchronized shocks for polymorphic VT) are marked *. Tennessee notes
+come from the *Tennessee EMS ALS/BLS Blended Protocol Guidelines 2022-23* (SOP numbers given)
+and the class pharmacology deck. The biggest differences: adenosine starts at 12 mg in TN
+(AHA 6 mg), arrest epinephrine is 0.5 mg in VF/pVT and asystole (AHA 1 mg), atropine starts at
+0.5 mg (AHA 1 mg), and TN gives fixed cardioversion energies (50, 100, 200 J).
+
 ## Running it
 
 It's a static site with no build step:
@@ -182,7 +204,7 @@ It's a static site with no build step:
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
 `node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js`,
-`node tests/ob.test.js` and `node tests/midterm.test.js`.
+`node tests/ob.test.js`, `node tests/midterm.test.js` and `node tests/acls.test.js`.
 
 ## Updating the drug list
 
