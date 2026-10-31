@@ -1,6 +1,6 @@
 # Drug Box: paramedic study app
 
-Study app for the Motlow State Community College paramedic program. It has seven
+Study app for the Motlow State Community College paramedic program. It has eight
 subjects, switched at the top of the page:
 
 - **Pharmacology** (Drug Box), built from the class deck *Paramedic Pharmacology – TN
@@ -32,6 +32,11 @@ subjects, switched at the top of the page:
   (cardiac arrest, post-arrest care, bradycardia, tachycardia, ACS, stroke) and megacodes
   to run as team leader. Where the Tennessee EMS protocol guidelines (2022-23) differ from
   AHA, the app says so and tags it **TN**.
+- **Trauma** (Trauma Box), built from Chapters 35–42 of *Sanders' Paramedic Textbook*
+  (6th ed.), the lecture slides: trauma overview and mechanism of injury, bleeding and
+  soft-tissue trauma, burns, head/face/neck, spine, chest, abdominal and orthopaedic trauma.
+  It opens on the primary survey and the 2021 field triage guideline. Anything beyond the
+  slides is marked * and Tennessee notes are tagged **TN**.
 
 Always check against your current protocols and your instructor. This app is a
 study aid, not a clinical reference.
@@ -167,6 +172,24 @@ and the class pharmacology deck. The biggest differences: adenosine starts at 12
 (AHA 6 mg), arrest epinephrine is 0.5 mg in VF/pVT and asystole (AHA 1 mg), atropine starts at
 0.5 mg (AHA 1 mg), and TN gives fixed cardioversion energies (50, 100, 200 J).
 
+## Trauma modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | The **Primary survey** page: XABCDE as a chain with what to look for and do at each step, the slides' nine components of trauma assessment, a "what do you fix first?" drill, the 2021 National Guideline for the Field Triage of Injured Patients (red and yellow criteria) with a "where does this patient go?" drill, a tap-to-score Glasgow Coma Scale, and the ATLS classes of hemorrhage. Also 56 topics in 12 areas (one or two per chapter), a searchable glossary, every scenario with its answer, and a **TN notes** table. |
+| **Cards** | Flashcard decks: terms (term to meaning, meaning to term, or mixed), key facts, scenarios, and the key points of each topic. Pick which areas (chapters) to include. |
+| **Quiz** | Multiple choice on terms, key facts, scenarios, and the what-first and triage drills, with the reason after each scenario. |
+| **Stats** | Accuracy per area for terms, facts and scenarios, with a button to study your weakest area. |
+
+Trauma content lives in `js/trauma-data.js`. Material the slides do not cover (XABCDE order,
+classes of hemorrhage, GCS item scores, Beck's triad, needle decompression sites, the rule of
+nines percentages, special populations) is marked *. Where the slides and standard teaching
+disagree, the app follows the slides and says so: Parkland is 2–4 mL × kg × %TBSA, moderate TBI
+is GCS 9–13, and amputated parts go in a sealed bag floated in ice water. Two slide slips are
+noted rather than copied: epidural bleeds come from the middle meningeal artery (the slide says
+middle cerebral), and Kehr's sign is classically left shoulder pain from the spleen. The trauma
+slides have no Tennessee content; TN notes come from the class pharmacology deck.
+
 ## Running it
 
 It's a static site with no build step:
@@ -187,7 +210,7 @@ It's a static site with no build step:
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
 `node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js`,
-`node tests/midterm.test.js` and `node tests/acls.test.js`.
+`node tests/midterm.test.js`, `node tests/acls.test.js` and `node tests/trauma.test.js`.
 
 ## Updating the drug list
 

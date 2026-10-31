@@ -1,5 +1,5 @@
 /* Cardiology: rhythm strips, flashcards, quiz, reference and stats over
-   window.CARDIO_* data, plus the subject switch (Pharmacology, Cardiology, A&P, Patho, Legal, Midterm, ACLS). */
+   window.CARDIO_* data, plus the subject switch (Pharmacology, Cardiology, A&P, Patho, Legal, Midterm, ACLS, Trauma). */
 (function () {
   'use strict';
 
@@ -238,7 +238,8 @@
     legal: ['Law Box', 'Motlow State Paramedic · Ch. 6 Medical & Legal', 'Paramedic Law Box'],
     ap: ['Body Box', 'Motlow State Paramedic · Ch. 10 Human Systems', 'Paramedic Body Box'],
     midterm: ['Midterm Box', 'Motlow State Paramedic · Midterm review', 'Paramedic Midterm Review'],
-    acls: ['Code Box', 'Motlow State Paramedic · ACLS (AHA 2025, TN notes)', 'Paramedic Code Box']
+    acls: ['Code Box', 'Motlow State Paramedic · ACLS (AHA 2025, TN notes)', 'Paramedic Code Box'],
+    trauma: ['Trauma Box', 'Motlow State Paramedic · Ch. 35–42 Trauma', 'Paramedic Trauma Box']
   };
   var subject = 'pharm';
   try { subject = localStorage.getItem(SUBJ_KEY) || 'pharm'; } catch (e) { /* storage blocked */ }
@@ -258,6 +259,7 @@
     if (subject === 'legal') window.LegalBox.show();
     if (subject === 'midterm') window.MidtermBox.show();
     if (subject === 'acls') window.AclsBox.show();
+    if (subject === 'trauma') window.TraumaBox.show();
   }
   $all('[data-subject]').forEach(function (b) {
     b.addEventListener('click', function () { setSubject(b.dataset.subject); window.scrollTo(0, 0); });
