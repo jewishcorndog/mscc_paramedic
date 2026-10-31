@@ -760,6 +760,19 @@ table.grid.basics td { white-space: normal; vertical-align: top; }
 .cx-w.done { stroke: var(--ink); }
 .cx-w.on { stroke: var(--heart); stroke-width: 3; }
 .cx-cap { min-height: 11em; }
+/* Waves, segments and intervals */
+.wv-svg { max-width: 560px; margin: 0 auto 8px; }
+.wv-band { fill: var(--heart); opacity: 0.12; }
+.wv-hl { fill: none; stroke: var(--heart); stroke-width: 0.7; stroke-linejoin: round; stroke-linecap: round; }
+.wv-br { fill: none; stroke: var(--heart); stroke-width: 0.3; }
+.wv-dot { fill: var(--heart); }
+.wv-lab { font: 700 2.1px var(--font-body); fill: var(--heart); text-anchor: middle; }
+.wv-letter { font: 600 1.8px var(--font-mono); fill: var(--muted); text-anchor: middle; }
+.wv-parts { flex-wrap: wrap; }
+.wv-cap, .an-cap { min-height: 9em; }
+.wv-cap p, .an-cap p { margin: 0 0 6px; }
+.an-steps button { min-width: 2.4em; }
+
 .cx-cap p { margin: 0 0 6px; }
 .cx-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0 0 8px; }
 .cx-facts dt { font-weight: 700; color: var(--muted); font-size: 0.85rem; }

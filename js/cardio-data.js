@@ -1404,3 +1404,273 @@ window.CARDIO_BBB = {
     { q: 'Patient with bifascicular block and syncope: what do you get ready?', a: 'Pads on and transcutaneous pacing', wrong: ['Synchronized cardioversion', 'Adenosine', 'Nothing: it is benign'], std: true }
   ]
 };
+
+// Waves, segments and intervals of one beat, and how to analyze and interpret a rhythm
+// (slides 33–48 and 158–159; outline on ECG basics). Each part's from/to are drawing keys in
+// js/waves.js. Fields ending in Std, and abnormal items with std: true, are standard ECG
+// teaching the slides use but don't spell out; the app stars them.
+window.CARDIO_WAVES = {
+  parts: [
+    {
+      id: 'p', name: 'P wave', kind: 'Wave', from: 'pOn', to: 'pOff', src: 'Slides 34–35',
+      measured: 'Begins with the first positive deflection from the baseline and ends where the wave returns to the baseline.',
+      represents: 'Atrial depolarization: the SA node fires and the impulse spreads through both atria.',
+      look: 'The first upward deflection. Usually rounded, and it comes before the QRS.',
+      normal: '0.08–0.11 s wide, under 2.5 mm tall, upright in lead II', normalStd: true, boxes: '2 to 3 small boxes',
+      abnormal: [
+        { find: 'Absent, with a wavy baseline', means: 'Atrial fibrillation', ids: ['afib'] },
+        { find: 'Sawtooth (F waves)', means: 'Atrial flutter', ids: ['flutter'] },
+        { find: 'Inverted in lead II, hidden in the QRS, or just after it', means: 'Junctional rhythm (the impulse goes back up into the atria)', ids: ['pjc', 'junctional-escape', 'accel-junctional'], std: true },
+        { find: 'Shape changes from beat to beat', means: 'Wandering pacemaker', ids: ['wap'] },
+        { find: 'Early, and shaped differently from the sinus P waves', means: 'Premature atrial complex', ids: ['pac'] },
+        { find: 'More P waves than QRS complexes', means: 'AV block: some atrial impulses are not reaching the ventricles', ids: ['avb-2-1', 'avb-2-2', 'avb-3'] },
+        { find: 'Tall and peaked (2.5 mm or more)', means: 'Right atrial enlargement (P pulmonale), as in COPD or pulmonary hypertension', std: true },
+        { find: 'Wide (over 0.11 s) and notched', means: 'Left atrial enlargement (P mitrale), as in mitral valve disease', std: true }
+      ]
+    },
+    {
+      id: 'pr', name: 'PR interval', kind: 'Interval', from: 'pOn', to: 'qrsOn', src: 'Slides 36, 47',
+      measured: 'From the beginning of the P wave to the beginning of the QRS complex.',
+      represents: 'The time for the impulse to travel through the atria and the AV node, up to the instant the ventricles start to depolarize.',
+      look: 'It should be the same length beat after beat (constant across the tracing).',
+      normal: '0.12–0.20 s, and constant', normalStd: true, boxes: '3 to 5 small boxes (no more than 1 large box)',
+      abnormal: [
+        { find: 'Longer than 0.20 s, the same every beat', means: 'First-degree AV block', ids: ['avb-1'] },
+        { find: 'Gets longer each beat until a P wave has no QRS', means: 'Second-degree AV block type I (Wenckebach)', ids: ['avb-2-1'] },
+        { find: 'Constant, then a P wave with no QRS', means: 'Second-degree AV block type II', ids: ['avb-2-2'] },
+        { find: 'No pattern: P waves and QRS complexes march separately', means: 'Third-degree (complete) AV block', ids: ['avb-3'] },
+        { find: 'Shorter than 0.12 s with a slurred upstroke (delta wave)', means: 'Pre-excitation through an accessory pathway (WPW)', ids: ['wpw'] },
+        { find: 'Shorter than 0.12 s with an inverted P', means: 'Junctional rhythm: the impulse starts near the AV node', ids: ['pjc', 'junctional-escape'], std: true },
+        { find: 'Varies from beat to beat', means: 'Wandering pacemaker (the pacemaker site keeps moving)', ids: ['wap'] }
+      ]
+    },
+    {
+      id: 'prseg', name: 'PR segment', kind: 'Segment', from: 'pOff', to: 'qrsOn', src: 'Slide 36 (inside the PR interval)', srcStd: true,
+      measured: 'From the end of the P wave to the beginning of the QRS: the flat part of the PR interval.',
+      represents: 'The pause at the AV node, which holds the impulse so the atria can finish emptying into the ventricles.',
+      look: 'Flat, on the baseline. It is one of the baselines you measure ST changes against.',
+      normal: 'Flat on the baseline; about 0.04–0.10 s', normalStd: true, boxes: '1 to 2½ small boxes',
+      abnormal: [
+        { find: 'Long', means: 'Most of a long PR is a long PR segment: slow conduction through the AV node (first-degree AV block)', ids: ['avb-1'], std: true },
+        { find: 'Depressed below the baseline, in many leads', means: 'Pericarditis (often with diffuse ST elevation)', std: true },
+        { find: 'Hard to see, buried in the upstroke of the QRS', means: 'Pre-excitation (WPW): the delta wave starts the QRS early', ids: ['wpw'], std: true }
+      ]
+    },
+    {
+      id: 'qrs', name: 'QRS complex', kind: 'Wave', from: 'qrsOn', to: 'j', src: 'Slide 37',
+      measured: 'Begins where the first wave of the complex leaves the baseline; ends where the last wave begins to flatten, at, above or below the baseline.',
+      represents: 'Ventricular depolarization. Q is the first downward deflection, R the first upward one, S the downward one after R.',
+      look: 'It follows the P wave. Judge its width first: narrow or wide?',
+      normal: 'Less than 0.12 s', boxes: 'Fewer than 3 small boxes',
+      abnormal: [
+        { find: '0.12 s or wider, from a supraventricular rhythm', means: 'Bundle branch block (the impulse travels slowly through muscle on one side)', std: false },
+        { find: 'Wide and bizarre, with no P wave before it', means: 'The beat started in the ventricles: PVC, ventricular tachycardia, idioventricular rhythm', ids: ['pvc', 'vt', 'idioventricular'] },
+        { find: 'Wide, right after a pacer spike', means: 'Ventricular paced beat (capture)', ids: ['paced'] },
+        { find: 'Wide, with a slurred start (delta wave) and short PR', means: 'WPW', ids: ['wpw'] },
+        { find: 'Wide, with peaked T waves or a sick patient on certain drugs', means: 'Hyperkalemia or sodium channel blocker toxicity (tricyclics); slide 134 lists both as causes of bundle branch block' },
+        { find: 'Low voltage, or height that alternates beat to beat', means: 'Cardiac tamponade (low-voltage QRS, electrical alternans)' },
+        { find: 'Q wave 0.04 s or wider, or a third of the R wave height', means: 'Pathologic Q wave: an old or evolving MI', std: true }
+      ]
+    },
+    {
+      id: 'j', name: 'J point', kind: 'Point', from: 'j', to: 'j', src: 'Slide 38',
+      measured: 'The point where the ST segment takes off from the QRS complex.',
+      represents: 'The end of ventricular depolarization and the start of repolarization.',
+      look: 'The corner where the QRS stops and the ST segment starts. ST elevation or depression is measured here.',
+      normal: 'Level with the baseline (TP or PR segment)', boxes: '',
+      abnormal: [
+        { find: 'Above the baseline', means: 'ST elevation: see ST segment', std: true },
+        { find: 'A hump right at the J point (Osborn or J wave)', means: 'Hypothermia', std: true }
+      ]
+    },
+    {
+      id: 'st', name: 'ST segment', kind: 'Segment', from: 'j', to: 'tOn', src: 'Slides 38, 146',
+      measured: 'From the J point to the start of the T wave.',
+      represents: 'The early phase of repolarization of the right and left ventricles.',
+      look: 'In a normal ECG it starts at the baseline and has a slight upward slope.',
+      normal: 'On the baseline (within about 1 mm), slight upward slope', normalStd: true, boxes: '',
+      abnormal: [
+        { find: 'Elevated 1 mm or more in two or more leads that look at the same wall', means: 'Injury: STEMI', std: true },
+        { find: 'Depressed (flat or down-sloping)', means: 'Ischemia: NSTE-ACS (unstable angina or NSTEMI), or reciprocal change from a STEMI on the opposite wall' },
+        { find: 'Depressed in V1–V3 with tall R waves', means: 'Posterior MI (mirror image)' },
+        { find: 'Elevated in almost every lead, often with PR depression', means: 'Pericarditis', std: true },
+        { find: 'Coved elevation over 2 mm in V1 and V2', means: 'Brugada syndrome' },
+        { find: 'Scooped ("hockey stick") depression', means: 'Digoxin effect', std: true }
+      ]
+    },
+    {
+      id: 't', name: 'T wave', kind: 'Wave', from: 'tOn', to: 'tOff', src: 'Slides 24, 39',
+      measured: 'Begins at the first deviation from the ST segment and ends where it returns to the baseline.',
+      represents: 'Repolarization of the ventricular muscle cells, during the last part of ventricular contraction.',
+      look: 'Usually slightly rounded and asymmetrical (slower going up than coming down). May be above or below the baseline.',
+      normal: 'Upright in lead II, same direction as the QRS; under 5 mm tall in limb leads, under 10 mm in chest leads', normalStd: true, boxes: '',
+      abnormal: [
+        { find: 'A beat lands on the downslope (R on T)', means: 'The downslope is the relative refractory period. A PVC here can start VT or VF', ids: ['pvc', 'vf'] },
+        { find: 'Tall, narrow and peaked (tented)', means: 'Hyperkalemia', std: true },
+        { find: 'Tall and broad in the leads over one wall', means: 'Hyperacute T waves: the earliest sign of a STEMI', std: true },
+        { find: 'Inverted (in leads where it is normally upright)', means: 'Ischemia, an evolving MI, or a bundle branch block or ventricular beat (where it is expected)', std: true },
+        { find: 'Flat, with a U wave', means: 'Hypokalemia', std: true }
+      ]
+    },
+    {
+      id: 'qt', name: 'QT interval', kind: 'Interval', from: 'qrsOn', to: 'tOff', src: 'Slides 40, 158–159',
+      measured: 'From the beginning of the QRS complex to the end of the T wave.',
+      represents: 'The whole time from the start of ventricular depolarization to the end of ventricular repolarization.',
+      look: 'It shortens as the heart speeds up, so it is corrected for rate (QTc). Quick check: a QT less than half the R-R interval is usually normal.',
+      normal: 'Usually less than 440 ms (varies with heart rate). Long QT: QTc greater than 450 ms in males, 460 ms in females', boxes: 'About 9 to 11 small boxes at a heart rate of 60–100',
+      abnormal: [
+        { find: 'Long (QTc over 450 ms in males, 460 ms in females)', means: 'Long QT syndrome (inherited) or a drug or electrolyte cause. Risk of syncope, seizure, torsades de pointes and sudden death', ids: ['torsades'] },
+        { find: 'Long, from a drug', means: 'Antidysrhythmics (amiodarone, procainamide, sotalol), some antipsychotics and antiemetics (haloperidol, droperidol, ondansetron), some antibiotics', std: true },
+        { find: 'Long, from electrolytes', means: 'Low potassium, low magnesium or low calcium', std: true },
+        { find: 'Short', means: 'High calcium or digoxin effect', std: true }
+      ]
+    },
+    {
+      id: 'u', name: 'U wave', kind: 'Wave', from: 'uOn', to: 'uOff', src: 'Slide 34',
+      measured: 'A small wave after the T wave, when it is seen.',
+      represents: 'Late repolarization (thought to be the Purkinje fibers or papillary muscles).', representsStd: true,
+      look: 'Sometimes seen. Small, rounded and in the same direction as the T wave.',
+      normal: 'Small or absent; under a third of the T wave height', normalStd: true, boxes: '',
+      abnormal: [
+        { find: 'Prominent, often with a flat T wave', means: 'Hypokalemia', std: true },
+        { find: 'Inverted', means: 'Ischemia or left ventricular strain', std: true }
+      ]
+    },
+    {
+      id: 'tp', name: 'TP segment', kind: 'Segment', from: 'restOn', to: 'pOn2', src: 'Slide 34 (isoelectric line)', srcStd: true,
+      measured: 'From the end of the T (or U) wave to the start of the next P wave.',
+      represents: 'Electrical rest: the cells are repolarized and recharged (phase 4) and the heart fills.',
+      look: 'Flat. It is the true baseline (isoelectric line). All waveforms begin and end there.',
+      normal: 'Flat; it gets shorter as the heart rate rises', normalStd: true, boxes: '',
+      abnormal: [
+        { find: 'Gone at fast rates (the P wave sits on the T wave)', means: 'Tachycardia such as SVT; use the PR segment as the baseline instead', ids: ['svt', 'sinus-tach'], std: true },
+        { find: 'Wavy or sawtooth instead of flat', means: 'Atrial fibrillation or flutter, or artifact', ids: ['afib', 'flutter'] }
+      ]
+    },
+    {
+      id: 'rr', name: 'R-R interval', kind: 'Interval', from: 'r1', to: 'r2', src: 'Slides 43–44, 48, 65',
+      measured: 'From one R wave to the next. The P-P interval, from one P wave to the next, is the same thing for the atria.',
+      represents: 'One whole cardiac cycle. Its length sets the ventricular rate; the P-P interval sets the atrial rate.',
+      look: 'Compare the R-R intervals across the strip to judge the rhythm: regular, regularly irregular or irregularly irregular.',
+      normal: 'Regular (R-R the same within about 0.12 s); 0.60–1.00 s at a rate of 60–100', normalStd: true, boxes: 'Rate = 1,500 ÷ small boxes, or 300 ÷ large boxes',
+      abnormal: [
+        { find: 'Irregularly irregular, no P waves', means: 'Atrial fibrillation', ids: ['afib'] },
+        { find: 'Speeds up and slows with breathing (P-P varies)', means: 'Sinus arrhythmia', ids: ['sinus-arrhythmia'] },
+        { find: 'Regular, with an early beat now and then', means: 'Premature complexes (PAC, PJC, PVC)', ids: ['pac', 'pjc', 'pvc'] },
+        { find: 'A pause that is not a multiple of the R-R', means: 'Sinus arrest', ids: ['sinus-arrest'] },
+        { find: 'Grouped beats with pauses', means: 'Second-degree AV block (look at the P waves)', ids: ['avb-2-1', 'avb-2-2'] }
+      ]
+    }
+  ],
+
+  // The five questions (slide 42) and the five steps (slides 43–48), in the order to do them.
+  steps: [
+    { id: 'sick', name: 'Is the patient sick?', src: 'Slide 42', rule: null,
+      how: 'Look at the patient before the monitor: mental status, skin, pulse, blood pressure, breathing. Treat the patient, not the monitor.',
+      ask: ['Are they stable or unstable?', 'Does the rhythm match how they look (a pulse with this rhythm)?'] },
+    { id: 'rate', name: 'Step 1: Analyze the rate', src: 'Slide 43', rule: 'rate',
+      how: 'Six-second count: count the QRS complexes on a 6-second strip and multiply by 10 (works for irregular rhythms). R-R method: 1,500 ÷ small boxes between two R waves. Triplicate: count large boxes from one R wave to the next: 300, 150, 100, 75, 60, 50.',
+      ask: ['Slow (under 60), normal (60–100) or fast (over 100)?', 'Are the atrial and ventricular rates the same?'] },
+    { id: 'rhythm', name: 'Step 2: Analyze the rhythm', src: 'Slide 44', rule: 'rhythm',
+      how: 'Compare the R-R intervals across the tracing. Calipers or the edge of a sheet of paper help: mark two R waves and walk them along the strip.',
+      ask: ['Regular, or irregular?', 'If irregular: an occasional early beat, a pattern (grouped beats), or irregularly irregular?'] },
+    { id: 'qrs', name: 'Step 3: Analyze the QRS complex', src: 'Slide 45', rule: 'qrs',
+      how: 'Measure from where the QRS leaves the baseline to where it flattens. Under 0.12 s (3 small boxes) is narrow; 0.12 s or more is wide.',
+      ask: ['Narrow (the impulse came down the normal pathway, from above the ventricles) or wide (from the ventricles, or a block)?', 'Do all the QRS complexes look alike?'] },
+    { id: 'p', name: 'Step 4: Analyze the P waves', src: 'Slide 46', rule: 'p',
+      how: 'To call a rhythm sinus: a P wave before every QRS (1:1), shaped like it came from the SA node (upright in lead II).',
+      ask: ['Are P waves present?', 'Are they at regular intervals?', 'Is there one P for each QRS, and a QRS after each P?', 'Upright or inverted?', 'Do they all look alike?'] },
+    { id: 'pr', name: 'Step 5: Analyze the PR interval', src: 'Slide 47', rule: 'pr',
+      how: 'Measure from the start of the P wave to the start of the QRS. It shows conduction through the atria and AV node, and should be constant across the tracing.',
+      ask: ['0.12–0.20 s?', 'The same every beat, getting longer, or no relationship at all?'] },
+    { id: 'name', name: 'Put it together', src: 'Slides 48, 51–53', rule: null,
+      how: 'Name the rhythm by where it starts (SA node, atria, AV junction, ventricles) and what the rate and conduction are doing. Normal: each P wave is followed by a normal QRS and T wave, every QRS has a P before it, the PR is normal and the R-R is regular.',
+      ask: ['Where is the pacemaker?', 'Is there a block?', 'Then: what does it mean for this patient, and what do you do?'] }
+  ],
+
+  // Putting the five steps together: narrow or wide, regular or irregular, then rate and P waves.
+  // All std: the slides classify by pacemaker site (slides 51–53), not by this sort.
+  sort: [
+    { name: 'Narrow and regular', items: [
+      { ids: ['sinus-brady'], clue: 'Under 60, normal P before every QRS' },
+      { ids: ['nsr'], clue: '60–100, normal P before every QRS' },
+      { ids: ['sinus-tach'], clue: '100–150, normal P waves' },
+      { ids: ['svt'], clue: '150–250, P waves hidden or hard to see' },
+      { ids: ['flutter'], clue: 'Sawtooth F waves, often 150 with 2:1 conduction' },
+      { ids: ['junctional-escape', 'accel-junctional'], clue: 'Inverted, hidden or late P waves: 40–60 (escape) or 60–100 (accelerated)' },
+      { ids: ['avb-1'], clue: 'Normal, but the PR is over 0.20 s' }
+    ] },
+    { name: 'Narrow and irregular', items: [
+      { ids: ['afib'], clue: 'Irregularly irregular, no P waves' },
+      { ids: ['sinus-arrhythmia'], clue: 'Normal P waves, rate rises and falls with breathing' },
+      { ids: ['wap'], clue: 'P waves change shape, PR varies' },
+      { ids: ['pac', 'pjc'], clue: 'Regular, with early beats' },
+      { ids: ['sinus-arrest'], clue: 'Regular, then a pause' },
+      { ids: ['avb-2-1'], clue: 'Grouped beats, PR lengthens until a QRS drops' },
+      { ids: ['avb-2-2'], clue: 'Constant PR, then a dropped QRS' }
+    ] },
+    { name: 'Wide and regular', items: [
+      { ids: ['vt'], clue: 'Over 100 (usually 150–250), no relationship to P waves' },
+      { ids: ['idioventricular'], clue: '20–40, no P waves' },
+      { ids: ['paced'], clue: 'A pacer spike before each QRS' },
+      { ids: ['avb-3'], clue: 'Slow, P waves march through with no relationship to the QRS (the QRS can be narrow if the escape is junctional)' },
+      { ids: ['wpw'], clue: 'Short PR and a delta wave' }
+    ] },
+    { name: 'Wide and irregular', items: [
+      { ids: ['pvc'], clue: 'Early, wide beats in an otherwise normal rhythm' },
+      { ids: ['torsades'], clue: 'The QRS twists around the baseline, getting taller and shorter' },
+      { ids: ['vf'], clue: 'Chaotic, no real QRS complexes: check the patient' }
+    ] },
+    { name: 'No QRS complexes', items: [
+      { ids: ['asystole'], clue: 'Flat line: confirm in two leads, check the gain and the leads' },
+      { ids: ['vf'], clue: 'Chaotic waves, no pulse' }
+    ] }
+  ],
+
+  qa: [
+    { q: 'What does the PR interval represent?', a: 'Conduction through the atria and the AV node up to the start of ventricular depolarization', wrong: ['Ventricular depolarization', 'Ventricular repolarization', 'The pause between beats when the heart fills'] },
+    { q: 'What does the PR segment represent?', a: 'The delay at the AV node', wrong: ['Atrial depolarization', 'Early ventricular repolarization', 'Conduction through the Purkinje fibers'], std: true },
+    { q: 'What is the difference between the PR interval and the PR segment?', a: 'The interval includes the P wave; the segment starts at the end of the P wave', wrong: ['The segment includes the P wave; the interval does not', 'The interval ends at the R peak; the segment ends at the Q', 'There is no difference'], std: true },
+    { q: 'An interval is different from a segment because…', a: 'An interval includes at least one wave; a segment is the line between two waves', wrong: ['A segment includes a wave; an interval is only baseline', 'An interval is always longer than 0.20 s', 'A segment is only measured in chest leads'], std: true },
+    { q: 'What does the QT interval represent?', a: 'From the start of ventricular depolarization to the end of ventricular repolarization', wrong: ['Atrial depolarization to ventricular depolarization', 'Only ventricular repolarization', 'One full cardiac cycle'] },
+    { q: 'What does the TP segment represent?', a: 'Electrical rest: the heart is repolarized and filling', wrong: ['AV node delay', 'Atrial repolarization', 'Early ventricular repolarization'], std: true },
+    { q: 'Why don\'t you see atrial repolarization on the ECG?', a: 'It happens during the QRS and is hidden by it', wrong: ['It is the T wave', 'It is the U wave', 'The atria do not repolarize'], std: true },
+    { q: 'What does the U wave represent, when it is seen?', a: 'Late ventricular repolarization (Purkinje fibers or papillary muscles)', wrong: ['Atrial repolarization', 'Ventricular depolarization', 'AV node delay'], std: true },
+    { q: 'A prominent U wave with a flat T wave suggests…', a: 'Hypokalemia', wrong: ['Hyperkalemia', 'Hypercalcemia', 'Pericarditis'], std: true },
+    { q: 'Tall, narrow, peaked T waves suggest…', a: 'Hyperkalemia', wrong: ['Hypokalemia', 'Hypocalcemia', 'Hypothermia'], std: true },
+    { q: 'Which part of the T wave is the relative refractory (vulnerable) period?', a: 'The downslope', wrong: ['The upslope', 'The peak only', 'The ST segment'] },
+    { q: 'The normal ST segment…', a: 'Starts at the baseline and has a slight upward slope', wrong: ['Is elevated 1 mm in every lead', 'Slopes downward from the J point', 'Is wavy'] },
+    { q: 'Where is ST elevation measured?', a: 'At the J point, against the baseline (TP or PR segment)', wrong: ['At the peak of the T wave', 'At the top of the R wave', 'At the start of the P wave'], std: true },
+    { q: 'ST depression usually means…', a: 'Ischemia, or a reciprocal change from a STEMI', wrong: ['Hyperkalemia', 'A normal variant only', 'Pericarditis'] },
+    { q: 'A QRS of 0.12 s or more from a supraventricular rhythm means…', a: 'Bundle branch block or another delay in ventricular conduction', wrong: ['First-degree AV block', 'Atrial enlargement', 'A normal QRS'] },
+    { q: 'A wide QRS with no P wave before it most likely started…', a: 'In the ventricles', wrong: ['In the SA node', 'In the atria', 'In the AV node'] },
+    { q: 'A PR interval of 0.28 s that is the same every beat is…', a: 'First-degree AV block', wrong: ['Second-degree AV block type I', 'Normal', 'WPW'] },
+    { q: 'A short PR (under 0.12 s) with a delta wave is…', a: 'WPW (pre-excitation)', wrong: ['First-degree AV block', 'Atrial flutter', 'Sinus tachycardia'] },
+    { q: 'PR intervals get longer until a P wave has no QRS. This is…', a: 'Second-degree AV block type I (Wenckebach)', wrong: ['Second-degree AV block type II', 'Third-degree AV block', 'First-degree AV block'] },
+    { q: 'Normal P wave width?', a: '0.08 to 0.11 s', wrong: ['0.12 to 0.20 s', 'Under 0.04 s', '0.16 to 0.24 s'], std: true },
+    { q: 'Long QT: the QTc is greater than…', a: '450 ms in males, 460 ms in females', wrong: ['350 ms in males, 360 ms in females', '400 ms in everyone', '500 ms in males, 550 ms in females'] },
+    { q: 'Quick bedside check for a long QT?', a: 'The QT is more than half the R-R interval', wrong: ['The QT is longer than the PR', 'The T wave is taller than the R wave', 'The QT is over 5 small boxes'], std: true },
+    { q: 'Why is the QT corrected for heart rate (QTc)?', a: 'The QT shortens as the heart rate rises', wrong: ['The QT lengthens as the heart rate rises', 'Only the PR changes with rate', 'To account for the patient\'s age'] },
+    { q: 'Bazett formula for QTc?', a: 'QT ÷ the square root of the R-R interval (in seconds)', wrong: ['QT × the heart rate', 'QT ÷ the R-R interval', 'QT + the PR interval'], std: true },
+    { q: 'A long QT puts the patient at risk of…', a: 'Torsades de pointes and sudden death', wrong: ['Atrial flutter', 'Complete heart block', 'Sinus bradycardia only'] },
+    { q: 'Electrolytes that lengthen the QT when low?', a: 'Potassium, magnesium and calcium', wrong: ['Sodium and chloride', 'Bicarbonate and phosphate', 'Glucose and sodium'], std: true },
+    { q: 'A pathologic Q wave is…', a: '0.04 s or wider, or a third of the R wave height or more', wrong: ['Any Q wave in lead II', 'Under 0.02 s wide', 'Only seen in V6'], std: true },
+    { q: 'The R-R interval is used to judge…', a: 'The ventricular rate and whether the rhythm is regular', wrong: ['AV node conduction', 'Ventricular repolarization', 'The axis'] },
+    { q: 'Heart rate when there are 20 small boxes between R waves?', a: '75/min', wrong: ['60/min', '100/min', '150/min'], std: true },
+    { q: 'Heart rate when there are 2 large boxes between R waves?', a: '150/min', wrong: ['100/min', '75/min', '300/min'], std: true },
+    { q: 'The baseline on the ECG is called…', a: 'The isoelectric line', wrong: ['The J point', 'The QT line', 'The R-R line'] },
+    { q: 'A deflection above the baseline is…', a: 'Positive', wrong: ['Negative', 'Isoelectric', 'Biphasic'] },
+    { q: 'First thing to ask when you analyze a rhythm?', a: 'Is the patient sick?', wrong: ['What is the axis?', 'Is the QT long?', 'Is the PR constant?'] },
+    { q: 'The five steps of rhythm analysis, in order?', a: 'Rate, rhythm, QRS, P waves, PR interval', wrong: ['P waves, PR, QRS, ST, T', 'Rhythm, rate, P waves, QRS, QT', 'QRS, rate, PR, P waves, rhythm'] },
+    { q: 'Step 2 of rhythm analysis (the rhythm) is done by…', a: 'Comparing the R-R intervals across the tracing', wrong: ['Measuring the QT', 'Counting P waves in 6 seconds', 'Looking for ST elevation'] },
+    { q: 'Which rate method works best for an irregular rhythm?', a: 'Six-second count (QRS complexes in 6 seconds × 10)', wrong: ['1,500 ÷ small boxes between two R waves', 'Triplicate method', '300 ÷ large boxes between two R waves'], std: true },
+    { q: 'The five things to check about the P waves?', a: 'Present? Regular? One per QRS? Upright or inverted? All alike?', wrong: ['Rate, rhythm, axis, height, width', 'Peaked? Notched? Wide? Tall? Flat?', 'Before the T? After the U? On the ST? In the QRS? Absent?'] },
+    { q: 'Normal sequence (slide 48): each P wave is followed by…', a: 'A normal QRS complex and T wave', wrong: ['A U wave', 'A pause', 'A second P wave'] },
+    { q: 'A narrow QRS tells you the impulse came from…', a: 'Above the ventricles, down the normal pathway', wrong: ['The ventricles', 'A pacemaker spike', 'The Purkinje fibers alone'], std: true },
+    { q: 'More P waves than QRS complexes means…', a: 'Some atrial impulses are blocked: an AV block', wrong: ['Atrial fibrillation', 'A junctional rhythm', 'Ventricular tachycardia'] },
+    { q: 'Narrow, regular, 180/min, no visible P waves. Most likely?', a: 'SVT', wrong: ['Sinus tachycardia', 'Atrial fibrillation', 'Ventricular tachycardia'] },
+    { q: 'Narrow, irregularly irregular, no P waves. Most likely?', a: 'Atrial fibrillation', wrong: ['Atrial flutter', 'Sinus arrhythmia', 'Wandering pacemaker'] },
+    { q: 'Wide, regular, 170/min, no P waves, unstable patient. Most likely?', a: 'Ventricular tachycardia', wrong: ['SVT', 'Sinus tachycardia', 'Idioventricular rhythm'] },
+    { q: 'Regular P waves and regular QRS complexes with no relationship between them?', a: 'Third-degree AV block', wrong: ['Second-degree type I', 'First-degree AV block', 'Wandering pacemaker'] }
+  ]
+};
