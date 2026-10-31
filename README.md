@@ -24,6 +24,12 @@ subjects, switched at the top of the page:
   covers the legal system, scope of practice, consent and refusal, confidentiality,
   transport, resuscitation and advance directives, crime scenes and documentation.
   Anything beyond the slides is marked * and Tennessee specifics are tagged **TN**.
+- **OB** (OB Box), built from Chapter 45 (*Obstetrics*) of *Sanders' Paramedic Textbook*
+  (6th ed.), the lecture slides, including the boxes that are pictures on the slides (fetal
+  development by lunar month, stages of labor, Apgar, BEAU-CHOPS). It covers pregnancy week by
+  week with viability, when each complication can happen, normal and complicated delivery, and
+  newborn care. Anything beyond the slides is marked * (newborn resuscitation, dating terms, the
+  modern edge of viability); the magnesium dose from the class Drug Box deck is tagged **TN**.
 - **Midterm** (Midterm Box): review for the midterm, built around the instructor's topic
   list: negligence, electrolytes and the Na-K pump, patient assessment, acid-base balance,
   blood flow through the heart, the conduction system and intrinsic rates, intubation
@@ -142,6 +148,17 @@ internally consistent.
 
 Legal content lives in `js/legal-data.js`.
 
+## OB modes
+
+| Tab | What it does |
+| --- | --- |
+| **Learn** | **Pregnancy**: a week slider from 0 to 42 weeks. For the week you pick it shows whether the baby could survive if born (previable, periviable, viable with NICU care, preterm, term, postterm), the trimester, embryo or fetus, that lunar month's development from Box 45-1, fundal height on a drawing, what is happening to the mother, and which complications can happen that week. Below that, the week lines to know (8, 12, 20, 22–24, 29–32, 37, 42) and the dating terms. **Complications**: a timeline of 23 conditions across pregnancy, labor and delivery, and the 6 weeks after, with the usual window and the possible window for each (tap one for details), and bleeding in pregnancy side by side. **Delivery**: stages of labor, signs of imminent delivery, the OB kit, a step-by-step normal delivery, and every complicated delivery (what you see, what you do). **Newborn**: an Apgar calculator, "score this newborn" practice, newborn resuscitation and SpO2 targets, and the premature newborn. Also every topic, the terms, and every scenario with its answer. |
+| **Cards** | Flashcard decks: terms, key facts, "when can it happen?" for each complication, scenarios, and the key points of each topic. Pick which areas to include. |
+| **Quiz** | Multiple choice on terms, key facts, scenarios, complication timing, viability by week and Apgar scoring, with the reason after each one. |
+| **Stats** | Accuracy per area for terms, facts, scenarios and timing, with a button to study your weakest area. |
+
+OB content lives in `js/ob-data.js`.
+
 ## Midterm modes
 
 | Tab | What it does |
@@ -210,7 +227,7 @@ It's a static site with no build step:
 
 Run the tests with `node tests/grading.test.js`, `node tests/cardio.test.js`,
 `node tests/ap.test.js`, `node tests/patho.test.js`, `node tests/legal.test.js`,
-`node tests/midterm.test.js`, `node tests/acls.test.js` and `node tests/trauma.test.js`.
+`node tests/ob.test.js`, `node tests/midterm.test.js`, `node tests/acls.test.js` and `node tests/trauma.test.js`.
 
 ## Updating the drug list
 
