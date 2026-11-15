@@ -1674,3 +1674,88 @@ window.CARDIO_WAVES = {
     { q: 'Regular P waves and regular QRS complexes with no relationship between them?', a: 'Third-degree AV block', wrong: ['Second-degree type I', 'First-degree AV block', 'Wandering pacemaker'] }
   ]
 };
+
+// Break it down: a strip quizzed one step at a time (rate, rhythm, QRS, P waves, PR), then named.
+// Steps follow slides 43–48; the answer options are standard ECG wording (std), and each option
+// says what that finding points to. fits[] lists, per rhythm, every answer that rhythm can show,
+// so the app can show how each step narrows the list. js/breakdown.js measures each strip and
+// picks the right answer for that strip from these sets.
+window.CARDIO_BREAKDOWN = {
+  steps: [
+    { id: 'rate', wv: 'rate', name: 'Rate', q: 'What is the ventricular rate?', options: [
+      { id: 'slow', text: 'Slow: under 60', means: 'Bradycardia: sinus bradycardia, a junctional or ventricular escape rhythm, or an AV block.' },
+      { id: 'normal', text: 'Normal: 60 to 100', means: 'A normal rate: most sinus rhythms, accelerated junctional, ectopic beats on a sinus rhythm, paced.' },
+      { id: 'fast', text: 'Fast: over 100', means: 'Tachycardia: sinus tachycardia, SVT, flutter or A-fib with a fast response, VT or torsades.' },
+      { id: 'none', text: 'No rate: no QRS complexes to count', means: 'No QRS complexes means no cardiac output: VF or asystole. Check the patient and start CPR.' }
+    ] },
+    { id: 'rhythm', wv: 'rhythm', name: 'Rhythm', q: 'Is the rhythm regular? March out the R-R intervals.', options: [
+      { id: 'regular', text: 'Regular', means: 'The same R-R all the way across (within about 3 small boxes).' },
+      { id: 'early', text: 'Regular, but interrupted by an early beat or a pause', means: 'An underlying rhythm with ectopy (PAC, PJC, PVC) or a pause (sinus arrest).' },
+      { id: 'pattern', text: 'Irregular in a repeating pattern', means: 'Grouped beats (second-degree block, bigeminy) or a rate that rises and falls with breathing (sinus arrhythmia).' },
+      { id: 'irreg', text: 'Irregularly irregular: no pattern at all', means: 'Classic for atrial fibrillation (also flutter with variable block, wandering pacemaker, torsades).' },
+      { id: 'none', text: 'Nothing to march out: chaotic or flat', means: 'No organized complexes: VF or asystole.' }
+    ] },
+    { id: 'qrs', wv: 'qrs', name: 'QRS', q: 'How wide is the QRS?', options: [
+      { id: 'narrow', text: 'Narrow: under 0.12 s (under 3 small boxes)', means: 'The impulse came down the normal pathway, so it started above the ventricles: sinus, atrial or junctional.' },
+      { id: 'wide', text: 'Wide: 0.12 s or more (3 small boxes or more)', means: 'The impulse started in the ventricles (or was paced), or a bundle branch is blocked.' },
+      { id: 'mixed', text: 'Mostly narrow, with some wide early beats', means: 'A supraventricular rhythm with premature ventricular complexes.' },
+      { id: 'none', text: 'No QRS complexes', means: 'Only a quivering or flat line: VF or asystole.' }
+    ] },
+    { id: 'p', wv: 'p', name: 'P waves', q: 'What do the P waves look like?', options: [
+      { id: 'normal', text: 'Upright and alike, one before every QRS', means: 'The SA node is the pacemaker and every impulse is conducted: a sinus rhythm.' },
+      { id: 'ectopic', text: 'Upright, but an early beat has a different P wave or none', means: 'An ectopic beat: a different P is atrial (PAC), an inverted or missing P with a narrow QRS is junctional (PJC), no P with a wide QRS is a PVC.' },
+      { id: 'extra', text: 'Upright and regular, but more P waves than QRS complexes', means: 'Some P waves are not conducted: a second- or third-degree AV block (or P-wave asystole if there is no QRS at all).' },
+      { id: 'inverted', text: 'Inverted, hidden in the QRS, or just after it', means: 'The impulse starts in the AV junction and travels backward up into the atria: junctional.' },
+      { id: 'changing', text: 'Change shape from beat to beat', means: 'The pacemaker is moving around the atria: wandering atrial pacemaker.' },
+      { id: 'flutter', text: 'Sawtooth flutter waves', means: 'Atrial flutter: the atria fire at 250 to 300.' },
+      { id: 'fib', text: 'None: a wavy, quivering baseline', means: 'The atria are fibrillating: atrial fibrillation (or VF if there are no QRS complexes either).' },
+      { id: 'none', text: 'None seen', means: 'No atrial activity to see: ventricular rhythms, SVT with P waves buried, or a junctional P hidden in the QRS.' }
+    ] },
+    { id: 'pr', wv: 'pr', name: 'PR interval', q: 'What is the PR interval doing?', options: [
+      { id: 'normal', text: 'Normal (0.12 to 0.20 s) and the same every beat', means: 'Normal conduction through the AV node.' },
+      { id: 'long', text: 'Over 0.20 s, and the same every beat', means: 'Slow but steady AV conduction: first-degree AV block.' },
+      { id: 'short', text: 'Under 0.12 s', means: 'The impulse skipped the normal AV delay: a junctional rhythm (P before the QRS) or WPW (with a delta wave).' },
+      { id: 'lengthen', text: 'Gets longer each beat until a QRS drops', means: 'Second-degree AV block type I (Wenckebach).' },
+      { id: 'dropped', text: 'The same on conducted beats, but some P waves are not conducted', means: 'Second-degree AV block type II: dangerous, it can go to complete block.' },
+      { id: 'nopattern', text: 'No relationship: the P waves and QRS complexes ignore each other', means: 'AV dissociation: third-degree (complete) heart block.' },
+      { id: 'varies', text: 'Varies as the P wave changes', means: 'The pacemaker moves around the atria: wandering atrial pacemaker.' },
+      { id: 'none', text: 'None: no P waves to measure from', means: 'No P waves before the QRS: A-fib, flutter, SVT, junctional (P hidden or after), ventricular rhythms, paced.' }
+    ] }
+  ],
+  fits: {
+    nsr: { rate: ['normal'], rhythm: ['regular'], qrs: ['narrow'], p: ['normal'], pr: ['normal'] },
+    'sinus-brady': { rate: ['slow'], rhythm: ['regular'], qrs: ['narrow'], p: ['normal'], pr: ['normal'] },
+    'sinus-tach': { rate: ['fast'], rhythm: ['regular'], qrs: ['narrow'], p: ['normal'], pr: ['normal'] },
+    'sinus-arrhythmia': { rate: ['normal', 'slow'], rhythm: ['pattern'], qrs: ['narrow'], p: ['normal'], pr: ['normal'] },
+    'sinus-arrest': { rate: ['normal', 'slow'], rhythm: ['early'], qrs: ['narrow'], p: ['normal'], pr: ['normal'] },
+    pac: { rate: ['normal'], rhythm: ['early'], qrs: ['narrow'], p: ['ectopic'], pr: ['normal'] },
+    wap: { rate: ['normal'], rhythm: ['regular', 'irreg'], qrs: ['narrow'], p: ['changing'], pr: ['varies'] },
+    svt: { rate: ['fast'], rhythm: ['regular'], qrs: ['narrow'], p: ['none', 'inverted'], pr: ['none', 'short'] },
+    flutter: { rate: ['slow', 'normal', 'fast'], rhythm: ['regular', 'pattern', 'irreg'], qrs: ['narrow'], p: ['flutter'], pr: ['none'] },
+    afib: { rate: ['slow', 'normal', 'fast'], rhythm: ['irreg'], qrs: ['narrow'], p: ['fib'], pr: ['none'] },
+    pjc: { rate: ['normal'], rhythm: ['early'], qrs: ['narrow'], p: ['ectopic'], pr: ['normal'] },
+    'junctional-escape': { rate: ['slow'], rhythm: ['regular'], qrs: ['narrow'], p: ['inverted', 'none'], pr: ['short', 'none'] },
+    'accel-junctional': { rate: ['normal'], rhythm: ['regular'], qrs: ['narrow'], p: ['inverted', 'none'], pr: ['short', 'none'] },
+    idioventricular: { rate: ['slow'], rhythm: ['regular'], qrs: ['wide'], p: ['none'], pr: ['none'] },
+    pvc: { rate: ['normal'], rhythm: ['early', 'pattern'], qrs: ['mixed'], p: ['ectopic'], pr: ['normal'] },
+    vt: { rate: ['fast'], rhythm: ['regular'], qrs: ['wide'], p: ['none'], pr: ['none'] },
+    torsades: { rate: ['fast'], rhythm: ['irreg', 'none'], qrs: ['wide'], p: ['none'], pr: ['none'] },
+    vf: { rate: ['none'], rhythm: ['none', 'irreg'], qrs: ['none'], p: ['fib', 'none'], pr: ['none'] },
+    asystole: { rate: ['none'], rhythm: ['none'], qrs: ['none'], p: ['none', 'extra'], pr: ['none'] },
+    paced: { rate: ['normal'], rhythm: ['regular'], qrs: ['wide'], p: ['none', 'normal'], pr: ['none', 'normal'] },
+    'avb-1': { rate: ['normal', 'slow'], rhythm: ['regular'], qrs: ['narrow'], p: ['normal'], pr: ['long'] },
+    'avb-2-1': { rate: ['normal', 'slow'], rhythm: ['pattern'], qrs: ['narrow'], p: ['extra'], pr: ['lengthen'] },
+    'avb-2-2': { rate: ['slow', 'normal'], rhythm: ['pattern', 'regular'], qrs: ['narrow', 'wide'], p: ['extra'], pr: ['dropped'] },
+    'avb-3': { rate: ['slow'], rhythm: ['regular'], qrs: ['narrow', 'wide'], p: ['extra'], pr: ['nopattern'] },
+    wpw: { rate: ['normal'], rhythm: ['regular'], qrs: ['narrow', 'wide'], p: ['normal'], pr: ['short'] }
+  },
+  // A line shown with the answer for rhythms where the textbook answer needs a word of explanation.
+  notes: {
+    wap: 'Wandering pacemaker is slightly irregular as the pacemaker moves; the textbook calls it regular with minor variability, so either counts.',
+    wpw: 'WPW\'s QRS is only slightly wide, because of the delta wave (the slurred upstroke), so narrow or wide counts.',
+    paced: 'Look for the pacer spike just before each wide QRS.',
+    torsades: 'Torsades is too fast and twisting to count beat by beat; it usually runs over 200.',
+    svt: 'At SVT rates the P waves are usually buried in the QRS or T wave.',
+    flutter: 'Count the QRS complexes, not the flutter waves: the ventricular rate depends on the conduction ratio (2:1, 3:1, 4:1).'
+  }
+};

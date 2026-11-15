@@ -55,6 +55,7 @@
 <nav class="tabs" aria-label="Cardiology study modes">
   <div class="tabs-inner" role="tablist">
     <button class="tab" role="tab" id="ctab-strips" data-ctab="strips" aria-selected="true">Strips</button>
+    <button class="tab" role="tab" id="ctab-steps" data-ctab="steps" aria-selected="false">Breakdown</button>
     <button class="tab" role="tab" id="ctab-cards" data-ctab="cards" aria-selected="false">Cards</button>
     <button class="tab" role="tab" id="ctab-quiz" data-ctab="quiz" aria-selected="false">Quiz</button>
     <button class="tab" role="tab" id="ctab-learn" data-ctab="learn" aria-selected="false">Learn</button>
@@ -64,6 +65,7 @@
 
 <main>
   <section class="view" id="cview-strips" role="tabpanel" aria-labelledby="ctab-strips"></section>
+  <section class="view" id="cview-steps" role="tabpanel" aria-labelledby="ctab-steps" hidden></section>
   <section class="view" id="cview-cards" role="tabpanel" aria-labelledby="ctab-cards" hidden></section>
   <section class="view" id="cview-quiz" role="tabpanel" aria-labelledby="ctab-quiz" hidden></section>
   <section class="view" id="cview-learn" role="tabpanel" aria-labelledby="ctab-learn" hidden></section>
@@ -210,6 +212,7 @@
 <script src="js/ecg.js"></script>
 <script src="js/twelve.js"></script>
 <script src="js/cardio-data.js"></script>
+<script src="js/breakdown.js"></script>
 <script src="js/waves.js"></script>
 <script src="js/real-strips.js"></script>
 <script src="js/ap-data.js"></script>

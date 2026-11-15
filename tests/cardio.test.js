@@ -7,6 +7,7 @@ require('../js/twelve.js');
 require('../js/cardio-data.js');
 require('../js/real-strips.js');
 require('../js/waves.js');
+require('../js/breakdown.js');
 const G = globalThis.Grading;
 const ECG = globalThis.ECG;
 const R = globalThis.CARDIO_RHYTHMS;
@@ -393,6 +394,51 @@ t('measuring questions are answerable from the drawing', () => {
       assert(!/NaN|undefined/.test(WD.svg(m.params, { id: kind, from: 'pOn', to: 'qrsOn', name: 'x' })));
     });
   }
+});
+
+t('break it down: every step has a right answer that leads to the rhythm', () => {
+  const BD = globalThis.CARDIO_BREAKDOWN, BRK = globalThis.BREAKDOWN;
+  const stepIds = BD.steps.map(s => s.id);
+  assert.deepStrictEqual(stepIds, ['rate', 'rhythm', 'qrs', 'p', 'pr']);
+  ECG.ids.forEach(id => {
+    const fit = BD.fits[id];
+    assert(fit, 'no breakdown fits for ' + id);
+    stepIds.forEach(k => {
+      const opts = BD.steps.find(s => s.id === k).options.map(o => o.id);
+      assert(fit[k].length && fit[k].every(x => opts.includes(x)), id + ' ' + k);
+    });
+  });
+  BD.steps.forEach(st => st.options.forEach(o => assert(o.text && o.means, st.id + ' ' + o.id)));
+  // Drawn strips: every usable strip's answers point back to its own rhythm.
+  ECG.ids.forEach(id => {
+    let usable = 0;
+    for (let seed = 1; seed < 80; seed++) {
+      const f = BRK.measureDrawn(id, seed);
+      if (!BRK.drawnUsable(id, f)) continue;
+      usable++;
+      const a = BRK.answers(id, f), nar = BRK.narrowing(ECG.ids, a);
+      stepIds.forEach(k => assert(a[k].length, id + ' seed ' + seed + ' ' + k));
+      assert(nar[nar.length - 1].includes(id), id + ' seed ' + seed + ' narrowed away');
+    }
+    assert(usable > 60, id + ' has too few usable strips');
+  });
+  // Measured facts on a few known strips.
+  for (let seed = 1; seed < 20; seed++) {
+    assert.deepStrictEqual(BRK.answers('avb-2-1', BRK.measureDrawn('avb-2-1', seed)).pr, ['lengthen']);
+    assert.deepStrictEqual(BRK.answers('vt', BRK.measureDrawn('vt', seed)).rate, ['fast']);
+    assert(BRK.measureDrawn('avb-1', seed).prs.every(x => x > 0.2), 'avb-1 PR');
+    assert(BRK.measureDrawn('nsr', seed).prs.every(x => x >= 0.12 && x <= 0.2), 'nsr PR');
+  }
+  // Real strips the breakdown uses are clean and consistent.
+  const RS = globalThis.REAL_STRIPS;
+  let realUsed = 0;
+  RS.strips.forEach(x => {
+    if (!BRK.realUsable(x, RS.hz)) return;
+    realUsed++;
+    const nar = BRK.narrowing(ECG.ids, BRK.answers(x.id, BRK.measureReal(x, RS.hz)));
+    assert(nar[nar.length - 1].includes(x.id), 'real ' + x.rec + ' ' + x.id);
+  });
+  assert(realUsed > 100, 'real strips used: ' + realUsed);
 });
 
 console.log(n + ' cardiology test groups passed');

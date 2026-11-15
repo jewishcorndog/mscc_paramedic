@@ -120,6 +120,9 @@
     quizLen: 20,
     quizTopics: { strips: true, rules: true, care: true, conditions: true, treatments: true, basics: true, pump: true, conduct: true, waves: true, twelve: true, mi: true, bbb: true },
     learn: 'rhythms',
+    bdSel: STRIP_IDS.slice(),
+    bdSrc: 'gen',
+    bdLen: 5,
     stats: {}
   }, loadSaved());
   // Older saves predate the pump deck.
@@ -142,6 +145,7 @@
   if (S.quizTopics.waves === undefined) S.quizTopics.waves = true;
   if (S.twPage !== 'mi' && S.twPage !== 'bbb') S.twPage = 'read';
   S.stripSel = S.stripSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
+  S.bdSel = S.bdSel.filter(function (id) { return STRIP_IDS.indexOf(id) !== -1; });
 
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage blocked */ }
@@ -292,14 +296,15 @@
   var stripsEl = $('#cview-strips');
   var X = null;
 
-  function rhythmChips(selected) {
+  function rhythmChips(selected, src, realBy) {
+    src = src || S.stripSrc; realBy = realBy || REAL_BY;
     return RGROUPS.map(function (g) {
       var list = RHYTHMS.filter(function (r) { return r.group === g.id && STRIP_IDS.indexOf(r.id) !== -1; });
       if (!list.length) return '';
       return '<div class="chip-group"><button class="btn link group-btn" data-rgroup="' + g.id + '">' + esc(g.name) + '</button><div class="chips">' +
         list.map(function (r) {
           return '<button class="chip" data-rhythm="' + r.id + '" aria-pressed="' + (selected.indexOf(r.id) !== -1) + '">' + esc(r.name) +
-            (S.stripSrc !== 'gen' && REAL_BY[r.id] ? ' <span class="real-tag">real</span>' : '') + '</button>';
+            (src !== 'gen' && realBy[r.id] ? ' <span class="real-tag">real</span>' : '') + '</button>';
         }).join('') + '</div></div>';
     }).join('');
   }
@@ -500,6 +505,244 @@
   });
 
   VIEWS.strips = { show: function () { if (X && X.i < X.list.length) stripsRender(); else if (X) stripsDone(); else stripsSetup(); } };
+
+  // =====================================================================
+  // Break it down: one strip, one step at a time (js/breakdown.js measures it)
+  // =====================================================================
+  var bdEl = $('#cview-steps');
+  var BDD = window.CARDIO_BREAKDOWN, BRK = window.BREAKDOWN;
+  var BD_STEPS = BDD.steps;
+  var WV_STEP = {};
+  WV.steps.forEach(function (st) { WV_STEP[st.id] = st; });
+  // Real strips the breakdown can use (clean beats, measurements inside the rhythm's picture).
+  var BD_REAL = {};
+  REAL.strips.forEach(function (x, i) { if (BRK.realUsable(x, REAL.hz)) (BD_REAL[x.id] = BD_REAL[x.id] || []).push(i); });
+  var BX = null;
+
+  function bdMakeItem(id, real) {
+    var item = { id: id, real: real, picks: {}, ok: {} };
+    if (real != null) {
+      item.f = BRK.measureReal(REAL.strips[real], REAL.hz);
+    } else {
+      // A few drawn strips miss what makes the rhythm (a PVC past the 6 seconds); draw another.
+      for (var tries = 0; tries < 20; tries++) {
+        item.seed = newSeed();
+        item.f = BRK.measureDrawn(id, item.seed);
+        if (BRK.drawnUsable(id, item.f)) break;
+      }
+    }
+    item.a = BRK.answers(id, item.f);
+    item.mc = rhythmMC(id, S.bdSel);
+    return item;
+  }
+
+  function bdSetup() {
+    var n = S.bdSel.length, y = window.scrollY;
+    bdEl.innerHTML =
+      '<div><h2 class="title">Break it down</h2><p class="lede">Read a strip the way you will on the monitor: one step at a time. Call the rate, the rhythm, the QRS, the P waves and the PR interval, with feedback after each step, then put it together and name the rhythm.</p></div>' +
+      '<div class="panel">' +
+      '<div class="field-row"><div class="row spread"><p class="eyebrow">Rhythms (' + n + ' of ' + STRIP_IDS.length + ')</p>' +
+      '<div class="row"><button class="btn link" data-act="all">All</button><button class="btn link" data-act="none">None</button></div></div>' +
+      rhythmChips(S.bdSel, S.bdSrc, BD_REAL) + '</div>' +
+      '<div class="field-row"><p class="eyebrow">Strips</p>' + seg('bdSrc', S.bdSrc, [['gen', 'Drawn'], ['real', 'Real'], ['mix', 'Mix']]) +
+      (S.bdSrc === 'gen' ? '' : '<p class="muted small">Real strips are recorded patients from the MIT-BIH database. They have no P-wave labels, so the app checks your P-wave and PR calls against the rhythm\'s rules; drawn strips are measured exactly.</p>') + '</div>' +
+      '<div class="field-row"><p class="eyebrow">Strips per round</p>' + seg('bdLen', S.bdLen, [[5, '5'], [10, '10'], [20, '20']]) + '</div>' +
+      (n ? '' : '<p class="muted small">Tap rhythms above to add them.</p>') +
+      '<div><button class="btn primary big" data-act="start"' + (n ? '' : ' disabled') + '>Start ' + S.bdLen + ' strips</button></div></div>' +
+      '<div class="panel"><p class="eyebrow">The steps</p><ol class="bd-howto">' + BD_STEPS.map(function (st) {
+        return '<li><strong>' + esc(st.name) + ':</strong> ' + esc(st.q) + '</li>';
+      }).join('') + '<li><strong>Put it together:</strong> name the rhythm.</li></ol>' +
+      '<p class="std-note">Steps from your Chapter 21 slides (analyzing a rhythm using the five steps, slides 43–48). The answer choices and what each one points to are standard ECG teaching. * Strips are drawn by the app or come from the MIT-BIH Arrhythmia Database.</p></div>';
+    window.scrollTo(0, y);
+  }
+
+  function bdStart(ids) {
+    if (!ids.length) return bdSetup();
+    var list = [], used = [];
+    while (list.length < S.bdLen) list = list.concat(shuffle(ids));
+    list = list.slice(0, S.bdLen).map(function (id) {
+      var real = null, pool = BD_REAL[id] || [];
+      if (pool.length && (S.bdSrc === 'real' || (S.bdSrc === 'mix' && Math.random() < 0.5))) {
+        var fresh = pool.filter(function (k) { return used.indexOf(k) === -1; });
+        real = pick(fresh.length ? fresh : pool);
+        used.push(real);
+      }
+      return bdMakeItem(id, real);
+    });
+    BX = { list: list, i: 0, step: 0, state: null, named: 0, tally: {} };
+    BD_STEPS.forEach(function (st) { BX.tally[st.id] = { c: 0, n: 0 }; });
+    bdRender();
+  }
+
+  function bdOptText(stepId, optId) { var o = BRK.option(stepId, optId); return o ? o.text : optId; }
+  function bdOkText(item, stepId) {
+    var ok = item.a[stepId];
+    return ok.map(function (x) { return bdOptText(stepId, x); }).join(' or ');
+  }
+
+  // What you have called so far, step by step.
+  function bdTrail(item, upTo) {
+    if (!upTo) return '';
+    return '<ol class="bd-trail">' + BD_STEPS.slice(0, upTo).map(function (st) {
+      var ok = item.ok[st.id];
+      return '<li class="' + (ok ? 'ok' : 'no') + '"><span class="bd-step">' + esc(st.name) + '</span>' +
+        '<span>' + (ok ? '✓ ' : '✗ ') + esc(bdOptText(st.id, item.picks[st.id])) +
+        (ok ? '' : ' <span class="muted small">→ ' + esc(bdOkText(item, st.id)) + '</span>') + '</span></li>';
+    }).join('') + '</ol>';
+  }
+
+  function bdStripHtml(item, revealed) {
+    return item.real != null ? realHtml(item.real, revealed) : stripHtml(item.id, item.seed);
+  }
+
+  function bdRender() {
+    if (BX.i >= BX.list.length) return bdDone();
+    var item = BX.list[BX.i], st = BX.state, last = BD_STEPS.length, naming = BX.step === last;
+    var html = '<div class="progress-line"><span>Strip ' + (BX.i + 1) + ' of ' + BX.list.length + '</span><span>' +
+      (naming ? 'Name it' : 'Step ' + (BX.step + 1) + ' of ' + last + ': ' + esc(BD_STEPS[BX.step].name)) + '</span></div>' +
+      '<div class="meter"><span style="width:' + Math.round((BX.i + BX.step / (last + 1)) / BX.list.length * 100) + '%"></span></div>' +
+      '<div class="panel">' + bdStripHtml(item, naming && !!st) +
+      '<div class="bd-dots" aria-hidden="true">' + BD_STEPS.map(function (s, i) {
+        var cls = i < BX.step || (i === BX.step && st) ? (item.ok[s.id] ? 'ok' : 'no') : i === BX.step ? 'now' : '';
+        return '<span class="bd-dot ' + cls + '">' + esc(s.name) + '</span>';
+      }).join('') + '<span class="bd-dot ' + (naming ? (st ? (st.ok ? 'ok' : 'no') : 'now') : '') + '">Name</span></div>' +
+      bdTrail(item, naming ? last : BX.step);
+    if (!naming) {
+      var step = BD_STEPS[BX.step], wv = WV_STEP[step.wv];
+      html += '<p class="q-prompt">' + esc(step.q) + '</p>' +
+        (wv ? '<details class="bd-help"><summary>How to check (' + esc(wv.src) + ')</summary><p>' + esc(wv.how) + '</p></details>' : '') +
+        '<div class="options">' + step.options.map(function (o, i) {
+          var cls = 'option';
+          if (st) {
+            if (item.a[step.id].indexOf(o.id) !== -1) cls += ' right';
+            else if (o.id === st.choice) cls += ' wrong';
+          }
+          return '<button class="' + cls + '" data-bdopt="' + o.id + '"' + (st ? ' disabled' : '') + '><span class="key">' + 'ABCDEFGH'[i] + '</span><span>' + esc(o.text) + '</span></button>';
+        }).join('') + '</div>';
+      if (st) {
+        var okIdsHere = item.a[step.id], seen = BRK.describe(step.id, item.id, item.f);
+        var means = okIdsHere.map(function (x) { return BRK.option(step.id, x).means; });
+        html += '<div class="verdict ' + (st.ok ? 'ok' : 'no') + '"><p class="v-title">' + (st.ok ? 'Right: ' : 'Not quite. This strip: ') + esc(st.ok ? bdOptText(step.id, st.choice) : bdOkText(item, step.id)) + '</p>' +
+          (okIdsHere.length > 1 ? '<p class="small">On this strip ' + esc(okIdsHere.map(function (x) { return bdOptText(step.id, x); }).join(' or ')) + ' counts.</p>' : '') +
+          (seen ? '<p><strong>On this strip:</strong> ' + esc(seen) + '</p>' : '') +
+          '<p><strong>What it tells you:</strong> ' + esc(means[0]) + '</p>' +
+          (st.ok ? '' : '<p class="small"><strong>' + esc(bdOptText(step.id, st.choice)) + '</strong> would mean: ' + esc(BRK.option(step.id, st.choice).means) + '</p>') +
+          '</div><div class="row"><button class="btn primary big" data-act="next">' + (BX.step + 1 < last ? 'Next step: ' + esc(BD_STEPS[BX.step + 1].name) : 'Put it together') + '</button></div>';
+      }
+    } else {
+      var r = R_BY[item.id];
+      html += '<p class="q-prompt">Put it together: what is this rhythm?</p>' +
+        '<div class="options">' + item.mc.options.map(function (o, i) {
+          var cls = 'option';
+          if (st) { if (i === item.mc.answer) cls += ' right'; else if (i === st.choice) cls += ' wrong'; }
+          return '<button class="' + cls + '" data-bdname="' + i + '"' + (st ? ' disabled' : '') + '><span class="key">' + 'ABCD'[i] + '</span><span>' + esc(o) + '</span></button>';
+        }).join('') + '</div>';
+      if (st) {
+        var nar = BRK.narrowing(STRIP_IDS, item.a), left = nar[nar.length - 1];
+        html += '<div class="verdict ' + (st.ok ? 'ok' : 'no') + '"><p class="v-title">' + (st.ok ? 'Correct: ' : 'It\'s ') + esc(r.name) + '</p>' +
+          '<p>' + esc(r.look) + '</p>' +
+          '<p class="small"><strong>How the steps narrow it:</strong> ' + STRIP_IDS.length + ' rhythms → ' + nar.map(function (x, k) {
+            return x.length + ' after ' + BD_STEPS[k].name.replace(/^(Rate|Rhythm)$/, function (w) { return w.toLowerCase(); });
+          }).join(' → ') + '.</p>' +
+          (left.length > 1 ? '<p class="small">Still fit after all five steps: ' + esc(left.map(function (x) { return R_BY[x].name; }).join(', ')) + '. ' + esc(BDD.notes[item.id] || 'Tell them apart by the look of the strip: ' + r.look) + '</p>' : '') +
+          rulesHtml(r) +
+          (item.real != null ? realLegend(item.real) + (REAL.strips[item.real].note ? '<p class="small">' + esc(REAL.strips[item.real].note) + '.</p>' : '') : '') +
+          '<div class="chips"><button class="chip" data-act="goto-rhythm" data-id="' + r.id + '">Causes and care: ' + esc(r.name) + '</button></div></div>' +
+          '<div class="row"><button class="btn primary big" data-act="next">' + (BX.i + 1 < BX.list.length ? 'Next strip' : 'See results') + '</button></div>' +
+          (item.real != null ? '<p class="real-note">Real strip: MIT-BIH Arrhythmia Database (Moody &amp; Mark), PhysioNet, ODC-By 1.0.</p>' : '');
+      }
+    }
+    html += '</div><p class="kbd-hint">Keys: A–' + 'ABCDEFGH'[(naming ? item.mc.options.length : BD_STEPS[BX.step].options.length) - 1] + ' to answer · Enter for next</p>';
+    bdEl.innerHTML = html;
+    if (st) { var nx = $('[data-act="next"]', bdEl); if (nx) nx.focus({ preventScroll: true }); }
+  }
+
+  function bdAnswerStep(optId) {
+    var item = BX.list[BX.i], step = BD_STEPS[BX.step];
+    if (BX.state || BX.step >= BD_STEPS.length) return;
+    var ok = item.a[step.id].indexOf(optId) !== -1;
+    item.picks[step.id] = optId;
+    item.ok[step.id] = ok;
+    BX.tally[step.id].n++;
+    if (ok) BX.tally[step.id].c++;
+    record('bd-' + step.id, 'breakdown', ok);
+    BX.state = { choice: optId, ok: ok };
+    bdRender();
+  }
+  function bdAnswerName(i) {
+    var item = BX.list[BX.i];
+    if (BX.state || BX.step !== BD_STEPS.length) return;
+    var ok = i === item.mc.answer;
+    item.named = ok;
+    if (ok) BX.named++;
+    record(item.id, 'breakdown', ok);
+    BX.state = { choice: i, ok: ok };
+    bdRender();
+  }
+  function bdNext() {
+    if (!BX.state) return;
+    BX.state = null;
+    if (BX.step < BD_STEPS.length) BX.step++;
+    else { BX.i++; BX.step = 0; window.scrollTo(0, 0); }
+    bdRender();
+  }
+
+  function bdDone() {
+    var steps = 0, right = 0;
+    BD_STEPS.forEach(function (st) { steps += BX.tally[st.id].n; right += BX.tally[st.id].c; });
+    var missed = BX.list.filter(function (it) { return !it.named || BD_STEPS.some(function (st) { return !it.ok[st.id]; }); });
+    var missedIds = Object.keys(missed.reduce(function (m, it) { m[it.id] = 1; return m; }, {}));
+    bdEl.innerHTML =
+      '<div class="panel"><p class="eyebrow">Round complete</p><p class="score-big">' + (steps ? Math.round(right / steps * 100) : 0) + '%</p>' +
+      '<p class="lede">' + right + ' of ' + steps + ' steps right, and ' + BX.named + ' of ' + BX.list.length + ' rhythms named.</p>' +
+      '<div class="table-wrap"><table class="grid"><thead><tr><th>Step</th><th style="text-align:center">Right</th></tr></thead><tbody>' +
+      BD_STEPS.map(function (st) {
+        var t = BX.tally[st.id], p = t.n ? t.c / t.n : 0;
+        return '<tr><td>' + esc(st.name) + '</td><td class="cell"><span class="pill ' + verdictPill(p) + '">' + t.c + ' / ' + t.n + '</span></td></tr>';
+      }).join('') +
+      '<tr><td>Named the rhythm</td><td class="cell"><span class="pill ' + verdictPill(BX.named / BX.list.length) + '">' + BX.named + ' / ' + BX.list.length + '</span></td></tr>' +
+      '</tbody></table></div>' +
+      '<div class="row">' + (missedIds.length ? '<button class="btn primary" data-act="retry">Break down the ' + missedIds.length + ' rhythm' + (missedIds.length === 1 ? '' : 's') + ' I slipped on</button>' : '') +
+      '<button class="btn" data-act="new">New round</button></div></div>' +
+      (missed.length ? '<div class="panel"><p class="eyebrow">Where you slipped</p><ul class="missed-list">' + missed.map(function (it) {
+        var wrong = BD_STEPS.filter(function (st) { return !it.ok[st.id]; }).map(function (st) { return st.name; });
+        if (!it.named) wrong.push('the name');
+        return '<li><strong>' + esc(R_BY[it.id].name) + '</strong><span class="muted small">Missed: ' + esc(wrong.join(', ')) + '</span></li>';
+      }).join('') + '</ul></div>' : '');
+    BX.missedIds = missedIds;
+  }
+
+  bdEl.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act],[data-seg],[data-bdopt],[data-bdname],[data-rhythm],[data-rgroup]');
+    if (!t) return;
+    if (t.dataset.seg) {
+      S[t.dataset.seg] = t.dataset.seg === 'bdLen' ? Number(t.dataset.val) : t.dataset.val;
+      save(); return bdSetup();
+    }
+    if (t.dataset.rhythm) {
+      var i = S.bdSel.indexOf(t.dataset.rhythm);
+      if (i === -1) S.bdSel.push(t.dataset.rhythm); else S.bdSel.splice(i, 1);
+      save(); return bdSetup();
+    }
+    if (t.dataset.rgroup) { S.bdSel = toggleRGroup(S.bdSel, t.dataset.rgroup); save(); return bdSetup(); }
+    if (t.dataset.bdopt) return bdAnswerStep(t.dataset.bdopt);
+    if (t.dataset.bdname) return bdAnswerName(Number(t.dataset.bdname));
+    var act = t.dataset.act;
+    if (act === 'all') { S.bdSel = STRIP_IDS.slice(); save(); return bdSetup(); }
+    if (act === 'none') { S.bdSel = []; save(); return bdSetup(); }
+    if (act === 'start') return bdStart(S.bdSel);
+    if (act === 'next') return bdNext();
+    if (act === 'retry') return bdStart(BX.missedIds);
+    if (act === 'new') { BX = null; return bdSetup(); }
+    if (act === 'goto-rhythm') {
+      showTab('learn');
+      S.learn = 'rhythms'; learnQuery = ''; save(); learnRender();
+      var d = $('[data-ref-rhythm="' + t.dataset.id + '"]', learnEl);
+      if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); }
+    }
+  });
+
+  VIEWS.steps = { show: function () { if (BX && BX.i < BX.list.length) bdRender(); else if (BX) bdDone(); else bdSetup(); } };
 
   // =====================================================================
   // 12-lead helpers
@@ -1679,7 +1922,7 @@
       }).join('') + '</div>' +
       '<p class="small"><strong>Then ask what it means:</strong> is the patient stable? Is the rate too slow or too fast to perfuse? Is there a block that could get worse? Treat the patient, not the monitor (slide 54).</p></div>' +
       '<div class="panel"><p class="eyebrow">Check yourself</p><p>Questions on the five steps, interpreting strips, and measuring intervals.</p>' +
-      '<div class="row"><button class="btn primary" data-act="wv-cards">Flashcards</button><button class="btn" data-act="wv-quiz">Quiz me</button><button class="btn" data-act="an-strips">Name strips</button></div></div>' +
+      '<div class="row"><button class="btn primary" data-act="wv-cards">Flashcards</button><button class="btn" data-act="wv-quiz">Quiz me</button><button class="btn" data-act="an-strips">Name strips</button><button class="btn" data-act="an-steps">Break down strips step by step</button></div></div>' +
       '<p class="std-note">From your Chapter 21 slides (steps in rhythm analysis, analyzing a rhythm using the five steps, classification by rate and pacemaker site, use of algorithms). * The narrow/wide, regular/irregular sort is standard ECG teaching. Strips are drawn by the app.</p>';
   }
 
@@ -1994,6 +2237,7 @@
     if (t.dataset.act === 'an-prev') return anSet(AN.step - 1);
     if (t.dataset.act === 'an-new') { anNew(); return learnRender(); }
     if (t.dataset.act === 'an-strips') return showTab('strips');
+    if (t.dataset.act === 'an-steps') return showTab('steps');
     if (t.dataset.act === 'an-reveal') { AN.shown[AN.step] = true; return anSet(AN.step); }
     if (t.dataset.act === 'wv-cards' || t.dataset.act === 'wv-quiz') {
       if (t.dataset.act === 'wv-cards') {
@@ -2100,6 +2344,14 @@
       .filter(function (r) { return S.stats[r[0]]; })
       .sort(function (a, b) { return (acc(a[0], 'bbb') || 0) - (acc(b[0], 'bbb') || 0); })
       .map(function (r) { return '<tr><td>' + esc(r[1]) + '</td>' + cell(r[0], 'bbb') + '</tr>'; }).join('');
+    var bdRows = BD_STEPS.filter(function (st) { return S.stats['bd-' + st.id]; })
+      .map(function (st) { return '<tr><td>' + esc(st.name) + '</td>' + cell('bd-' + st.id, 'breakdown') + '</tr>'; }).join('');
+    var bdNamed = STRIP_IDS.reduce(function (m, id) {
+      var s = S.stats[id] && S.stats[id].breakdown;
+      if (s) { m.c += s.c; m.n += s.c + s.w; }
+      return m;
+    }, { c: 0, n: 0 });
+    if (bdNamed.n) bdRows += '<tr><td>Named the rhythm after breaking it down</td><td class="cell"><span class="pill ' + verdictPill(bdNamed.c / bdNamed.n) + '" title="' + bdNamed.c + ' right of ' + bdNamed.n + '">' + Math.round(bdNamed.c / bdNamed.n * 100) + '%</span></td></tr>';
     var axisRows = TW.axis.filter(function (a) { return S.stats['tw-axis-' + a.id]; })
       .map(function (a) { return '<tr><td>Axis: ' + esc(a.name) + '</td>' + cell('tw-axis-' + a.id, 'twelve') + '</tr>'; }).join('');
     statsEl.innerHTML =
@@ -2110,6 +2362,7 @@
       '<div class="row"><button class="btn primary" data-act="weak">Practice my weakest 6 strips</button></div>' +
       '<div class="table-wrap"><table class="grid"><thead><tr><th>Rhythm</th><th style="text-align:center">Strip</th><th style="text-align:center">Rules</th><th style="text-align:center">Care</th></tr></thead><tbody>' +
       rhythmRows + '</tbody></table></div>' +
+      (bdRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Break it down: step</th><th style="text-align:center">Score</th></tr></thead><tbody>' + bdRows + '</tbody></table></div>' : '') +
       (topicRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Condition or treatment</th><th style="text-align:center">Score</th></tr></thead><tbody>' + topicRows + '</tbody></table></div>' : '') +
       (twRows || axisRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>12-lead finding</th><th style="text-align:center">Named</th></tr></thead><tbody>' + twRows + axisRows + '</tbody></table></div>' : '') +
       (wvRows ? '<div class="table-wrap"><table class="grid"><thead><tr><th>Waves and intervals</th><th style="text-align:center">Score</th></tr></thead><tbody>' + wvRows + '</tbody></table></div>' : '') +
@@ -2164,6 +2417,12 @@
         var other = RHYTHMS.filter(function (r) { return r.name === item.mc.options[idx]; })[0];
         stripsAnswer(idx === item.mc.answer, { choice: idx, otherId: other && other.id });
       } else if (X.state && e.key === 'Enter' && tag !== 'button') { e.preventDefault(); stripsNext(); }
+    } else if (S.tab === 'steps' && BX && BX.i < BX.list.length) {
+      var k = 'abcdefgh'.indexOf((e.key || '').toLowerCase());
+      if (!BX.state && !typing && k !== -1 && e.key.length === 1) {
+        if (BX.step < BD_STEPS.length) { var so = BD_STEPS[BX.step].options[k]; if (so) bdAnswerStep(so.id); }
+        else if (k < BX.list[BX.i].mc.options.length) bdAnswerName(k);
+      } else if (BX.state && e.key === 'Enter' && tag !== 'button') { e.preventDefault(); bdNext(); }
     }
   });
 
