@@ -901,7 +901,8 @@ svg.angle .needle { stroke: var(--accent); stroke-width: 2.6; stroke-linecap: ro
 .tw-cell.picked { stroke: var(--accent); stroke-width: 0.6; }
 .tw-lab { font: 600 3.4px var(--font-mono); fill: var(--ecg-trace); pointer-events: none; }
 .tw-sep { stroke: var(--ecg-trace); stroke-width: 0.4; }
-.tw-controls select { flex: 1 1 220px; max-width: 100%; width: auto; }
+.tw-controls { min-width: 0; }
+.tw-controls select { flex: 1 1 220px; max-width: 100%; width: auto; min-width: 0; }
 .tw-cap { min-height: 0; }
 .tw-cap ul { margin: 4px 0; }
 .tw-lead-info { margin-top: 8px; }
